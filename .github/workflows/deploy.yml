@@ -4,7 +4,7 @@ name: Deploy Static Site to VPS
 on:
   push:
     branches:
-      - main
+      - master
 
   workflow_dispatch:
 
