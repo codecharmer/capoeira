@@ -1,12 +1,213 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Capoeira Cuernavaca</title>
-</head>
-<body>
-  <h1>Capoeira Cuernavaca</h1>
-  <p>Static site deployed from GitHub Actions to the VPS.</p>
-</body>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0A0A0A" />
+
+    <title>Pura Capoeira Cuernavaca | Clases de Capoeira en Cuernavaca</title>
+    <meta name="description" content="Clases de Capoeira en Cuernavaca, Morelos. Entrenamiento, música, cultura afrobrasileña y comunidad con Professor Malandro." />
+    <meta name="keywords" content="Capoeira Cuernavaca, Clases de capoeira en Cuernavaca, Pura Capoeira, Professor Malandro, Capoeira Morelos, Capoeira Tlaltenango, Cultura afrobrasileña, Roda de capoeira, Berimbau" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Pura Capoeira Cuernavaca" />
+    <meta property="og:description" content="Clases de Capoeira en Cuernavaca, Morelos. Cultura, música, movimiento y comunidad." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" />
+    <!-- UPDATE: og:url with final domain -->
+    <meta property="og:url" content="https://example.com/" />
+
+    <!-- Speculation Rules API -->
+    <script type="speculationrules">
+    {
+      "prefetch": [
+        { "where": { "selector_matches": "a[data-prefetch]" }, "eagerness": "moderate" }
+      ],
+      "prerender": [
+        { "where": { "selector_matches": "a[data-prerender]" }, "eagerness": "conservative" }
+      ]
+    }
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+    <link rel="icon" type="image/png" href="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a href="index.html" class="brand" data-testid="header-logo" data-prefetch>
+          <img src="assets/images/pura-capoeira-logo.png" alt="Pura Capoeira Cuernavaca" />
+          <span class="brand__name">Pura Capoeira<br/>Cuernavaca</span>
+        </a>
+        <nav class="site-nav" aria-label="Navegación principal">
+          <a href="index.html" data-prefetch data-testid="nav-inicio">Inicio</a>
+          <a href="trayectoria.html" data-prefetch data-testid="nav-trayectoria">Trayectoria</a>
+          <a href="clases.html" data-prerender data-testid="nav-clases">Clases</a>
+          <a href="galeria.html" data-prerender data-testid="nav-galeria">Galería</a>
+          <a href="contacto.html" data-prefetch data-testid="nav-contacto">Contacto</a>
+        </nav>
+        <a class="btn btn--whatsapp nav-cta" href="https://wa.me/18056385603" target="_blank" rel="noopener noreferrer" data-testid="nav-whatsapp-cta">
+          WhatsApp
+        </a>
+        <button class="menu-toggle" aria-label="Abrir menú" data-testid="menu-toggle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Mobile menu -->
+    <div class="mobile-menu" aria-hidden="true" data-testid="mobile-menu">
+      <button class="mobile-menu__close" aria-label="Cerrar menú" data-testid="menu-close">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <nav aria-label="Navegación móvil">
+        <a href="index.html" data-prefetch>Inicio</a>
+        <a href="trayectoria.html" data-prefetch>Trayectoria</a>
+        <a href="clases.html" data-prerender>Clases</a>
+        <a href="galeria.html" data-prerender>Galería</a>
+        <a href="contacto.html" data-prefetch>Contacto</a>
+      </nav>
+      <a class="btn btn--whatsapp" href="https://wa.me/18056385603" target="_blank" rel="noopener noreferrer">Contactar por WhatsApp</a>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero" data-testid="hero-section">
+      <div class="hero__bg" style="background-image:url('https://images.unsplash.com/photo-1641688587256-7b6549157cef?crop=entropy&cs=srgb&fm=jpg&w=2000&q=80')"></div>
+      <div class="container hero__inner">
+        <div class="hero-logo-wrap">
+          <img src="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" alt="Pura Capoeira Logo" class="hero-logo" />
+          <span class="overline">Cuernavaca · Morelos · México</span>
+          <h1 class="hero__title">
+            <span>Pura</span>
+            <span class="accent">Capoeira</span>
+            <span class="stroke">Cuernavaca</span>
+          </h1>
+          <p class="hero__sub">Capoeira, cultura, música y movimiento en Cuernavaca, Morelos.</p>
+          <p class="hero__support">Entrena capoeira en una comunidad enfocada en disciplina, estrategia, expresión corporal, música y cultura afrobrasileña.</p>
+        </div>
+        <div>
+          <div class="hero__ctas">
+            <a class="btn btn--primary" href="clases.html" data-prerender data-testid="hero-cta-clases">Ver clases</a>
+            <a class="btn btn--secondary" href="galeria.html" data-prerender data-testid="hero-cta-galeria">Ver galería</a>
+            <a class="btn btn--whatsapp" href="https://wa.me/18056385603" target="_blank" rel="noopener noreferrer" data-testid="hero-cta-whatsapp">Contactar por WhatsApp</a>
+          </div>
+          <div class="hero__meta" style="margin-top:2.5rem;">
+            <div>
+              <div style="color:var(--yellow); font-weight:700;">10+ años</div>
+              <div>Enseñando capoeira</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Intro -->
+    <section class="section">
+      <div class="container">
+        <div class="split">
+          <div class="reveal">
+            <span class="overline">¿Qué es la capoeira?</span>
+            <h2 style="margin-top:1rem;">Lucha. Música. Cultura.</h2>
+            <p class="lead" style="margin-top:1.5rem;">
+              La capoeira es lucha, danza, música, historia, estrategia, cultura afrobrasileña y comunidad. En la roda, el cuerpo aprende a dialogar con ritmo, malicia, defensa, ataque, creatividad y respeto.
+            </p>
+            <p style="color:var(--text-2);">
+              No es solamente ejercicio: es una forma de expresión, resistencia y desarrollo personal. Pura Capoeira Cuernavaca es un espacio de entrenamiento, cultura y comunidad donde la capoeira se vive como arte, lucha, música e historia.
+            </p>
+            <a class="btn btn--ghost" href="trayectoria.html" data-prefetch data-testid="intro-cta-trayectoria" style="margin-top:1.5rem;">Conoce la trayectoria <span aria-hidden="true">→</span></a>
+          </div>
+          <div class="split__media reveal">
+            <img loading="lazy" src="https://images.unsplash.com/photo-1759352856072-985a4ddab82d?crop=entropy&cs=srgb&fm=jpg&w=1200&q=80" alt="Roda de capoeira" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Horarios + Costos -->
+    <section class="section section--dark">
+      <div class="container">
+        <div class="section__head reveal">
+          <span class="overline">Información</span>
+          <h2>Horarios y costos</h2>
+        </div>
+        <div class="info-grid">
+          <div class="info-card reveal" data-testid="schedule-card">
+            <span class="info-card__tag">Horarios</span>
+            <h3 class="info-card__title">Adultos</h3>
+            <div class="info-card__row"><span>Martes</span><span>17:30 – 19:30</span></div>
+            <div class="info-card__row"><span>Jueves</span><span>17:30 – 19:30</span></div>
+            <h3 class="info-card__title" style="margin-top:2rem;">Kids</h3>
+            <div class="info-card__row"><span>Miércoles</span><span>17:00 – 18:00</span></div>
+            <div class="info-card__row"><span>Viernes</span><span>17:00 – 18:00</span></div>
+          </div>
+          <div class="info-card reveal" data-testid="pricing-card">
+            <span class="info-card__tag">Costos</span>
+            <h3 class="info-card__title">Mensualidad</h3>
+            <div class="info-card__price">$1,150 <span style="font-size:1rem;color:var(--text-2);">MXN / mes</span></div>
+            <h3 class="info-card__title" style="margin-top:2rem;">Inscripción / Uniforme</h3>
+            <div class="info-card__price">$1,500 <span style="font-size:1rem;color:var(--text-2);">MXN</span></div>
+            <p class="info-card__sub" style="margin-top:1rem;">Incluye el proceso inicial de integración y uniforme de entrenamiento.</p>
+            <a class="btn btn--primary" href="https://wa.me/18056385603" target="_blank" rel="noopener noreferrer" style="margin-top:1.5rem;" data-testid="pricing-cta">Agendar clase de prueba</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ubicación -->
+    <section class="section">
+      <div class="container">
+        <div class="location reveal" data-testid="location-card">
+          <div>
+            <span class="location__tag">Ubicación</span>
+            <p class="location__addr">San Jerónimo 503,<br/>Tlaltenango, Cuernavaca,<br/>Morelos</p>
+          </div>
+          <a class="btn btn--blue" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query=San%20Jer%C3%B3nimo%20503%2C%20Tlaltenango%2C%20Cuernavaca%2C%20Morelos" data-testid="location-cta">
+            Ver ubicación
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <div class="footer-brand">
+          <img src="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" alt="Pura Capoeira Cuernavaca" />
+          <p>Capoeira, cultura, música y movimiento en Cuernavaca, Morelos.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Navegación</h4>
+          <ul>
+            <li><a href="index.html" data-prefetch>Inicio</a></li>
+            <li><a href="trayectoria.html" data-prefetch>Trayectoria</a></li>
+            <li><a href="clases.html" data-prerender>Clases</a></li>
+            <li><a href="galeria.html" data-prerender>Galería</a></li>
+            <li><a href="contacto.html" data-prefetch>Contacto</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contacto</h4>
+          <ul>
+            <li><a href="https://wa.me/18056385603" target="_blank" rel="noopener noreferrer">WhatsApp: +1 (805) 638-5603</a></li>
+            <li><a href="https://www.instagram.com/profesor.malandro/" target="_blank" rel="noopener noreferrer">Instagram: @profesor.malandro</a></li>
+            <!-- UPDATE: Facebook URL -->
+            <li><a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer">Facebook: Pura Capoeira Cuernavaca</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="container footer-bottom">
+        <span>© <span id="year"></span> Pura Capoeira Cuernavaca</span>
+        <span>San Jerónimo 503, Tlaltenango</span>
+      </div>
+    </footer>
+
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+    <script src="assets/js/main.js" defer></script>
+  </body>
 </html>

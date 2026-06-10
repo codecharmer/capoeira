@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0A0A0A" />
+    <title>Galería de Videos | Pura Capoeira Cuernavaca</title>
+    <meta name="description" content="Videos de clases, rodas, música, entrenamientos y eventos de Pura Capoeira Cuernavaca." />
+
+    <meta property="og:title" content="Galería de Videos | Pura Capoeira Cuernavaca" />
+    <meta property="og:description" content="Videos de clases, rodas, música, entrenamientos y eventos." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" />
+
+    <script type="speculationrules">
+    {
+      "prefetch": [{"where": {"selector_matches": "a[data-prefetch]"}, "eagerness": "moderate"}],
+      "prerender": [{"where": {"selector_matches": "a[data-prerender]"}, "eagerness": "conservative"}]
+    }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a href="index.html" class="brand" data-testid="header-logo" data-prefetch>
+          <img src="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" alt="Pura Capoeira Cuernavaca" />
+          <span class="brand__name">Pura Capoeira<br/>Cuernavaca</span>
+        </a>
+        <nav class="site-nav" aria-label="Navegación principal">
+          <a href="index.html" data-prefetch data-testid="nav-inicio">Inicio</a>
+          <a href="trayectoria.html" data-prefetch data-testid="nav-trayectoria">Trayectoria</a>
+          <a href="clases.html" data-prerender data-testid="nav-clases">Clases</a>
+          <a href="galeria.html" data-prerender data-testid="nav-galeria">Galería</a>
+          <a href="contacto.html" data-prefetch data-testid="nav-contacto">Contacto</a>
+        </nav>
+        <a class="btn btn--whatsapp nav-cta" href="https://wa.me/18056385603" target="_blank" rel="noopener noreferrer" data-testid="nav-whatsapp-cta">WhatsApp</a>
+        <button class="menu-toggle" aria-label="Abrir menú" data-testid="menu-toggle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="mobile-menu" aria-hidden="true" data-testid="mobile-menu">
+      <button class="mobile-menu__close" aria-label="Cerrar menú" data-testid="menu-close">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <nav aria-label="Navegación móvil">
+        <a href="index.html" data-prefetch>Inicio</a>
+        <a href="trayectoria.html" data-prefetch>Trayectoria</a>
+        <a href="clases.html" data-prerender>Clases</a>
+        <a href="galeria.html" data-prerender>Galería</a>
+        <a href="contacto.html" data-prefetch>Contacto</a>
+      </nav>
+      <a class="btn btn--whatsapp" href="https://wa.me/18056385603" target="_blank" rel="noopener noreferrer">Contactar por WhatsApp</a>
+    </div>
+
+    <section class="page-header">
+      <div class="container page-header__inner">
+        <span class="overline">Multimedia</span>
+        <h1>Galería de <span class="text-yellow">Videos</span></h1>
+        <p class="lead">Momentos de clases, rodas, entrenamientos y eventos de Pura Capoeira Cuernavaca.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="gallery-filters reveal" role="tablist" aria-label="Filtros de galería">
+          <button class="filter-pill is-active" data-category="Todos" data-testid="gallery-filter-todos">Todos</button>
+          <button class="filter-pill" data-category="Clases" data-testid="gallery-filter-clases">Clases</button>
+          <button class="filter-pill" data-category="Rodas" data-testid="gallery-filter-rodas">Rodas</button>
+          <button class="filter-pill" data-category="Música" data-testid="gallery-filter-musica">Música</button>
+          <button class="filter-pill" data-category="Eventos" data-testid="gallery-filter-eventos">Eventos</button>
+          <button class="filter-pill" data-category="Entrenamiento" data-testid="gallery-filter-entrenamiento">Entrenamiento</button>
+          <button class="filter-pill" data-category="Kids" data-testid="gallery-filter-kids">Kids</button>
+          <button class="filter-pill" data-category="Adultos" data-testid="gallery-filter-adultos">Adultos</button>
+        </div>
+
+        <div class="gallery-grid" data-testid="gallery-grid"></div>
+
+        <!-- Fallback if JSON fails -->
+        <div class="gallery-fallback" data-testid="gallery-fallback" hidden>
+          <span class="overline">Galería</span>
+          <h3 style="margin:1rem 0;">Nuestra galería está disponible en iCloud</h3>
+          <p>Nuestra galería completa está disponible en iCloud. Haz clic abajo para ver videos recientes de clases, rodas, entrenamientos y eventos.</p>
+          <a class="btn btn--blue" href="https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR" target="_blank" rel="noopener noreferrer" data-testid="gallery-fallback-cta">Ver galería completa en iCloud</a>
+        </div>
+
+        <div class="icloud-banner reveal">
+          <span class="overline" style="color:rgba(255,215,0,0.9);">iCloud</span>
+          <h3>Ver galería completa en iCloud</h3>
+          <p>Accede a todos los videos del álbum compartido con clases, rodas, música, eventos y entrenamientos.</p>
+          <a class="btn btn--primary" href="https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR" target="_blank" rel="noopener noreferrer" data-testid="gallery-icloud-cta">Abrir álbum de iCloud</a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <div class="footer-brand">
+          <img src="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" alt="Pura Capoeira Cuernavaca" />
+          <p>Capoeira, cultura, música y movimiento en Cuernavaca, Morelos.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Navegación</h4>
+          <ul>
+            <li><a href="index.html" data-prefetch>Inicio</a></li>
+            <li><a href="trayectoria.html" data-prefetch>Trayectoria</a></li>
+            <li><a href="clases.html" data-prerender>Clases</a></li>
+            <li><a href="galeria.html" data-prerender>Galería</a></li>
+            <li><a href="contacto.html" data-prefetch>Contacto</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contacto</h4>
+          <ul>
+            <li><a href="https://wa.me/18056385603" target="_blank" rel="noopener noreferrer">WhatsApp: +1 (805) 638-5603</a></li>
+            <li><a href="https://www.instagram.com/profesor.malandro/" target="_blank" rel="noopener noreferrer">Instagram: @profesor.malandro</a></li>
+            <li><a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer">Facebook: Pura Capoeira Cuernavaca</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="container footer-bottom">
+        <span>© <span id="year"></span> Pura Capoeira Cuernavaca</span>
+        <span>San Jerónimo 503, Tlaltenango</span>
+      </div>
+    </footer>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+    <script src="assets/js/main.js" defer></script>
+  </body>
+</html>
