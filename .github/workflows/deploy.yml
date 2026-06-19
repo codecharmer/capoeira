@@ -47,6 +47,8 @@ jobs:
             --exclude='.well-known/' \
             --exclude='.htaccess' \
             --exclude='api/.printful-token' \
+            --exclude='api/.stripe-secret' \
+            --exclude='api/.stripe-webhook-secret' \
             -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.SSH_PORT }}" \
             public/ \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/"

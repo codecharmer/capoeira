@@ -169,6 +169,12 @@
     const refreshBtn = root.querySelector('[data-store-refresh]');
     const cartItemsEl = root.querySelector('[data-store-cart-items]');
     const totalEl = root.querySelector('[data-store-total]');
+    const subtotalEl = root.querySelector('[data-store-subtotal]');
+    const shippingCostEl = root.querySelector('[data-store-shipping-cost]');
+    const shippingBox = root.querySelector('[data-store-shipping]');
+    const shippingOptionsEl = root.querySelector('[data-store-shipping-options]');
+    const payBtn = root.querySelector('[data-store-pay]');
+    const resultEl = root.querySelector('[data-store-result]');
     const orderForm = root.querySelector('[data-store-order-form]');
 
     if (!grid || !feedback || !cartItemsEl || !totalEl || !orderForm) return;
@@ -177,6 +183,9 @@
       products: [],
       details: new Map(),
       cart: [],
+      currency: 'MXN',
+      rates: [],
+      shipping: null,
     };
 
     const asNumber = (value) => {
@@ -184,7 +193,16 @@
       return Number.isFinite(num) ? num : 0;
     };
 
-    const money = (value) => `$${asNumber(value).toFixed(2)}`;
+    const money = (value) => {
+      try {
+        return new Intl.NumberFormat('es-MX', {
+          style: 'currency',
+          currency: state.currency || 'MXN',
+        }).format(asNumber(value));
+      } catch (_err) {
+        return `$${asNumber(value).toFixed(2)}`;
+      }
+    };
 
     const setFeedback = (msg, isError = false) => {
       feedback.textContent = msg;
@@ -214,18 +232,61 @@
       return asNumber(variant?.retail_price || variant?.price || 0);
     };
 
-    const cartTotal = () =>
+    const subtotal = () =>
       state.cart.reduce((sum, item) => sum + getVariantPrice(item.variant) * item.quantity, 0);
 
-    const syncCartTotal = () => {
-      totalEl.textContent = money(cartTotal());
+    const shippingCost = () => (state.shipping ? asNumber(state.shipping.rate) : 0);
+
+    const grandTotal = () => subtotal() + shippingCost();
+
+    const syncTotals = () => {
+      if (subtotalEl) subtotalEl.textContent = money(subtotal());
+      if (shippingCostEl) shippingCostEl.textContent = state.shipping ? money(shippingCost()) : '—';
+      totalEl.textContent = money(grandTotal());
+    };
+
+    const updatePayState = () => {
+      if (!payBtn) return;
+      payBtn.disabled = !(state.cart.length && state.shipping);
+    };
+
+    // Any cart change invalidates previously fetched shipping rates.
+    const invalidateShipping = () => {
+      state.rates = [];
+      state.shipping = null;
+      if (shippingOptionsEl) shippingOptionsEl.innerHTML = '';
+      if (shippingBox) shippingBox.hidden = true;
+      syncTotals();
+      updatePayState();
+    };
+
+    const renderShipping = () => {
+      if (!shippingOptionsEl || !shippingBox) return;
+      if (!state.rates.length) {
+        shippingBox.hidden = true;
+        return;
+      }
+      shippingOptionsEl.innerHTML = state.rates
+        .map(
+          (r, i) => `
+          <label class="store-shipping__option">
+            <input type="radio" name="shipping-rate" value="${i}" ${i === 0 ? 'checked' : ''} />
+            <span>${r.name || 'Envío'}</span>
+            <strong>${money(r.rate)}</strong>
+          </label>`
+        )
+        .join('');
+      shippingBox.hidden = false;
+      state.shipping = state.rates[0] || null;
+      syncTotals();
+      updatePayState();
     };
 
     const renderCart = () => {
       cartItemsEl.innerHTML = '';
       if (!state.cart.length) {
         cartItemsEl.innerHTML = '<p class="store-empty">Tu carrito está vacío.</p>';
-        syncCartTotal();
+        syncTotals();
         return;
       }
 
@@ -247,7 +308,7 @@
         cartItemsEl.appendChild(row);
       });
 
-      syncCartTotal();
+      syncTotals();
     };
 
     const addToCart = (product, variant) => {
@@ -270,6 +331,7 @@
       }
 
       renderCart();
+      invalidateShipping();
       setFeedback('Producto agregado al carrito.');
     };
 
@@ -410,6 +472,7 @@
         if (!item) return;
         item.quantity = Math.max(1, item.quantity - 1);
         renderCart();
+        invalidateShipping();
       }
 
       if (plus) {
@@ -418,6 +481,7 @@
         if (!item) return;
         item.quantity += 1;
         renderCart();
+        invalidateShipping();
       }
 
       if (remove) {
@@ -425,19 +489,24 @@
         if (!Number.isFinite(idx)) return;
         state.cart.splice(idx, 1);
         renderCart();
+        invalidateShipping();
       }
     });
 
-    orderForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    if (shippingOptionsEl) {
+      shippingOptionsEl.addEventListener('change', (e) => {
+        const radio = e.target.closest('input[name="shipping-rate"]');
+        if (!radio) return;
+        const idx = Number.parseInt(radio.value || '', 10);
+        state.shipping = state.rates[idx] || null;
+        syncTotals();
+        updatePayState();
+      });
+    }
 
-      if (!state.cart.length) {
-        setFeedback('Agrega al menos un producto antes de crear el pedido.', true);
-        return;
-      }
-
+    const getRecipient = () => {
       const formData = new FormData(orderForm);
-      const recipient = {
+      return {
         name: String(formData.get('name') || '').trim(),
         email: String(formData.get('email') || '').trim(),
         address1: String(formData.get('address1') || '').trim(),
@@ -446,48 +515,149 @@
         country_code: String(formData.get('country_code') || '').trim().toUpperCase(),
         zip: String(formData.get('zip') || '').trim(),
       };
+    };
 
-      const payload = {
-        external_id: `capoeira-${Date.now()}`,
-        recipient,
-        currency: 'USD',
-        items: state.cart.map((item) => ({
-          sync_variant_id: item.variant.id,
-          quantity: item.quantity,
-          retail_price: getVariantPrice(item.variant).toFixed(2),
-        })),
-      };
+    const recipientReady = (r) =>
+      r.name && r.email && r.address1 && r.city && r.country_code && r.zip;
 
-      setFeedback('Creando pedido borrador...');
+    // Step 1: calculate real Printful shipping rates for the cart + address.
+    orderForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!state.cart.length) {
+        setFeedback('Agrega al menos un producto antes de calcular el envío.', true);
+        return;
+      }
+
+      const recipient = getRecipient();
+      if (!recipientReady(recipient)) {
+        setFeedback('Completa todos los datos de envío.', true);
+        return;
+      }
+
+      const items = state.cart.map((item) => ({
+        variant_id: item.variant.variant_id, // Printful catalog variant id
+        quantity: item.quantity,
+      }));
+
+      setFeedback('Calculando envío...');
 
       try {
-        const res = await fetch('api/printful.php?action=order', {
+        const res = await fetch('api/checkout.php?action=shipping', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({ recipient, items }),
         });
-
         const json = await res.json();
         if (!res.ok || !json.ok) {
-          throw new Error(json.error || 'No se pudo crear el pedido');
+          throw new Error(json.error || 'No se pudo calcular el envío');
         }
 
-        const orderId = json?.order?.id ? ` #${json.order.id}` : '';
-        setFeedback(`Pedido borrador creado${orderId}. Revisa tu panel de Printful para confirmar costos.`);
-        state.cart = [];
-        renderCart();
-        orderForm.reset();
+        state.currency = json.currency || 'MXN';
+        state.rates = Array.isArray(json.rates) ? json.rates : [];
+
+        if (!state.rates.length) {
+          invalidateShipping();
+          setFeedback('No hay métodos de envío para esa dirección.', true);
+          return;
+        }
+
+        renderShipping();
+        setFeedback('Selecciona un método de envío y continúa al pago.');
       } catch (err) {
-        console.warn('Store order failed:', err);
-        setFeedback('No se pudo crear el pedido. Verifica datos de envío y configuración del API.', true);
+        console.warn('Shipping calc failed:', err);
+        invalidateShipping();
+        setFeedback('No se pudo calcular el envío. Verifica la dirección.', true);
       }
     });
+
+    // Step 2: create the Stripe Checkout session and redirect to pay.
+    if (payBtn) {
+      payBtn.addEventListener('click', async () => {
+        if (!state.cart.length || !state.shipping) {
+          setFeedback('Calcula el envío y selecciona un método antes de pagar.', true);
+          return;
+        }
+
+        const recipient = getRecipient();
+        if (!recipientReady(recipient)) {
+          setFeedback('Completa todos los datos de envío.', true);
+          return;
+        }
+
+        const payload = {
+          recipient,
+          items: state.cart.map((item) => ({
+            sync_variant_id: item.variant.id,
+            quantity: item.quantity,
+            retail_price: getVariantPrice(item.variant).toFixed(2),
+            name: `${item.title} — ${item.variantName}`,
+          })),
+          shipping_id: state.shipping.id,
+          shipping_name: state.shipping.name || 'Envío',
+          shipping_rate: asNumber(state.shipping.rate),
+        };
+
+        payBtn.disabled = true;
+        setFeedback('Redirigiendo a pago seguro con Stripe...');
+
+        try {
+          const res = await fetch('api/checkout.php?action=create-checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const json = await res.json();
+          if (!res.ok || !json.ok || !json.url) {
+            throw new Error(json.error || 'No se pudo iniciar el pago');
+          }
+          window.location.href = json.url;
+        } catch (err) {
+          console.warn('Checkout failed:', err);
+          payBtn.disabled = false;
+          setFeedback('No se pudo iniciar el pago. Intenta de nuevo.', true);
+        }
+      });
+    }
+
+    // Handle return from Stripe Checkout.
+    const showResult = (msg, ok) => {
+      if (!resultEl) return;
+      resultEl.hidden = false;
+      resultEl.textContent = msg;
+      resultEl.classList.toggle('is-success', ok);
+      resultEl.classList.toggle('is-error', !ok);
+    };
+
+    const handleCheckoutReturn = () => {
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get('checkout');
+      if (!status) return;
+
+      if (status === 'success') {
+        showResult('¡Pago recibido! Tu pedido se envió a producción. Recibirás un correo de confirmación.', true);
+        state.cart = [];
+        renderCart();
+        invalidateShipping();
+        orderForm.reset();
+      } else if (status === 'cancel') {
+        showResult('Pago cancelado. Tu carrito sigue disponible.', false);
+      }
+
+      params.delete('checkout');
+      params.delete('session_id');
+      const query = params.toString();
+      const newUrl = window.location.pathname + (query ? `?${query}` : '');
+      window.history.replaceState({}, '', newUrl);
+    };
 
     if (refreshBtn) {
       refreshBtn.addEventListener('click', fetchProducts);
     }
 
     renderCart();
+    updatePayState();
+    handleCheckoutReturn();
     fetchProducts();
   }
 

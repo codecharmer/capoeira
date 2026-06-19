@@ -83,11 +83,8 @@
 
         <aside class="store-cart reveal" data-store-cart>
           <h2>Carrito</h2>
+          <div class="store-cart-result" data-store-result hidden></div>
           <div class="store-cart__items" data-store-cart-items></div>
-          <div class="store-cart__summary">
-            <span>Total estimado</span>
-            <strong data-store-total>$0.00</strong>
-          </div>
 
           <h3>Datos de envío</h3>
           <form class="store-form" data-store-order-form>
@@ -96,11 +93,24 @@
             <input type="text" name="address1" placeholder="Dirección" required />
             <input type="text" name="city" placeholder="Ciudad" required />
             <input type="text" name="state_code" placeholder="Estado (ej. MOR)" required />
-            <input type="text" name="country_code" placeholder="País (ej. MX)" required maxlength="2" />
+            <input type="text" name="country_code" placeholder="País (ej. MX)" value="MX" required maxlength="2" />
             <input type="text" name="zip" placeholder="Código postal" required />
-            <button class="btn btn--primary" type="submit">Crear pedido borrador</button>
+            <button class="btn btn--secondary" type="submit" data-store-shipping-btn>Calcular envío</button>
           </form>
-          <p class="store-footnote">El pedido se crea en Printful como borrador para validación final de costos y envío.</p>
+
+          <div class="store-shipping" data-store-shipping hidden>
+            <h3>Método de envío</h3>
+            <div class="store-shipping__options" data-store-shipping-options></div>
+          </div>
+
+          <div class="store-cart__summary">
+            <div class="store-cart__line"><span>Subtotal</span><strong data-store-subtotal>$0.00</strong></div>
+            <div class="store-cart__line"><span>Envío</span><strong data-store-shipping-cost>—</strong></div>
+            <div class="store-cart__line store-cart__line--total"><span>Total</span><strong data-store-total>$0.00</strong></div>
+          </div>
+
+          <button class="btn btn--primary store-pay-btn" type="button" data-store-pay disabled>Pagar con tarjeta</button>
+          <p class="store-footnote">Pago seguro con Stripe. Tu pedido se envía a producción automáticamente al confirmarse el pago.</p>
         </aside>
       </div>
     </section>

@@ -1054,18 +1054,99 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
   color: var(--text);
 }
 .store-cart__summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 1rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--border);
 }
-.store-cart__summary strong {
+.store-cart__line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
+  color: var(--text-2);
+}
+.store-cart__line strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.store-cart__line--total {
+  margin-top: 0.5rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+}
+.store-cart__line--total span {
   font-family: var(--font-heading);
-  font-size: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.store-cart__line--total strong {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
   line-height: 1;
   color: var(--yellow);
+}
+.store-shipping {
+  margin: 1rem 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.store-shipping h3 {
+  margin: 0 0 0.6rem;
+}
+.store-shipping__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.store-shipping__option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-2);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.store-shipping__option:hover {
+  border-color: var(--yellow);
+}
+.store-shipping__option input {
+  accent-color: var(--yellow);
+}
+.store-shipping__option span {
+  flex: 1;
+  color: var(--text);
+}
+.store-shipping__option strong {
+  color: var(--yellow);
+}
+.store-pay-btn {
+  width: 100%;
+}
+.store-pay-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.store-cart-result {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+.store-cart-result.is-success {
+  border-color: var(--green);
+  background: rgba(0, 158, 96, 0.12);
+  color: var(--text);
+}
+.store-cart-result.is-error {
+  border-color: #c0392b;
+  background: rgba(192, 57, 43, 0.12);
+  color: var(--text);
 }
 .store-form {
   display: flex;
