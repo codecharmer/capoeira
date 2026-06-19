@@ -4,11 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0A0A0A" />
-    <title>Galería de Videos | Pura Capoeira Cuernavaca</title>
-    <meta name="description" content="Videos de clases, rodas, música, entrenamientos y eventos de Pura Capoeira Cuernavaca." />
+    <title>Tienda | Pura Capoeira Cuernavaca</title>
+    <meta name="description" content="Tienda oficial de Pura Capoeira Cuernavaca conectada con Printful." />
 
-    <meta property="og:title" content="Galería de Videos | Pura Capoeira Cuernavaca" />
-    <meta property="og:description" content="Videos de clases, rodas, música, entrenamientos y eventos." />
+    <meta property="og:title" content="Tienda | Pura Capoeira Cuernavaca" />
+    <meta property="og:description" content="Compra productos oficiales de Pura Capoeira Cuernavaca." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" />
 
@@ -29,7 +29,7 @@
     <header class="site-header">
       <div class="site-header__inner">
         <a href="index.html" class="brand" data-testid="header-logo" data-prefetch>
-          <img src="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" alt="Pura Capoeira Cuernavaca" />
+          <img src="assets/images/pura-capoeira-logo.png" alt="Pura Capoeira Cuernavaca" />
           <span class="brand__name">Pura Capoeira<br/>Cuernavaca</span>
         </a>
         <nav class="site-nav" aria-label="Navegación principal">
@@ -64,48 +64,51 @@
 
     <section class="page-header">
       <div class="container page-header__inner">
-        <span class="overline">Multimedia</span>
-        <h1>Galería de <span class="text-yellow">Videos</span></h1>
-        <p class="lead">Momentos de clases, rodas, entrenamientos y eventos de Pura Capoeira Cuernavaca.</p>
+        <span class="overline">Store</span>
+        <h1>Tienda <span class="text-yellow">Oficial</span></h1>
+        <p class="lead">Playeras, hoodies y accesorios conectados en tiempo real con Printful.</p>
       </div>
     </section>
 
     <section class="section">
-      <div class="container">
-        <div class="gallery-filters reveal" role="tablist" aria-label="Filtros de galería">
-          <button class="filter-pill is-active" data-category="Todos" data-testid="gallery-filter-todos">Todos</button>
-          <button class="filter-pill" data-category="Clases" data-testid="gallery-filter-clases">Clases</button>
-          <button class="filter-pill" data-category="Rodas" data-testid="gallery-filter-rodas">Rodas</button>
-          <button class="filter-pill" data-category="Música" data-testid="gallery-filter-musica">Música</button>
-          <button class="filter-pill" data-category="Eventos" data-testid="gallery-filter-eventos">Eventos</button>
-          <button class="filter-pill" data-category="Entrenamiento" data-testid="gallery-filter-entrenamiento">Entrenamiento</button>
-          <button class="filter-pill" data-category="Kids" data-testid="gallery-filter-kids">Kids</button>
-          <button class="filter-pill" data-category="Adultos" data-testid="gallery-filter-adultos">Adultos</button>
+      <div class="container store-layout" data-store-root>
+        <div>
+          <div class="store-toolbar reveal">
+            <p class="store-note">Productos sincronizados con Printful.</p>
+            <button class="btn btn--secondary" type="button" data-store-refresh>Actualizar productos</button>
+          </div>
+          <div class="store-feedback" data-store-feedback>Consultando catálogo...</div>
+          <div class="store-grid" data-store-grid></div>
         </div>
 
-        <div class="gallery-grid" data-testid="gallery-grid"></div>
+        <aside class="store-cart reveal" data-store-cart>
+          <h2>Carrito</h2>
+          <div class="store-cart__items" data-store-cart-items></div>
+          <div class="store-cart__summary">
+            <span>Total estimado</span>
+            <strong data-store-total>$0.00</strong>
+          </div>
 
-        <!-- Fallback if JSON fails -->
-        <div class="gallery-fallback" data-testid="gallery-fallback" hidden>
-          <span class="overline">Galería</span>
-          <h3 style="margin:1rem 0;">Nuestra galería está disponible en iCloud</h3>
-          <p>Nuestra galería completa está disponible en iCloud. Haz clic abajo para ver videos recientes de clases, rodas, entrenamientos y eventos.</p>
-          <a class="btn btn--blue" href="https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR" target="_blank" rel="noopener noreferrer" data-testid="gallery-fallback-cta">Ver galería completa en iCloud</a>
-        </div>
-
-        <div class="icloud-banner reveal">
-          <span class="overline" style="color:rgba(255,215,0,0.9);">iCloud</span>
-          <h3>Ver galería completa en iCloud</h3>
-          <p>Accede a todos los videos del álbum compartido con clases, rodas, música, eventos y entrenamientos.</p>
-          <a class="btn btn--primary" href="https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR" target="_blank" rel="noopener noreferrer" data-testid="gallery-icloud-cta">Abrir álbum de iCloud</a>
-        </div>
+          <h3>Datos de envío</h3>
+          <form class="store-form" data-store-order-form>
+            <input type="text" name="name" placeholder="Nombre completo" required />
+            <input type="email" name="email" placeholder="Email" required />
+            <input type="text" name="address1" placeholder="Dirección" required />
+            <input type="text" name="city" placeholder="Ciudad" required />
+            <input type="text" name="state_code" placeholder="Estado (ej. MOR)" required />
+            <input type="text" name="country_code" placeholder="País (ej. MX)" required maxlength="2" />
+            <input type="text" name="zip" placeholder="Código postal" required />
+            <button class="btn btn--primary" type="submit">Crear pedido borrador</button>
+          </form>
+          <p class="store-footnote">El pedido se crea en Printful como borrador para validación final de costos y envío.</p>
+        </aside>
       </div>
     </section>
 
     <footer class="site-footer">
       <div class="container site-footer__inner">
         <div class="footer-brand">
-          <img src="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" alt="Pura Capoeira Cuernavaca" />
+          <img src="assets/images/pura-capoeira-logo.png" alt="Pura Capoeira Cuernavaca" />
           <p>Capoeira, cultura, música y movimiento en Cuernavaca, Morelos.</p>
         </div>
         <div class="footer-col">
@@ -133,6 +136,7 @@
         <span>San Jerónimo 503, Tlaltenango</span>
       </div>
     </footer>
+
     <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
     <script src="assets/js/main.js" defer></script>
   </body>

@@ -159,6 +159,275 @@
     });
   }
 
+  /* ----- Store (Printful) ----- */
+  function initStore() {
+    const root = document.querySelector('[data-store-root]');
+    if (!root) return;
+
+    const grid = root.querySelector('[data-store-grid]');
+    const feedback = root.querySelector('[data-store-feedback]');
+    const refreshBtn = root.querySelector('[data-store-refresh]');
+    const cartItemsEl = root.querySelector('[data-store-cart-items]');
+    const totalEl = root.querySelector('[data-store-total]');
+    const orderForm = root.querySelector('[data-store-order-form]');
+
+    if (!grid || !feedback || !cartItemsEl || !totalEl || !orderForm) return;
+
+    const state = {
+      products: [],
+      cart: [],
+    };
+
+    const asNumber = (value) => {
+      const num = Number.parseFloat(value);
+      return Number.isFinite(num) ? num : 0;
+    };
+
+    const money = (value) => `$${asNumber(value).toFixed(2)}`;
+
+    const setFeedback = (msg, isError = false) => {
+      feedback.textContent = msg;
+      feedback.classList.toggle('is-error', Boolean(isError));
+    };
+
+    const getProductTitle = (product) => {
+      if (product?.sync_product?.name) return product.sync_product.name;
+      if (product?.name) return product.name;
+      return 'Producto';
+    };
+
+    const getProductThumb = (product) => {
+      return (
+        product?.sync_product?.thumbnail_url ||
+        product?.thumbnail_url ||
+        PLACEHOLDER_THUMB
+      );
+    };
+
+    const getDefaultVariant = (product) => {
+      const variants = Array.isArray(product?.sync_variants) ? product.sync_variants : [];
+      return variants[0] || null;
+    };
+
+    const getVariantPrice = (variant) => {
+      return asNumber(variant?.retail_price || variant?.price || 0);
+    };
+
+    const cartTotal = () =>
+      state.cart.reduce((sum, item) => sum + getVariantPrice(item.variant) * item.quantity, 0);
+
+    const syncCartTotal = () => {
+      totalEl.textContent = money(cartTotal());
+    };
+
+    const renderCart = () => {
+      cartItemsEl.innerHTML = '';
+      if (!state.cart.length) {
+        cartItemsEl.innerHTML = '<p class="store-empty">Tu carrito está vacío.</p>';
+        syncCartTotal();
+        return;
+      }
+
+      state.cart.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = 'store-cart-item';
+        row.innerHTML = `
+          <div>
+            <strong>${item.title}</strong>
+            <span>${item.variantName}</span>
+          </div>
+          <div class="store-cart-item__actions">
+            <button type="button" data-cart-minus="${idx}" aria-label="Restar">-</button>
+            <span>${item.quantity}</span>
+            <button type="button" data-cart-plus="${idx}" aria-label="Sumar">+</button>
+            <button type="button" data-cart-remove="${idx}" aria-label="Eliminar">x</button>
+          </div>
+        `;
+        cartItemsEl.appendChild(row);
+      });
+
+      syncCartTotal();
+    };
+
+    const addToCart = (product) => {
+      const variant = getDefaultVariant(product);
+      if (!variant || !variant.sync_variant_id) {
+        setFeedback('Este producto no tiene variantes disponibles para compra.', true);
+        return;
+      }
+
+      const existing = state.cart.find(
+        (entry) => entry.variant.sync_variant_id === variant.sync_variant_id
+      );
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        state.cart.push({
+          productId: product.id,
+          title: getProductTitle(product),
+          variantName: variant.name || 'Variante',
+          variant,
+          quantity: 1,
+        });
+      }
+
+      renderCart();
+      setFeedback('Producto agregado al carrito.');
+    };
+
+    const renderProducts = () => {
+      grid.innerHTML = '';
+
+      if (!state.products.length) {
+        grid.innerHTML = '<p class="store-empty">No hay productos publicados por ahora.</p>';
+        return;
+      }
+
+      state.products.forEach((product, idx) => {
+        const variant = getDefaultVariant(product);
+        const card = document.createElement('article');
+        card.className = 'store-card reveal';
+        card.setAttribute('data-testid', `store-product-${idx}`);
+        card.innerHTML = `
+          <div class="store-card__image" style="background-image:url('${getProductThumb(product)}')"></div>
+          <div class="store-card__body">
+            <h3>${getProductTitle(product)}</h3>
+            <p>${variant?.name || 'Sin variante visible'}</p>
+            <div class="store-card__bottom">
+              <strong>${money(getVariantPrice(variant))}</strong>
+              <button class="btn btn--primary" type="button" data-add-product="${product.id}">Agregar</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      initReveal();
+    };
+
+    const fetchProducts = async () => {
+      setFeedback('Consultando catálogo...');
+      try {
+        const res = await fetch('api/printful.php?action=products', { cache: 'no-store' });
+        const json = await res.json();
+        if (!res.ok || !json.ok) {
+          throw new Error(json.error || 'Error al cargar productos');
+        }
+
+        state.products = Array.isArray(json.products) ? json.products : [];
+        renderProducts();
+        setFeedback(`Catálogo actualizado: ${state.products.length} productos.`);
+      } catch (err) {
+        console.warn('Store load failed:', err);
+        state.products = [];
+        renderProducts();
+        setFeedback('No fue posible cargar la tienda. Revisa la configuración del API de Printful.', true);
+      }
+    };
+
+    grid.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-add-product]');
+      if (!btn) return;
+      const productId = Number.parseInt(btn.getAttribute('data-add-product') || '', 10);
+      if (!Number.isFinite(productId)) return;
+
+      const product = state.products.find((p) => p.id === productId);
+      if (!product) return;
+      addToCart(product);
+    });
+
+    cartItemsEl.addEventListener('click', (e) => {
+      const minus = e.target.closest('[data-cart-minus]');
+      const plus = e.target.closest('[data-cart-plus]');
+      const remove = e.target.closest('[data-cart-remove]');
+
+      if (minus) {
+        const idx = Number.parseInt(minus.getAttribute('data-cart-minus') || '', 10);
+        const item = state.cart[idx];
+        if (!item) return;
+        item.quantity = Math.max(1, item.quantity - 1);
+        renderCart();
+      }
+
+      if (plus) {
+        const idx = Number.parseInt(plus.getAttribute('data-cart-plus') || '', 10);
+        const item = state.cart[idx];
+        if (!item) return;
+        item.quantity += 1;
+        renderCart();
+      }
+
+      if (remove) {
+        const idx = Number.parseInt(remove.getAttribute('data-cart-remove') || '', 10);
+        if (!Number.isFinite(idx)) return;
+        state.cart.splice(idx, 1);
+        renderCart();
+      }
+    });
+
+    orderForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!state.cart.length) {
+        setFeedback('Agrega al menos un producto antes de crear el pedido.', true);
+        return;
+      }
+
+      const formData = new FormData(orderForm);
+      const recipient = {
+        name: String(formData.get('name') || '').trim(),
+        email: String(formData.get('email') || '').trim(),
+        address1: String(formData.get('address1') || '').trim(),
+        city: String(formData.get('city') || '').trim(),
+        state_code: String(formData.get('state_code') || '').trim(),
+        country_code: String(formData.get('country_code') || '').trim().toUpperCase(),
+        zip: String(formData.get('zip') || '').trim(),
+      };
+
+      const payload = {
+        external_id: `capoeira-${Date.now()}`,
+        recipient,
+        currency: 'USD',
+        items: state.cart.map((item) => ({
+          sync_variant_id: item.variant.sync_variant_id,
+          quantity: item.quantity,
+          retail_price: getVariantPrice(item.variant).toFixed(2),
+        })),
+      };
+
+      setFeedback('Creando pedido borrador...');
+
+      try {
+        const res = await fetch('api/printful.php?action=order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const json = await res.json();
+        if (!res.ok || !json.ok) {
+          throw new Error(json.error || 'No se pudo crear el pedido');
+        }
+
+        const orderId = json?.order?.id ? ` #${json.order.id}` : '';
+        setFeedback(`Pedido borrador creado${orderId}. Revisa tu panel de Printful para confirmar costos.`);
+        state.cart = [];
+        renderCart();
+        orderForm.reset();
+      } catch (err) {
+        console.warn('Store order failed:', err);
+        setFeedback('No se pudo crear el pedido. Verifica datos de envío y configuración del API.', true);
+      }
+    });
+
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', fetchProducts);
+    }
+
+    renderCart();
+    fetchProducts();
+  }
+
   /* ----- Contact form (WhatsApp redirect) ----- */
   function initContactForm() {
     const form = $('[data-testid="contact-form"]');
@@ -203,6 +472,7 @@
     initMobileMenu();
     initReveal();
     initGallery();
+    initStore();
     initContactForm();
     highlightActiveNav();
   });
