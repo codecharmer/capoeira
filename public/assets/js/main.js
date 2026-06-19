@@ -175,6 +175,7 @@
 
     const state = {
       products: [],
+      details: new Map(),
       cart: [],
     };
 
@@ -204,9 +205,9 @@
       );
     };
 
-    const getDefaultVariant = (product) => {
-      const variants = Array.isArray(product?.sync_variants) ? product.sync_variants : [];
-      return variants[0] || null;
+    const getProductVariants = (productId) => {
+      const detail = state.details.get(productId);
+      return Array.isArray(detail?.sync_variants) ? detail.sync_variants : [];
     };
 
     const getVariantPrice = (variant) => {
@@ -249,16 +250,13 @@
       syncCartTotal();
     };
 
-    const addToCart = (product) => {
-      const variant = getDefaultVariant(product);
-      if (!variant || !variant.sync_variant_id) {
-        setFeedback('Este producto no tiene variantes disponibles para compra.', true);
+    const addToCart = (product, variant) => {
+      if (!variant || !variant.id) {
+        setFeedback('Selecciona una variante disponible para comprar.', true);
         return;
       }
 
-      const existing = state.cart.find(
-        (entry) => entry.variant.sync_variant_id === variant.sync_variant_id
-      );
+      const existing = state.cart.find((entry) => entry.variant.id === variant.id);
       if (existing) {
         existing.quantity += 1;
       } else {
@@ -284,18 +282,37 @@
       }
 
       state.products.forEach((product, idx) => {
-        const variant = getDefaultVariant(product);
+        const variants = getProductVariants(product.id);
+        const hasDetail = state.details.has(product.id);
+        const firstVariant = variants[0] || null;
+
         const card = document.createElement('article');
         card.className = 'store-card reveal';
         card.setAttribute('data-testid', `store-product-${idx}`);
+        card.setAttribute('data-product-id', String(product.id));
+
+        const optionsHtml = variants
+          .map(
+            (v) => `<option value="${v.id}">${v.name || 'Variante'}</option>`
+          )
+          .join('');
+
+        const variantControl = !hasDetail
+          ? '<p class="store-card__loading">Cargando opciones...</p>'
+          : variants.length
+            ? `<select class="store-card__variant" data-variant-select aria-label="Variante">${optionsHtml}</select>`
+            : '<p class="store-card__loading">Sin variantes disponibles.</p>';
+
+        const priceText = hasDetail ? money(getVariantPrice(firstVariant)) : '...';
+
         card.innerHTML = `
           <div class="store-card__image" style="background-image:url('${getProductThumb(product)}')"></div>
           <div class="store-card__body">
             <h3>${getProductTitle(product)}</h3>
-            <p>${variant?.name || 'Sin variante visible'}</p>
+            ${variantControl}
             <div class="store-card__bottom">
-              <strong>${money(getVariantPrice(variant))}</strong>
-              <button class="btn btn--primary" type="button" data-add-product="${product.id}">Agregar</button>
+              <strong data-price>${priceText}</strong>
+              <button class="btn btn--primary" type="button" data-add-product="${product.id}" ${hasDetail && variants.length ? '' : 'disabled'}>Agregar</button>
             </div>
           </div>
         `;
@@ -303,6 +320,28 @@
       });
 
       initReveal();
+    };
+
+    const loadDetail = async (productId) => {
+      if (state.details.has(productId)) return;
+      try {
+        const res = await fetch(`api/printful.php?action=product&id=${productId}`, {
+          cache: 'no-store',
+        });
+        const json = await res.json();
+        if (!res.ok || !json.ok || !json.product) {
+          throw new Error(json.error || 'detalle no disponible');
+        }
+        state.details.set(productId, json.product);
+      } catch (err) {
+        console.warn(`Detail load failed for ${productId}:`, err);
+        state.details.set(productId, { sync_variants: [] });
+      }
+    };
+
+    const loadAllDetails = async () => {
+      await Promise.all(state.products.map((p) => loadDetail(p.id)));
+      renderProducts();
     };
 
     const fetchProducts = async () => {
@@ -315,8 +354,10 @@
         }
 
         state.products = Array.isArray(json.products) ? json.products : [];
+        state.details.clear();
         renderProducts();
         setFeedback(`Catálogo actualizado: ${state.products.length} productos.`);
+        await loadAllDetails();
       } catch (err) {
         console.warn('Store load failed:', err);
         state.products = [];
@@ -324,6 +365,20 @@
         setFeedback('No fue posible cargar la tienda. Revisa la configuración del API de Printful.', true);
       }
     };
+
+    grid.addEventListener('change', (e) => {
+      const select = e.target.closest('[data-variant-select]');
+      if (!select) return;
+      const card = select.closest('[data-product-id]');
+      if (!card) return;
+      const productId = Number.parseInt(card.getAttribute('data-product-id') || '', 10);
+      const variantId = Number.parseInt(select.value || '', 10);
+      const variant = getProductVariants(productId).find((v) => v.id === variantId);
+      const priceEl = card.querySelector('[data-price]');
+      if (variant && priceEl) {
+        priceEl.textContent = money(getVariantPrice(variant));
+      }
+    });
 
     grid.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-add-product]');
@@ -333,7 +388,15 @@
 
       const product = state.products.find((p) => p.id === productId);
       if (!product) return;
-      addToCart(product);
+
+      const card = btn.closest('[data-product-id]');
+      const select = card ? card.querySelector('[data-variant-select]') : null;
+      const variants = getProductVariants(productId);
+      const variantId = select ? Number.parseInt(select.value || '', 10) : NaN;
+      const variant =
+        variants.find((v) => v.id === variantId) || variants[0] || null;
+
+      addToCart(product, variant);
     });
 
     cartItemsEl.addEventListener('click', (e) => {
@@ -389,7 +452,7 @@
         recipient,
         currency: 'USD',
         items: state.cart.map((item) => ({
-          sync_variant_id: item.variant.sync_variant_id,
+          sync_variant_id: item.variant.id,
           quantity: item.quantity,
           retail_price: getVariantPrice(item.variant).toFixed(2),
         })),

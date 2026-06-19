@@ -969,6 +969,26 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
   color: var(--text-2);
   font-size: 1rem;
 }
+.store-card__loading {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 0.95rem;
+}
+.store-card__variant {
+  width: 100%;
+  margin-top: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.6rem;
+}
+.store-card__variant:focus {
+  outline: none;
+  border-color: var(--yellow);
+}
 .store-card__bottom {
   margin-top: 1rem;
   display: flex;
