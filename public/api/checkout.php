@@ -82,10 +82,27 @@ function storeCurrency(): string
 /** Multiplier applied to Printful retail prices before charging (e.g. USD->MXN). Default 1. */
 function priceMultiplier(): float
 {
+    // 1) Environment variable takes priority.
     $m = getenv('PRICE_MULTIPLIER');
     if (is_string($m) && is_numeric($m) && (float) $m > 0) {
         return (float) $m;
     }
+
+    // 2) Fall back to a file (same secure pattern as the secrets): a local
+    //    api/.price-multiplier or, preferred, one level above the web root.
+    $candidates = [
+        __DIR__ . '/.price-multiplier',
+        dirname(__DIR__, 2) . '/.price-multiplier',
+    ];
+    foreach ($candidates as $path) {
+        if (is_readable($path)) {
+            $value = trim((string) file_get_contents($path));
+            if (is_numeric($value) && (float) $value > 0) {
+                return (float) $value;
+            }
+        }
+    }
+
     return 1.0;
 }
 
@@ -248,6 +265,17 @@ function sanitizeRecipient(array $r): array
 $action = isset($_GET['action']) ? (string) $_GET['action'] : '';
 
 /* ---------------------------------------------------------------------------
+ * 0) CONFIG (currency + price multiplier for the storefront)
+ * ------------------------------------------------------------------------- */
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'config') {
+    jsonResponse(200, [
+        'ok' => true,
+        'currency' => storeCurrency(),
+        'price_multiplier' => priceMultiplier(),
+    ]);
+}
+
+/* ---------------------------------------------------------------------------
  * 1) SHIPPING RATES
  * ------------------------------------------------------------------------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'shipping') {
@@ -383,13 +411,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create-checkout') {
     }
 
     // Shipping as a Stripe shipping option (charged on top of items).
+    // Printful already returns the shipping rate in the store currency (MXN),
+    // so it must NOT be passed through the USD->MXN multiplier.
     if ($shippingRate > 0) {
         $stripeParams['shipping_options'][0] = [
             'shipping_rate_data' => [
                 'type' => 'fixed_amount',
                 'display_name' => $shippingName,
                 'fixed_amount' => [
-                    'amount' => (int) round($shippingRate * $multiplier * 100),
+                    'amount' => (int) round($shippingRate * 100),
                     'currency' => strtolower($currency),
                 ],
             ],

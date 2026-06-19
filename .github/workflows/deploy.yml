@@ -49,6 +49,7 @@ jobs:
             --exclude='api/.printful-token' \
             --exclude='api/.stripe-secret' \
             --exclude='api/.stripe-webhook-secret' \
+            --exclude='api/.price-multiplier' \
             -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.SSH_PORT }}" \
             public/ \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/"

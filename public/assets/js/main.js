@@ -184,6 +184,7 @@
       details: new Map(),
       cart: [],
       currency: 'MXN',
+      priceMultiplier: 1,
       rates: [],
       shipping: null,
     };
@@ -232,8 +233,13 @@
       return asNumber(variant?.retail_price || variant?.price || 0);
     };
 
+    // Printful prices are stored in USD; convert to the store currency (MXN)
+    // for everything shown to the customer. The raw USD value is still sent to
+    // the backend, which applies the same multiplier when charging.
+    const displayPrice = (variant) => getVariantPrice(variant) * (state.priceMultiplier || 1);
+
     const subtotal = () =>
-      state.cart.reduce((sum, item) => sum + getVariantPrice(item.variant) * item.quantity, 0);
+      state.cart.reduce((sum, item) => sum + displayPrice(item.variant) * item.quantity, 0);
 
     const shippingCost = () => (state.shipping ? asNumber(state.shipping.rate) : 0);
 
@@ -365,7 +371,7 @@
             ? `<select class="store-card__variant" data-variant-select aria-label="Variante">${optionsHtml}</select>`
             : '<p class="store-card__loading">Sin variantes disponibles.</p>';
 
-        const priceText = hasDetail ? money(getVariantPrice(firstVariant)) : '...';
+        const priceText = hasDetail ? money(displayPrice(firstVariant)) : '...';
 
         card.innerHTML = `
           <div class="store-card__image" style="background-image:url('${getProductThumb(product)}')"></div>
@@ -438,7 +444,7 @@
       const variant = getProductVariants(productId).find((v) => v.id === variantId);
       const priceEl = card.querySelector('[data-price]');
       if (variant && priceEl) {
-        priceEl.textContent = money(getVariantPrice(variant));
+        priceEl.textContent = money(displayPrice(variant));
       }
     });
 
@@ -655,10 +661,26 @@
       refreshBtn.addEventListener('click', fetchProducts);
     }
 
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch('api/checkout.php?action=config', { cache: 'no-store' });
+        const json = await res.json();
+        if (res.ok && json.ok) {
+          state.currency = json.currency || state.currency;
+          const mult = Number.parseFloat(json.price_multiplier);
+          if (Number.isFinite(mult) && mult > 0) {
+            state.priceMultiplier = mult;
+          }
+        }
+      } catch (err) {
+        console.warn('Config load failed, using defaults:', err);
+      }
+    };
+
     renderCart();
     updatePayState();
     handleCheckoutReturn();
-    fetchProducts();
+    fetchConfig().then(fetchProducts);
   }
 
   /* ----- Contact form (WhatsApp redirect) ----- */
