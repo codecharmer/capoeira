@@ -203,10 +203,10 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
 /* Shrink the header logo below the desktop nav breakpoint so the
    hamburger toggle always fits within the mobile header. */
 @media (max-width: 899px) {
-  .brand img { height: 72px; }
+  .brand img { height: 144px; }
 }
 @media (max-width: 480px) {
-  .brand img { height: 56px; }
+  .brand img { height: 112px; }
 }
 
 .mobile-menu {
