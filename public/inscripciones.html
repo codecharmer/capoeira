@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0A0A0A" />
+    <title>Inscripciones | Pura Capoeira Cuernavaca</title>
+    <meta name="description" content="Inscríbete a Pura Capoeira Cuernavaca. Elige tu paquete mensual, trimestral o anual y paga de forma segura con Stripe." />
+
+    <meta property="og:title" content="Inscripciones | Pura Capoeira Cuernavaca" />
+    <meta property="og:description" content="Inscríbete a Pura Capoeira Cuernavaca y reserva tu lugar en la escuela." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="https://customer-assets.emergentagent.com/job_6cb27ee2-0575-4d51-b1ec-4158ff1eee25/artifacts/aqgmykbd_Logo-Pura-Capoeira-Prof-malandro.png" />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a href="index.html" class="brand" data-testid="header-logo" data-prefetch>
+          <img src="assets/images/Logo-Pura-Capoeira-Prof-malandro.png" alt="Pura Capoeira Cuernavaca" />
+        </a>
+        <nav class="site-nav" aria-label="Navegación principal">
+          <a href="index.html" data-prefetch data-testid="nav-inicio">Inicio</a>
+          <a href="trayectoria.html" data-prefetch data-testid="nav-trayectoria">Trayectoria</a>
+          <a href="clases.html" data-prerender data-testid="nav-clases">Clases</a>
+          <a href="inscripciones.html" data-prerender data-testid="nav-inscripciones">Inscripciones</a>
+          <a href="galeria.html" data-prerender data-testid="nav-galeria">Galería</a>
+          <a href="tienda.html" data-prerender data-testid="nav-tienda">Tienda</a>
+          <a href="contacto.html" data-prefetch data-testid="nav-contacto">Contacto</a>
+        </nav>
+        <a class="btn btn--whatsapp nav-cta" href="https://wa.me/18056385603" target="_blank" rel="noopener noreferrer" data-testid="nav-whatsapp-cta">WhatsApp</a>
+        <button class="menu-toggle" aria-label="Abrir menú" data-testid="menu-toggle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="mobile-menu" aria-hidden="true" data-testid="mobile-menu">
+      <button class="mobile-menu__close" aria-label="Cerrar menú" data-testid="menu-close">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <nav aria-label="Navegación móvil">
+        <a href="index.html" data-prefetch>Inicio</a>
+        <a href="trayectoria.html" data-prefetch>Trayectoria</a>
+        <a href="clases.html" data-prerender>Clases</a>
+        <a href="inscripciones.html" data-prerender>Inscripciones</a>
+        <a href="galeria.html" data-prerender>Galería</a>
+        <a href="tienda.html" data-prerender>Tienda</a>
+        <a href="contacto.html" data-prefetch>Contacto</a>
+      </nav>
+      <a class="btn btn--whatsapp" href="https://wa.me/18056385603" target="_blank" rel="noopener noreferrer">Contactar por WhatsApp</a>
+    </div>
+
+    <section class="page-header">
+      <div class="container page-header__inner">
+        <span class="overline">Inscripciones</span>
+        <h1>Únete a <span class="text-yellow">la roda</span></h1>
+        <p class="lead">Elige tu paquete, llena tus datos y reserva tu lugar. Pago seguro con tarjeta vía Stripe.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container inscription-layout" data-inscription-root>
+        <form class="inscription-form" data-inscription-form novalidate>
+          <!-- Step 1: choose plan -->
+          <fieldset class="inscription-block">
+            <legend>1. Elige tu paquete</legend>
+            <div class="plan-grid">
+              <label class="plan-card">
+                <input type="radio" name="plan" value="inscription_month" data-amount="2650" data-allow-addon="0" required />
+                <span class="plan-card__body">
+                  <span class="plan-card__title">Inscripción + primer mes</span>
+                  <span class="plan-card__price" data-plan-price="inscription_month">$2,650 MXN</span>
+                  <span class="plan-card__note" data-plan-note="inscription_month">Inscripción ($1,500) + primera mensualidad ($1,150).</span>
+                </span>
+              </label>
+
+              <label class="plan-card">
+                <input type="radio" name="plan" value="inscription" data-amount="1500" data-allow-addon="0" />
+                <span class="plan-card__body">
+                  <span class="plan-card__title">Solo inscripción</span>
+                  <span class="plan-card__price">$1,500 MXN</span>
+                  <span class="plan-card__note">Pago único de inscripción.</span>
+                </span>
+              </label>
+
+              <label class="plan-card">
+                <input type="radio" name="plan" value="month" data-amount="1150" data-allow-addon="1" />
+                <span class="plan-card__body">
+                  <span class="plan-card__title">Un mes</span>
+                  <span class="plan-card__price" data-plan-price="month">$1,150 MXN</span>
+                  <span class="plan-card__note">Una mensualidad.</span>
+                </span>
+              </label>
+
+              <label class="plan-card">
+                <input type="radio" name="plan" value="quarter" data-amount="2932.5" data-allow-addon="1" />
+                <span class="plan-card__body">
+                  <span class="plan-card__title">Paquete trimestral</span>
+                  <span class="plan-card__price" data-plan-price="quarter">$2,932.50 MXN</span>
+                  <span class="plan-card__note">3 meses con 15% de descuento.</span>
+                </span>
+              </label>
+
+              <label class="plan-card">
+                <input type="radio" name="plan" value="year" data-amount="11040" data-allow-addon="1" />
+                <span class="plan-card__body">
+                  <span class="plan-card__title">Paquete anual</span>
+                  <span class="plan-card__price" data-plan-price="year">$11,040 MXN</span>
+                  <span class="plan-card__note">12 meses con 20% de descuento.</span>
+                </span>
+              </label>
+            </div>
+
+            <label class="inscription-addon" data-inscription-addon hidden>
+              <input type="checkbox" name="add_inscription" value="1" />
+              <span>Agregar inscripción (+$1,500 MXN) — para alumnos de nuevo ingreso.</span>
+            </label>
+          </fieldset>
+
+          <!-- Step 2: student data -->
+          <fieldset class="inscription-block">
+            <legend>2. Datos del alumno</legend>
+            <div class="form-grid">
+              <label class="field">
+                <span>Nombre(s) *</span>
+                <input type="text" name="first_name" autocomplete="given-name" required />
+              </label>
+              <label class="field">
+                <span>Apellidos *</span>
+                <input type="text" name="last_name" autocomplete="family-name" required />
+              </label>
+              <label class="field">
+                <span>Fecha de nacimiento *</span>
+                <input type="date" name="dob" required />
+              </label>
+              <label class="field">
+                <span>Nombre del padre/madre/tutor (si es menor de edad)</span>
+                <input type="text" name="parent_name" autocomplete="name" />
+              </label>
+              <label class="field field--full">
+                <span>Dirección *</span>
+                <input type="text" name="address" autocomplete="street-address" required />
+              </label>
+              <label class="field">
+                <span>Correo electrónico *</span>
+                <input type="email" name="email" autocomplete="email" required />
+              </label>
+              <label class="field">
+                <span>Teléfono *</span>
+                <input type="tel" name="phone" autocomplete="tel" required />
+              </label>
+              <label class="field">
+                <span>Teléfono del padre/tutor</span>
+                <input type="tel" name="parent_phone" />
+              </label>
+              <label class="field">
+                <span>Teléfono de emergencia *</span>
+                <input type="tel" name="emergency_phone" required />
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- Step 3: promo + summary -->
+          <fieldset class="inscription-block">
+            <legend>3. Código promocional (opcional)</legend>
+            <div class="promo-row">
+              <input type="text" name="promocode" placeholder="Ej. BECADOPC26" autocomplete="off" data-inscription-promo />
+              <button type="button" class="btn btn--ghost" data-inscription-promo-apply>Aplicar</button>
+            </div>
+            <p class="promo-note" data-inscription-promo-note hidden></p>
+          </fieldset>
+
+          <!-- Payment mode: shown only when a code makes payment optional -->
+          <fieldset class="inscription-block inscription-paymode" data-inscription-paymode hidden>
+            <legend>4. Forma de pago</legend>
+            <div class="paymode-options">
+              <label class="paymode-option">
+                <input type="radio" name="payment_mode" value="now" checked />
+                <span>Pagar ahora con tarjeta (Stripe)</span>
+              </label>
+              <label class="paymode-option">
+                <input type="radio" name="payment_mode" value="later" />
+                <span>Registrarme y pagar después (en persona)</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="inscription-summary" data-inscription-summary>
+            <div class="inscription-summary__line">
+              <span>Paquete</span>
+              <strong data-inscription-summary-label>—</strong>
+            </div>
+            <div class="inscription-summary__line inscription-summary__line--total">
+              <span>Total a pagar</span>
+              <strong data-inscription-summary-total>$0.00 MXN</strong>
+            </div>
+          </div>
+
+          <div class="inscription-result" data-inscription-result hidden></div>
+
+          <button type="submit" class="btn btn--primary inscription-submit" data-inscription-submit>
+            Continuar al pago
+          </button>
+          <p class="store-footnote">
+            Pago seguro con Stripe. Si tienes un código de beca, el descuento se valida al confirmar.
+          </p>
+        </form>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <div class="footer-brand">
+          <img src="assets/images/pura-capoeira-logo.png" alt="Pura Capoeira Cuernavaca" />
+          <p>Capoeira, cultura, música y movimiento en Cuernavaca, Morelos.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Navegación</h4>
+          <ul>
+            <li><a href="index.html" data-prefetch>Inicio</a></li>
+            <li><a href="trayectoria.html" data-prefetch>Trayectoria</a></li>
+            <li><a href="clases.html" data-prerender>Clases</a></li>
+            <li><a href="inscripciones.html" data-prerender>Inscripciones</a></li>
+            <li><a href="galeria.html" data-prerender>Galería</a></li>
+            <li><a href="tienda.html" data-prerender>Tienda</a></li>
+            <li><a href="contacto.html" data-prefetch>Contacto</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contacto</h4>
+          <ul>
+            <li><a href="https://wa.me/18056385603" target="_blank" rel="noopener noreferrer">WhatsApp: +1 (805) 638-5603</a></li>
+            <li><a href="https://www.instagram.com/profesor.malandro/" target="_blank" rel="noopener noreferrer">Instagram: @profesor.malandro</a></li>
+            <li><a href="https://www.facebook.com/PuraCapoeiraCuernavaca/" target="_blank" rel="noopener noreferrer">Facebook: Pura Capoeira Cuernavaca</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="container footer-bottom">
+        <span>© <span id="year"></span> Pura Capoeira Cuernavaca</span>
+        <span>San Jerónimo 503, Tlaltenango</span>
+      </div>
+    </footer>
+
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+    <script src="assets/js/main.js" defer></script>
+  </body>
+</html>

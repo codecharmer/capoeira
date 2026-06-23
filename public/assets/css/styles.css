@@ -1206,3 +1206,242 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
 
 /* --- Emergent badge tweak (keep but blend) --- */
 #emergent-badge { z-index: 20 !important; }
+
+/* --- Inscriptions page --- */
+.inscription-layout {
+  max-width: 880px;
+  margin: 0 auto;
+}
+.inscription-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+.inscription-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.5rem;
+  margin: 0;
+}
+.inscription-block legend {
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 1.25rem;
+  padding: 0 0.5rem;
+  color: var(--yellow);
+}
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.plan-card {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+.plan-card input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+.plan-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  height: 100%;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  transition: border-color .2s ease, transform .2s ease, background .2s ease;
+}
+.plan-card:hover .plan-card__body {
+  transform: translateY(-2px);
+  border-color: var(--muted);
+}
+.plan-card input:checked + .plan-card__body {
+  border-color: var(--yellow);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--yellow) inset;
+}
+.plan-card input:focus-visible + .plan-card__body {
+  border-color: var(--yellow);
+}
+.plan-card__title {
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 1.1rem;
+}
+.plan-card__price {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--yellow);
+  font-size: 1.15rem;
+}
+.plan-card__note {
+  color: var(--text-2);
+  font-size: 0.9rem;
+}
+.inscription-addon {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-2);
+  cursor: pointer;
+}
+.inscription-addon input {
+  margin-top: 0.2rem;
+  accent-color: var(--yellow);
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.field--full {
+  grid-column: 1 / -1;
+}
+.field span {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.field input {
+  padding: 0.85rem 1rem;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font-body, inherit);
+  font-size: 1rem;
+}
+.field input:focus {
+  outline: none;
+  border-color: var(--yellow);
+}
+.promo-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.promo-row input {
+  flex: 1 1 220px;
+  padding: 0.85rem 1rem;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.promo-row input:focus {
+  outline: none;
+  border-color: var(--yellow);
+}
+.promo-note {
+  margin: 0.85rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-2);
+}
+.promo-note.is-success {
+  color: var(--yellow);
+}
+.inscription-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+}
+.inscription-summary__line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  color: var(--text-2);
+}
+.inscription-summary__line--total {
+  border-top: 1px solid var(--border);
+  padding-top: 0.6rem;
+  margin-top: 0.2rem;
+  color: var(--text);
+  font-size: 1.2rem;
+}
+.inscription-summary__line--total strong {
+  color: var(--yellow);
+  font-family: var(--font-mono);
+}
+.inscription-result {
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 0.98rem;
+}
+.inscription-result.is-success {
+  border-color: var(--green, #2e7d32);
+  background: rgba(46, 125, 50, 0.12);
+  color: var(--text);
+}
+.inscription-result.is-error {
+  border-color: #b3261e;
+  background: rgba(179, 38, 30, 0.12);
+  color: var(--text);
+}
+.inscription-submit {
+  align-self: flex-start;
+}
+.paymode-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.paymode-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease;
+}
+.paymode-option:hover {
+  border-color: var(--muted);
+}
+.paymode-option input {
+  accent-color: var(--yellow);
+}
+.paymode-option:has(input:checked) {
+  border-color: var(--yellow);
+  background: var(--surface);
+}
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .inscription-submit {
+    align-self: stretch;
+    justify-content: center;
+  }
+}

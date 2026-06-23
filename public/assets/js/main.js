@@ -705,6 +705,259 @@
     });
   }
 
+  /* ----- Inscriptions (membership sign-up) ----- */
+  function initInscription() {
+    const root = $('[data-inscription-root]');
+    if (!root) return;
+
+    const form = $('[data-inscription-form]', root);
+    const addonWrap = $('[data-inscription-addon]', root);
+    const addonInput = addonWrap ? $('input', addonWrap) : null;
+    const promoInput = $('[data-inscription-promo]', root);
+    const promoApplyBtn = $('[data-inscription-promo-apply]', root);
+    const promoNote = $('[data-inscription-promo-note]', root);
+    const paymodeWrap = $('[data-inscription-paymode]', root);
+    const summaryLabel = $('[data-inscription-summary-label]', root);
+    const summaryTotal = $('[data-inscription-summary-total]', root);
+    const resultEl = $('[data-inscription-result]', root);
+    const submitBtn = $('[data-inscription-submit]', root);
+    if (!form) return;
+
+    const money = (n) =>
+      new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n) + ' MXN';
+
+    // Capture the default plan prices/notes so we can restore them if a code is cleared.
+    const defaults = {};
+    $$('input[name="plan"]', form).forEach((input) => {
+      const id = input.value;
+      defaults[id] = {
+        amount: input.getAttribute('data-amount'),
+        price: $(`[data-plan-price="${id}"]`, form)?.textContent || '',
+        note: $(`[data-plan-note="${id}"]`, form)?.textContent || '',
+      };
+    });
+
+    // Promo state for the current session.
+    const promoState = { type: 'none', free: false, paymentOptional: false };
+
+    const selectedPlan = () => $('input[name="plan"]:checked', form);
+    const payLaterSelected = () =>
+      !!paymodeWrap &&
+      !paymodeWrap.hidden &&
+      $('input[name="payment_mode"]:checked', form)?.value === 'later';
+
+    function setPlanPrices(plans, monthly) {
+      (plans || []).forEach((p) => {
+        const input = $(`input[name="plan"][value="${p.id}"]`, form);
+        if (input) input.setAttribute('data-amount', String(p.amount));
+        const priceEl = $(`[data-plan-price="${p.id}"]`, form);
+        if (priceEl) priceEl.textContent = money(p.amount);
+      });
+      const noteEl = $('[data-plan-note="inscription_month"]', form);
+      if (noteEl && typeof monthly === 'number') {
+        noteEl.textContent = `Inscripción ($1,500) + primera mensualidad (${money(monthly)}).`;
+      }
+    }
+
+    function restoreDefaultPrices() {
+      Object.keys(defaults).forEach((id) => {
+        const input = $(`input[name="plan"][value="${id}"]`, form);
+        if (input) input.setAttribute('data-amount', defaults[id].amount);
+        const priceEl = $(`[data-plan-price="${id}"]`, form);
+        if (priceEl) priceEl.textContent = defaults[id].price;
+        const noteEl = $(`[data-plan-note="${id}"]`, form);
+        if (noteEl) noteEl.textContent = defaults[id].note;
+      });
+    }
+
+    function updatePaymodeUi() {
+      if (paymodeWrap) paymodeWrap.hidden = !promoState.paymentOptional;
+      if (submitBtn) {
+        submitBtn.textContent =
+          promoState.free || payLaterSelected() ? 'Registrar inscripción' : 'Continuar al pago';
+      }
+    }
+
+    function updateSummary() {
+      const plan = selectedPlan();
+      if (!plan) {
+        if (summaryLabel) summaryLabel.textContent = '—';
+        if (summaryTotal) summaryTotal.textContent = money(0);
+        updatePaymodeUi();
+        return;
+      }
+      const allowAddon = plan.getAttribute('data-allow-addon') === '1';
+      if (addonWrap) {
+        addonWrap.hidden = !allowAddon;
+        if (!allowAddon && addonInput) addonInput.checked = false;
+      }
+      let amount = parseFloat(plan.getAttribute('data-amount')) || 0;
+      let label = $('.plan-card__title', plan.closest('.plan-card'))?.textContent || 'Paquete';
+      if (allowAddon && addonInput && addonInput.checked) {
+        amount += 1500;
+        label += ' + inscripción';
+      }
+      if (promoState.free) {
+        amount = 0;
+        label += ' (beca 100%)';
+      }
+      if (summaryLabel) summaryLabel.textContent = label;
+      if (summaryTotal) summaryTotal.textContent = money(amount);
+      updatePaymodeUi();
+    }
+
+    form.addEventListener('change', (e) => {
+      if (e.target.name === 'plan' || e.target.name === 'add_inscription' || e.target.name === 'payment_mode') {
+        updateSummary();
+      }
+    });
+
+    async function applyPromo() {
+      const code = (promoInput?.value || '').trim();
+      if (!promoNote) return;
+      promoNote.hidden = false;
+      promoNote.classList.remove('is-success');
+
+      if (code === '') {
+        promoState.type = 'none';
+        promoState.free = false;
+        promoState.paymentOptional = false;
+        restoreDefaultPrices();
+        promoNote.textContent = 'Escribe un código para aplicarlo.';
+        updateSummary();
+        return;
+      }
+
+      promoNote.textContent = 'Validando código...';
+      try {
+        const res = await fetch('api/checkout.php?action=validate-promo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ promocode: code }),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.ok) throw new Error(json.error || 'No se pudo validar el código');
+
+        if (!json.valid) {
+          promoState.type = 'none';
+          promoState.free = false;
+          promoState.paymentOptional = false;
+          restoreDefaultPrices();
+          promoNote.textContent = 'Código no válido. Se aplican los precios normales.';
+          updateSummary();
+          return;
+        }
+
+        promoState.type = json.type;
+        promoState.free = !!json.free;
+        promoState.paymentOptional = !!json.payment_optional;
+
+        if (json.type === 'beca') {
+          restoreDefaultPrices();
+          promoNote.textContent = '¡Beca del 100% aplicada! Tu inscripción será gratuita.';
+        } else if (json.type === 'current') {
+          setPlanPrices(json.plans, json.monthly);
+          promoNote.textContent =
+            '¡Código de alumno aplicado! Mensualidad de ' +
+            money(json.monthly) +
+            '. El pago es opcional: puedes pagar ahora o después.';
+        }
+        promoNote.classList.add('is-success');
+        updateSummary();
+      } catch (err) {
+        console.warn('Promo validation failed:', err);
+        promoNote.textContent = 'No se pudo validar el código. Intenta de nuevo.';
+      }
+    }
+
+    if (promoApplyBtn) {
+      promoApplyBtn.addEventListener('click', applyPromo);
+    }
+
+    const showResult = (msg, ok) => {
+      if (!resultEl) return;
+      resultEl.hidden = false;
+      resultEl.textContent = msg;
+      resultEl.classList.toggle('is-success', !!ok);
+      resultEl.classList.toggle('is-error', !ok);
+      resultEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+
+      const plan = selectedPlan();
+      if (!plan) {
+        showResult('Selecciona un paquete para continuar.', false);
+        return;
+      }
+
+      const fd = new FormData(form);
+      const payload = {
+        plan: fd.get('plan'),
+        add_inscription: addonWrap && !addonWrap.hidden && addonInput && addonInput.checked ? 1 : 0,
+        promocode: (fd.get('promocode') || '').toString().trim(),
+        payment_mode: payLaterSelected() ? 'later' : 'now',
+        first_name: (fd.get('first_name') || '').toString().trim(),
+        last_name: (fd.get('last_name') || '').toString().trim(),
+        parent_name: (fd.get('parent_name') || '').toString().trim(),
+        address: (fd.get('address') || '').toString().trim(),
+        email: (fd.get('email') || '').toString().trim(),
+        phone: (fd.get('phone') || '').toString().trim(),
+        parent_phone: (fd.get('parent_phone') || '').toString().trim(),
+        emergency_phone: (fd.get('emergency_phone') || '').toString().trim(),
+        dob: (fd.get('dob') || '').toString().trim(),
+      };
+
+      if (submitBtn) submitBtn.disabled = true;
+      showResult('Procesando tu inscripción...', true);
+
+      try {
+        const res = await fetch('api/checkout.php?action=inscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.ok) {
+          throw new Error(json.error || 'No se pudo procesar la inscripción');
+        }
+        if (json.free) {
+          showResult(json.message || '¡Inscripción registrada!', true);
+          form.reset();
+          promoState.type = 'none';
+          promoState.free = false;
+          promoState.paymentOptional = false;
+          restoreDefaultPrices();
+          updateSummary();
+          if (submitBtn) submitBtn.disabled = false;
+          return;
+        }
+        if (json.url) {
+          window.location.href = json.url;
+          return;
+        }
+        throw new Error('Respuesta inesperada del servidor');
+      } catch (err) {
+        console.warn('Inscription failed:', err);
+        showResult(err.message || 'No se pudo procesar la inscripción. Intenta de nuevo.', false);
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+
+    // Handle return from Stripe Checkout.
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('inscription');
+    if (status === 'success') {
+      showResult('¡Pago recibido! Tu inscripción quedó registrada. Te contactaremos pronto.', true);
+    } else if (status === 'cancel') {
+      showResult('El pago fue cancelado. Puedes intentarlo de nuevo cuando quieras.', false);
+    }
+
+    updateSummary();
+  }
+
   /* ----- Set active nav based on current page ----- */
   function highlightActiveNav() {
     const path = window.location.pathname.replace(/\/$/, '');
@@ -729,6 +982,7 @@
     initGallery();
     initStore();
     initContactForm();
+    initInscription();
     highlightActiveNav();
   });
 })();

@@ -106,6 +106,135 @@ function priceMultiplier(): float
     return 1.0;
 }
 
+/**
+ * Inscription (membership) plans. Amounts are in MXN cents to avoid float drift.
+ * Monthly tuition: $1,150 MXN. Inscription fee: $1,500 MXN.
+ * Quarterly = 3 months -15%. Yearly = 12 months -20%.
+ */
+function inscriptionPlans(?int $monthlyCents = null): array
+{
+    $monthly = $monthlyCents !== null ? $monthlyCents : 115000; // default $1,150.00 MXN
+    $inscription = 150000; // $1,500.00 MXN
+
+    return [
+        'inscription' => [
+            'label' => 'Solo inscripción',
+            'amount' => $inscription,
+            'allow_addon' => false,
+        ],
+        'inscription_month' => [
+            'label' => 'Inscripción + primer mes',
+            'amount' => $inscription + $monthly,
+            'allow_addon' => false,
+        ],
+        'month' => [
+            'label' => 'Mensualidad (1 mes)',
+            'amount' => $monthly,
+            'allow_addon' => true,
+        ],
+        'quarter' => [
+            'label' => 'Paquete trimestral (3 meses, -15%)',
+            'amount' => (int) round($monthly * 3 * 0.85),
+            'allow_addon' => true,
+        ],
+        'year' => [
+            'label' => 'Paquete anual (12 meses, -20%)',
+            'amount' => (int) round($monthly * 12 * 0.80),
+            'allow_addon' => true,
+        ],
+    ];
+}
+
+/** Optional inscription add-on amount (MXN cents) for month/quarter/year plans. */
+function inscriptionAddonAmount(): int
+{
+    return 150000;
+}
+
+/** Default monthly tuition (MXN cents). */
+function inscriptionMonthlyAmount(): int
+{
+    return 115000; // $1,150.00 MXN
+}
+
+/** Discounted monthly tuition for current students (MXN cents). */
+function inscriptionCurrentMonthlyAmount(): int
+{
+    return 75000; // $750.00 MXN
+}
+
+/** Read a configurable code from env, then a file outside the web root, else a default. */
+function readInscriptionCode(string $envName, string $fileName, string $default): string
+{
+    $code = getenv($envName);
+    if (is_string($code) && trim($code) !== '') {
+        return trim($code);
+    }
+    $candidates = [
+        __DIR__ . '/' . $fileName,
+        dirname(__DIR__, 2) . '/' . $fileName,
+    ];
+    foreach ($candidates as $path) {
+        if (is_readable($path)) {
+            $value = trim((string) file_get_contents($path));
+            if ($value !== '') {
+                return $value;
+            }
+        }
+    }
+    return $default;
+}
+
+/** Promo code that grants a 100% scholarship (beca). Configurable, defaults to BECADOPC26. */
+function inscriptionPromoCode(): string
+{
+    return readInscriptionCode('INSCRIPTION_PROMO_CODE', '.inscription-promo', 'BECADOPC26');
+}
+
+/** Promo code for current students: $750/month and payment becomes optional. Defaults to ACTUALPC26. */
+function inscriptionCurrentCode(): string
+{
+    return readInscriptionCode('INSCRIPTION_CURRENT_CODE', '.inscription-current', 'ACTUALPC26');
+}
+
+/**
+ * Resolve a typed promo code to its effect.
+ * Returns ['type' => 'beca'|'current'|'none', 'monthly' => cents, 'payment_optional' => bool, 'free' => bool].
+ */
+function resolveInscriptionPromo(string $code): array
+{
+    $code = trim($code);
+    if ($code !== '' && strcasecmp($code, inscriptionPromoCode()) === 0) {
+        return ['type' => 'beca', 'monthly' => inscriptionMonthlyAmount(), 'payment_optional' => true, 'free' => true];
+    }
+    if ($code !== '' && strcasecmp($code, inscriptionCurrentCode()) === 0) {
+        return ['type' => 'current', 'monthly' => inscriptionCurrentMonthlyAmount(), 'payment_optional' => true, 'free' => false];
+    }
+    return ['type' => 'none', 'monthly' => inscriptionMonthlyAmount(), 'payment_optional' => false, 'free' => false];
+}
+
+
+/** Append an inscription record to a JSONL file stored OUTSIDE the web root. */
+function logInscription(array $entry): void
+{
+    $entry = ['ts' => date('c')] + $entry;
+    $line = json_encode($entry, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($line === false) {
+        return;
+    }
+    $candidates = [
+        dirname(__DIR__, 2) . '/inscriptions.jsonl',
+        __DIR__ . '/inscriptions.jsonl',
+    ];
+    foreach ($candidates as $path) {
+        $dir = dirname($path);
+        if ((file_exists($path) && is_writable($path)) || is_writable($dir)) {
+            @file_put_contents($path, $line . PHP_EOL, FILE_APPEND | LOCK_EX);
+            return;
+        }
+    }
+}
+
 function printfulRequest(string $method, string $path, string $token, ?array $body = null): array
 {
     $baseUrl = getenv('PRINTFUL_API_BASE_URL');
@@ -272,6 +401,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'config') {
         'ok' => true,
         'currency' => storeCurrency(),
         'price_multiplier' => priceMultiplier(),
+    ]);
+}
+
+/* ---------------------------------------------------------------------------
+ * 0b) INSCRIPTION CONFIG (membership plan prices for the inscriptions page)
+ * ------------------------------------------------------------------------- */
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'inscription-config') {
+    $plans = [];
+    foreach (inscriptionPlans() as $id => $p) {
+        $plans[] = [
+            'id' => $id,
+            'label' => $p['label'],
+            'amount' => $p['amount'] / 100,
+            'allow_addon' => $p['allow_addon'],
+        ];
+    }
+    jsonResponse(200, [
+        'ok' => true,
+        'currency' => storeCurrency(),
+        'addon_amount' => inscriptionAddonAmount() / 100,
+        'plans' => $plans,
+    ]);
+}
+
+/* ---------------------------------------------------------------------------
+ * 0c) VALIDATE PROMO CODE (returns the code's effect for the inscriptions page)
+ * ------------------------------------------------------------------------- */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'validate-promo') {
+    $data = readJsonBody();
+    $code = trim((string) ($data['promocode'] ?? ''));
+    if ($code === '') {
+        jsonResponse(400, ['ok' => false, 'error' => 'Escribe un código para validarlo']);
+    }
+
+    $promo = resolveInscriptionPromo($code);
+    if ($promo['type'] === 'none') {
+        jsonResponse(200, ['ok' => true, 'valid' => false]);
+    }
+
+    $plans = [];
+    foreach (inscriptionPlans($promo['monthly']) as $id => $p) {
+        $plans[] = [
+            'id' => $id,
+            'label' => $p['label'],
+            'amount' => $p['amount'] / 100,
+            'allow_addon' => $p['allow_addon'],
+        ];
+    }
+
+    jsonResponse(200, [
+        'ok' => true,
+        'valid' => true,
+        'type' => $promo['type'],
+        'free' => $promo['free'],
+        'payment_optional' => $promo['payment_optional'],
+        'monthly' => $promo['monthly'] / 100,
+        'addon_amount' => inscriptionAddonAmount() / 100,
+        'plans' => $plans,
     ]);
 }
 
@@ -508,12 +695,172 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'webhook') {
             // Confirm the draft for fulfillment.
             printfulRequest('POST', '/orders/' . rawurlencode((string) $orderId) . '/confirm', $printfulToken);
         }
+
+        // Inscription (membership) payments: record a paid entry.
+        $meta = $session['metadata'] ?? [];
+        if (($meta['type'] ?? '') === 'inscription' && $paymentStatus === 'paid') {
+            logInscription([
+                'status' => 'paid',
+                'plan' => $meta['plan'] ?? '',
+                'label' => $meta['label'] ?? '',
+                'currency' => strtoupper((string) ($session['currency'] ?? storeCurrency())),
+                'amount' => isset($session['amount_total']) ? ((int) $session['amount_total']) / 100 : null,
+                'student_name' => $meta['student_name'] ?? '',
+                'email' => $meta['email'] ?? ($session['customer_email'] ?? ''),
+                'session_id' => $session['id'] ?? '',
+            ]);
+        }
     }
 
     // Always acknowledge so Stripe stops retrying.
     http_response_code(200);
     echo json_encode(['received' => true]);
     exit;
+}
+
+/* ---------------------------------------------------------------------------
+ * 4) INSCRIPTION CHECKOUT (membership sign-up + Stripe payment)
+ * ------------------------------------------------------------------------- */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
+    $data = readJsonBody();
+
+    $student = [
+        'first_name' => trim((string) ($data['first_name'] ?? '')),
+        'last_name' => trim((string) ($data['last_name'] ?? '')),
+        'parent_name' => trim((string) ($data['parent_name'] ?? '')),
+        'address' => trim((string) ($data['address'] ?? '')),
+        'email' => trim((string) ($data['email'] ?? '')),
+        'phone' => trim((string) ($data['phone'] ?? '')),
+        'parent_phone' => trim((string) ($data['parent_phone'] ?? '')),
+        'emergency_phone' => trim((string) ($data['emergency_phone'] ?? '')),
+        'dob' => trim((string) ($data['dob'] ?? '')),
+    ];
+
+    $required = ['first_name', 'last_name', 'address', 'email', 'phone', 'emergency_phone', 'dob'];
+    foreach ($required as $field) {
+        if ($student[$field] === '') {
+            jsonResponse(400, ['ok' => false, 'error' => 'Faltan datos obligatorios del formulario']);
+        }
+    }
+    if (!filter_var($student['email'], FILTER_VALIDATE_EMAIL)) {
+        jsonResponse(400, ['ok' => false, 'error' => 'El correo electrónico no es válido']);
+    }
+
+    $plans = inscriptionPlans();
+    $planId = (string) ($data['plan'] ?? '');
+    if (!isset($plans[$planId])) {
+        jsonResponse(400, ['ok' => false, 'error' => 'Selecciona un plan válido']);
+    }
+
+    // Resolve the promo code first so plan prices reflect the right monthly rate.
+    $promo = trim((string) ($data['promocode'] ?? ''));
+    $promoEffect = resolveInscriptionPromo($promo);
+    $plans = inscriptionPlans($promoEffect['monthly']);
+    $plan = $plans[$planId];
+
+    $amount = $plan['amount']; // MXN cents
+    $addInscription = !empty($data['add_inscription']) && $plan['allow_addon'];
+    if ($addInscription) {
+        $amount += inscriptionAddonAmount();
+    }
+    $label = $plan['label'] . ($addInscription ? ' + inscripción' : '');
+
+    // Beca code -> 100% scholarship (free).
+    if ($promoEffect['type'] === 'beca') {
+        $amount = 0;
+    }
+
+    $studentName = trim($student['first_name'] . ' ' . $student['last_name']);
+    $currency = storeCurrency();
+
+    // Current-student code -> payment is optional. If the student chose to pay
+    // later (or the total is zero), register without charging.
+    $payLater = false;
+    if ($promoEffect['payment_optional']) {
+        $mode = strtolower(trim((string) ($data['payment_mode'] ?? '')));
+        if ($mode === 'later' || $promoEffect['free']) {
+            $payLater = true;
+        }
+    }
+
+    // Full scholarship or opt-out of immediate payment: register directly.
+    if ($amount <= 0 || $payLater) {
+        $free = ($amount <= 0);
+        logInscription([
+            'status' => $free ? 'free' : 'pending_payment_offline',
+            'plan' => $planId,
+            'label' => $label,
+            'amount' => $amount / 100,
+            'currency' => $currency,
+            'promocode' => $promo,
+            'promo_type' => $promoEffect['type'],
+            'student' => $student,
+        ]);
+        $message = $free
+            ? 'Inscripción registrada con beca del 100%. Te contactaremos para confirmar tu lugar.'
+            : 'Inscripción registrada. Te contactaremos para coordinar el pago de ' . number_format($amount / 100, 2) . ' ' . $currency . '.';
+        jsonResponse(200, [
+            'ok' => true,
+            'free' => true,
+            'message' => $message,
+        ]);
+    }
+
+    $stripeSecret = readSecret('STRIPE_SECRET_KEY', '.stripe-secret');
+    if ($stripeSecret === null) {
+        jsonResponse(500, ['ok' => false, 'error' => 'Falta configurar STRIPE_SECRET_KEY']);
+    }
+
+    logInscription([
+        'status' => 'pending_payment',
+        'plan' => $planId,
+        'label' => $label,
+        'amount' => $amount / 100,
+        'currency' => $currency,
+        'promocode' => $promo,
+        'promo_type' => $promoEffect['type'],
+        'student' => $student,
+    ]);
+
+    $stripeParams = [
+        'mode' => 'payment',
+        'success_url' => siteBaseUrl() . '/inscripciones.html?inscription=success&session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url' => siteBaseUrl() . '/inscripciones.html?inscription=cancel',
+        'customer_email' => $student['email'],
+        'payment_method_types' => ['card'],
+        'line_items' => [[
+            'quantity' => 1,
+            'price_data' => [
+                'currency' => strtolower($currency),
+                'unit_amount' => $amount,
+                'product_data' => ['name' => 'Pura Capoeira — ' . $label],
+            ],
+        ]],
+        'metadata' => [
+            'type' => 'inscription',
+            'plan' => $planId,
+            'label' => $label,
+            'student_name' => $studentName,
+            'email' => $student['email'],
+            'phone' => $student['phone'],
+            'emergency_phone' => $student['emergency_phone'],
+            'dob' => $student['dob'],
+        ],
+    ];
+
+    $sessionResponse = stripeRequest('POST', 'checkout/sessions', $stripeSecret, $stripeParams);
+    if (!$sessionResponse['ok'] || empty($sessionResponse['payload']['url'])) {
+        jsonResponse($sessionResponse['status'] ?? 500, [
+            'ok' => false,
+            'error' => 'No fue posible iniciar el pago con Stripe',
+            'details' => $sessionResponse['payload']['error'] ?? ($sessionResponse['error'] ?? null),
+        ]);
+    }
+
+    jsonResponse(200, [
+        'ok' => true,
+        'url' => $sessionResponse['payload']['url'],
+    ]);
 }
 
 jsonResponse(404, ['ok' => false, 'error' => 'Acción no encontrada']);

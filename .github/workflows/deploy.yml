@@ -50,6 +50,9 @@ jobs:
             --exclude='api/.stripe-secret' \
             --exclude='api/.stripe-webhook-secret' \
             --exclude='api/.price-multiplier' \
+            --exclude='api/.inscription-promo' \
+            --exclude='api/.inscription-current' \
+            --exclude='api/inscriptions.jsonl' \
             -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.SSH_PORT }}" \
             public/ \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/"
