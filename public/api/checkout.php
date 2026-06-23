@@ -240,6 +240,356 @@ function logInscription(array $entry): void
     }
 }
 
+/**
+ * Email address(es) that should be notified of new inscriptions. Reads
+ * INSCRIPTION_NOTIFY_EMAIL (env) or an .inscription-notify file outside the web
+ * root. Multiple recipients may be comma-separated. Returns [] if unset.
+ */
+function inscriptionNotifyEmails(): array
+{
+    $raw = readInscriptionCode('INSCRIPTION_NOTIFY_EMAIL', '.inscription-notify', '');
+    if ($raw === '') {
+        return [];
+    }
+    $emails = array_filter(array_map('trim', explode(',', $raw)), static function ($e) {
+        return $e !== '' && filter_var($e, FILTER_VALIDATE_EMAIL);
+    });
+    return array_values($emails);
+}
+
+/** Optional "From" address for notification emails. Defaults to no-reply@<host>. */
+function inscriptionNotifyFrom(): string
+{
+    $from = readInscriptionCode('INSCRIPTION_NOTIFY_FROM', '.inscription-notify-from', '');
+    if ($from !== '' && filter_var($from, FILTER_VALIDATE_EMAIL)) {
+        return $from;
+    }
+    $host = preg_replace('/[^a-z0-9.\-]/i', '', (string) ($_SERVER['HTTP_HOST'] ?? 'capoeiracuernavaca.com'));
+    $host = preg_replace('/^www\./i', '', $host) ?: 'capoeiracuernavaca.com';
+    return 'no-reply@' . $host;
+}
+
+/**
+ * Read SMTP configuration. Each value comes from an environment variable first,
+ * then from a key=value ".smtp" file stored OUTSIDE the web root. Returns null
+ * if no host is configured (so the caller can fall back to mail()).
+ *
+ * Recognized keys (env name / file key):
+ *   SMTP_HOST     host
+ *   SMTP_PORT     port      (default 587)
+ *   SMTP_USER     user
+ *   SMTP_PASS     pass
+ *   SMTP_SECURE   secure    (tls | ssl | none; default tls)
+ *   SMTP_FROM     from      (optional; overrides the From address)
+ *   SMTP_FROM_NAME from_name (optional; default "Pura Capoeira")
+ */
+function smtpSettings(): ?array
+{
+    // Load key=value pairs from a ".smtp" file outside the web root, if present.
+    $fileValues = [];
+    $candidates = [
+        __DIR__ . '/.smtp',
+        dirname(__DIR__, 2) . '/.smtp',
+    ];
+    foreach ($candidates as $path) {
+        if (is_readable($path)) {
+            foreach (preg_split('/\r\n|\r|\n/', (string) file_get_contents($path)) as $rawLine) {
+                $line = trim($rawLine);
+                if ($line === '' || $line[0] === '#' || strpos($line, '=') === false) {
+                    continue;
+                }
+                [$k, $v] = explode('=', $line, 2);
+                $fileValues[strtolower(trim($k))] = trim($v);
+            }
+            break;
+        }
+    }
+
+    $get = static function (string $envName, string $fileKey, string $default = '') use ($fileValues): string {
+        $env = getenv($envName);
+        if (is_string($env) && trim($env) !== '') {
+            return trim($env);
+        }
+        if (isset($fileValues[$fileKey]) && $fileValues[$fileKey] !== '') {
+            return $fileValues[$fileKey];
+        }
+        return $default;
+    };
+
+    $host = $get('SMTP_HOST', 'host');
+    if ($host === '') {
+        return null;
+    }
+
+    $secure = strtolower($get('SMTP_SECURE', 'secure', 'tls'));
+    if (!in_array($secure, ['tls', 'ssl', 'none'], true)) {
+        $secure = 'tls';
+    }
+    $port = (int) $get('SMTP_PORT', 'port', $secure === 'ssl' ? '465' : '587');
+
+    return [
+        'host' => $host,
+        'port' => $port > 0 ? $port : 587,
+        'user' => $get('SMTP_USER', 'user'),
+        'pass' => $get('SMTP_PASS', 'pass'),
+        'secure' => $secure,
+        'from' => $get('SMTP_FROM', 'from'),
+        'from_name' => $get('SMTP_FROM_NAME', 'from_name', 'Pura Capoeira'),
+    ];
+}
+
+/** Read one line (or multiline) SMTP reply and return [code, fullText]. */
+function smtpReadReply($conn): array
+{
+    $text = '';
+    $code = 0;
+    while (($line = fgets($conn, 1024)) !== false) {
+        $text .= $line;
+        // Lines look like "250-..." (more to come) or "250 ..." (final).
+        if (strlen($line) >= 4 && ($line[3] === ' ' )) {
+            $code = (int) substr($line, 0, 3);
+            break;
+        }
+    }
+    return [$code, $text];
+}
+
+/** Send one SMTP command and assert the reply starts with an expected code. */
+function smtpCommand($conn, string $cmd, array $expected): array
+{
+    if ($cmd !== '') {
+        fwrite($conn, $cmd . "\r\n");
+    }
+    [$code, $text] = smtpReadReply($conn);
+    return [in_array($code, $expected, true), $code, $text];
+}
+
+/**
+ * Minimal dependency-free SMTP sender. Supports implicit TLS (ssl), STARTTLS
+ * (tls) and plain (none), with AUTH LOGIN. Returns true on success.
+ */
+function smtpSend(array $cfg, string $fromEmail, string $fromName, string $to, string $subject, string $body, string $replyTo = ''): bool
+{
+    $host = $cfg['host'];
+    $port = (int) $cfg['port'];
+    $secure = $cfg['secure'];
+
+    $transport = $secure === 'ssl' ? 'ssl://' . $host : $host;
+    $context = stream_context_create([
+        'ssl' => ['verify_peer' => true, 'verify_peer_name' => true, 'SNI_enabled' => true],
+    ]);
+
+    $errno = 0;
+    $errstr = '';
+    $conn = @stream_socket_client(
+        $transport . ':' . $port,
+        $errno,
+        $errstr,
+        15,
+        STREAM_CLIENT_CONNECT,
+        $context
+    );
+    if (!$conn) {
+        error_log('SMTP connect failed: ' . $errstr . ' (' . $errno . ')');
+        return false;
+    }
+    stream_set_timeout($conn, 15);
+
+    $fail = static function (string $msg) use ($conn): bool {
+        error_log('SMTP error: ' . $msg);
+        @fclose($conn);
+        return false;
+    };
+
+    [$ok] = smtpCommand($conn, '', [220]);
+    if (!$ok) {
+        return $fail('no greeting');
+    }
+
+    $ehloHost = preg_replace('/[^a-z0-9.\-]/i', '', (string) ($_SERVER['HTTP_HOST'] ?? 'localhost')) ?: 'localhost';
+
+    [$ok] = smtpCommand($conn, 'EHLO ' . $ehloHost, [250]);
+    if (!$ok) {
+        return $fail('EHLO rejected');
+    }
+
+    if ($secure === 'tls') {
+        [$ok] = smtpCommand($conn, 'STARTTLS', [220]);
+        if (!$ok) {
+            return $fail('STARTTLS rejected');
+        }
+        $crypto = STREAM_CRYPTO_METHOD_TLS_CLIENT;
+        if (defined('STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT')) {
+            $crypto |= STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT;
+        }
+        if (!@stream_socket_enable_crypto($conn, true, $crypto)) {
+            return $fail('TLS negotiation failed');
+        }
+        // Re-issue EHLO over the now-encrypted channel.
+        [$ok] = smtpCommand($conn, 'EHLO ' . $ehloHost, [250]);
+        if (!$ok) {
+            return $fail('EHLO after STARTTLS rejected');
+        }
+    }
+
+    if ($cfg['user'] !== '' && $cfg['pass'] !== '') {
+        [$ok] = smtpCommand($conn, 'AUTH LOGIN', [334]);
+        if (!$ok) {
+            return $fail('AUTH LOGIN unsupported');
+        }
+        [$ok] = smtpCommand($conn, base64_encode($cfg['user']), [334]);
+        if (!$ok) {
+            return $fail('username rejected');
+        }
+        [$ok] = smtpCommand($conn, base64_encode($cfg['pass']), [235]);
+        if (!$ok) {
+            return $fail('authentication failed');
+        }
+    }
+
+    [$ok] = smtpCommand($conn, 'MAIL FROM:<' . $fromEmail . '>', [250]);
+    if (!$ok) {
+        return $fail('MAIL FROM rejected');
+    }
+    [$ok] = smtpCommand($conn, 'RCPT TO:<' . $to . '>', [250, 251]);
+    if (!$ok) {
+        return $fail('RCPT TO rejected');
+    }
+    [$ok] = smtpCommand($conn, 'DATA', [354]);
+    if (!$ok) {
+        return $fail('DATA rejected');
+    }
+
+    $date = date('r');
+    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    $encodedFromName = '=?UTF-8?B?' . base64_encode($fromName) . '?=';
+    $headers = [
+        'Date: ' . $date,
+        'From: ' . $encodedFromName . ' <' . $fromEmail . '>',
+        'To: ' . $to,
+        'Subject: ' . $encodedSubject,
+        'MIME-Version: 1.0',
+        'Content-Type: text/plain; charset=UTF-8',
+        'Content-Transfer-Encoding: 8bit',
+    ];
+    if ($replyTo !== '') {
+        $headers[] = 'Reply-To: ' . $replyTo;
+    }
+
+    // Dot-stuff the body so lines starting with "." are not treated as EOF.
+    $normalizedBody = preg_replace('/\r\n|\r|\n/', "\r\n", $body);
+    $normalizedBody = preg_replace('/^\./m', '..', $normalizedBody);
+
+    $message = implode("\r\n", $headers) . "\r\n\r\n" . $normalizedBody . "\r\n.";
+    [$ok] = smtpCommand($conn, $message, [250]);
+    if (!$ok) {
+        return $fail('message not accepted');
+    }
+
+    smtpCommand($conn, 'QUIT', [221]);
+    @fclose($conn);
+    return true;
+}
+
+/**
+ * Send a plain-text email notification about a new inscription. Best-effort:
+ * failures are swallowed so they never block the checkout/webhook response.
+ */
+function notifyInscription(array $entry): void
+{
+    $recipients = inscriptionNotifyEmails();
+    if (empty($recipients)) {
+        return;
+    }
+
+    $statusLabels = [
+        'paid' => 'Pago recibido',
+        'pending_payment' => 'Pago iniciado (pendiente)',
+        'pending_payment_offline' => 'Registro sin pago (pagará en persona)',
+        'free' => 'Inscripción con beca (gratis)',
+    ];
+    $status = (string) ($entry['status'] ?? '');
+    $statusText = $statusLabels[$status] ?? $status;
+
+    $student = $entry['student'] ?? [];
+    $name = trim((string) (
+        ($entry['student_name'] ?? '')
+        ?: trim((string) ($student['first_name'] ?? '') . ' ' . (string) ($student['last_name'] ?? ''))
+    ));
+    $email = (string) ($entry['email'] ?? ($student['email'] ?? ''));
+    $phone = (string) ($student['phone'] ?? '');
+    $currency = (string) ($entry['currency'] ?? storeCurrency());
+    $amount = $entry['amount'];
+
+    $lines = [
+        'Nueva inscripción en Pura Capoeira Cuernavaca',
+        '',
+        'Estado: ' . $statusText,
+        'Paquete: ' . (string) ($entry['label'] ?? ($entry['plan'] ?? '')),
+    ];
+    if (is_numeric($amount)) {
+        $lines[] = 'Monto: ' . number_format((float) $amount, 2) . ' ' . $currency;
+    }
+    if ($name !== '') {
+        $lines[] = 'Alumno: ' . $name;
+    }
+    if ($email !== '') {
+        $lines[] = 'Correo: ' . $email;
+    }
+    if ($phone !== '') {
+        $lines[] = 'Teléfono: ' . $phone;
+    }
+    if (!empty($entry['trial_date'])) {
+        $lines[] = 'Fecha de Clase de Prueba: ' . (string) $entry['trial_date'];
+    }
+    if (!empty($entry['promocode'])) {
+        $lines[] = 'Código promocional: ' . (string) $entry['promocode'];
+    }
+    if (!empty($student['emergency_phone'])) {
+        $lines[] = 'Teléfono de emergencia: ' . (string) $student['emergency_phone'];
+    }
+    if (!empty($student['address'])) {
+        $lines[] = 'Dirección: ' . (string) $student['address'];
+    }
+    if (!empty($student['dob'])) {
+        $lines[] = 'Fecha de nacimiento: ' . (string) $student['dob'];
+    }
+    $lines[] = '';
+    $lines[] = 'Fecha de registro: ' . ($entry['ts'] ?? date('c'));
+
+    $subject = 'Nueva inscripción (' . $statusText . ')' . ($name !== '' ? ' — ' . $name : '');
+    $body = implode("\n", $lines);
+
+    $replyTo = ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) ? $email : '';
+
+    // Prefer SMTP when configured; fall back to PHP mail().
+    $smtp = smtpSettings();
+    if ($smtp !== null) {
+        $fromEmail = $smtp['from'] !== '' ? $smtp['from'] : inscriptionNotifyFrom();
+        $fromName = $smtp['from_name'] !== '' ? $smtp['from_name'] : 'Pura Capoeira';
+        foreach ($recipients as $to) {
+            smtpSend($smtp, $fromEmail, $fromName, $to, $subject, $body, $replyTo);
+        }
+        return;
+    }
+
+    $from = inscriptionNotifyFrom();
+    $headers = [
+        'From: Pura Capoeira <' . $from . '>',
+        'Content-Type: text/plain; charset=UTF-8',
+        'X-Mailer: PHP/' . phpversion(),
+    ];
+    if ($replyTo !== '') {
+        $headers[] = 'Reply-To: ' . $replyTo;
+    }
+
+    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    foreach ($recipients as $to) {
+        @mail($to, $encodedSubject, $body, implode("\r\n", $headers));
+    }
+}
+
+
 function printfulRequest(string $method, string $path, string $token, ?array $body = null): array
 {
     $baseUrl = getenv('PRINTFUL_API_BASE_URL');
@@ -704,7 +1054,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'webhook') {
         // Inscription (membership) payments: record a paid entry.
         $meta = $session['metadata'] ?? [];
         if (($meta['type'] ?? '') === 'inscription' && $paymentStatus === 'paid') {
-            logInscription([
+            $paidEntry = [
                 'status' => 'paid',
                 'plan' => $meta['plan'] ?? '',
                 'label' => $meta['label'] ?? '',
@@ -714,7 +1064,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'webhook') {
                 'email' => $meta['email'] ?? ($session['customer_email'] ?? ''),
                 'trial_date' => $meta['trial_date'] ?? '',
                 'session_id' => $session['id'] ?? '',
-            ]);
+            ];
+            logInscription($paidEntry);
+            notifyInscription($paidEntry);
         }
     }
 
@@ -808,7 +1160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
     // Full scholarship or opt-out of immediate payment: register directly.
     if ($amount <= 0 || $payLater) {
         $free = ($amount <= 0);
-        logInscription([
+        $offlineEntry = [
             'status' => $free ? 'free' : 'pending_payment_offline',
             'plan' => $planId,
             'label' => $label,
@@ -818,7 +1170,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
             'promo_type' => $promoEffect['type'],
             'trial_date' => $trialDate,
             'student' => $student,
-        ]);
+        ];
+        logInscription($offlineEntry);
+        notifyInscription($offlineEntry);
         $message = $free
             ? 'Inscripción registrada con beca del 100%. Te contactaremos para confirmar tu lugar.'
             : 'Inscripción registrada. Te contactaremos para coordinar el pago de ' . number_format($amount / 100, 2) . ' ' . $currency . '.';
@@ -835,6 +1189,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
     }
 
     logInscription([
+        'status' => 'pending_payment',
+        'plan' => $planId,
+        'label' => $label,
+        'amount' => $amount / 100,
+        'currency' => $currency,
+        'promocode' => $promo,
+        'promo_type' => $promoEffect['type'],
+        'trial_date' => $trialDate,
+        'student' => $student,
+    ]);
+
+    notifyInscription([
         'status' => 'pending_payment',
         'plan' => $planId,
         'label' => $label,
