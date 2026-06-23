@@ -117,6 +117,11 @@ function inscriptionPlans(?int $monthlyCents = null): array
     $inscription = 150000; // $1,500.00 MXN
 
     return [
+        'trial' => [
+            'label' => 'Clase de Prueba',
+            'amount' => 20000, // $200.00 MXN, fixed regardless of monthly rate
+            'allow_addon' => false,
+        ],
         'inscription' => [
             'label' => 'Solo inscripción',
             'amount' => $inscription,
@@ -707,6 +712,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'webhook') {
                 'amount' => isset($session['amount_total']) ? ((int) $session['amount_total']) / 100 : null,
                 'student_name' => $meta['student_name'] ?? '',
                 'email' => $meta['email'] ?? ($session['customer_email'] ?? ''),
+                'trial_date' => $meta['trial_date'] ?? '',
                 'session_id' => $session['id'] ?? '',
             ]);
         }
@@ -752,6 +758,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
         jsonResponse(400, ['ok' => false, 'error' => 'Selecciona un plan válido']);
     }
 
+    // Trial class requires a chosen date (must be today or in the future).
+    $trialDate = trim((string) ($data['trial_date'] ?? ''));
+    if ($planId === 'trial') {
+        $d = DateTime::createFromFormat('Y-m-d', $trialDate);
+        $validFormat = $d !== false && $d->format('Y-m-d') === $trialDate;
+        if (!$validFormat) {
+            jsonResponse(400, ['ok' => false, 'error' => 'Selecciona una fecha válida para tu Clase de Prueba']);
+        }
+        $today = new DateTime('today');
+        if ($d < $today) {
+            jsonResponse(400, ['ok' => false, 'error' => 'La fecha de la Clase de Prueba no puede estar en el pasado']);
+        }
+    } else {
+        $trialDate = '';
+    }
+
     // Resolve the promo code first so plan prices reflect the right monthly rate.
     $promo = trim((string) ($data['promocode'] ?? ''));
     $promoEffect = resolveInscriptionPromo($promo);
@@ -794,6 +816,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
             'currency' => $currency,
             'promocode' => $promo,
             'promo_type' => $promoEffect['type'],
+            'trial_date' => $trialDate,
             'student' => $student,
         ]);
         $message = $free
@@ -819,6 +842,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
         'currency' => $currency,
         'promocode' => $promo,
         'promo_type' => $promoEffect['type'],
+        'trial_date' => $trialDate,
         'student' => $student,
     ]);
 
@@ -845,6 +869,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
             'phone' => $student['phone'],
             'emergency_phone' => $student['emergency_phone'],
             'dob' => $student['dob'],
+            'trial_date' => $trialDate,
         ],
     ];
 

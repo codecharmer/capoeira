@@ -72,7 +72,16 @@
             <legend>1. Elige tu paquete</legend>
             <div class="plan-grid">
               <label class="plan-card">
-                <input type="radio" name="plan" value="inscription_month" data-amount="2650" data-allow-addon="0" required />
+                <input type="radio" name="plan" value="trial" data-amount="200" data-allow-addon="0" required />
+                <span class="plan-card__body">
+                  <span class="plan-card__title">Clase de Prueba</span>
+                  <span class="plan-card__price">$200 MXN</span>
+                  <span class="plan-card__note">Una clase para conocernos. Elige el día que vendrás.</span>
+                </span>
+              </label>
+
+              <label class="plan-card">
+                <input type="radio" name="plan" value="inscription_month" data-amount="2650" data-allow-addon="0" />
                 <span class="plan-card__body">
                   <span class="plan-card__title">Inscripción + primer mes</span>
                   <span class="plan-card__price" data-plan-price="inscription_month">$2,650 MXN</span>
@@ -120,6 +129,11 @@
             <label class="inscription-addon" data-inscription-addon hidden>
               <input type="checkbox" name="add_inscription" value="1" />
               <span>Agregar inscripción (+$1,500 MXN) — para alumnos de nuevo ingreso.</span>
+            </label>
+
+            <label class="field field--full inscription-trial-date" data-inscription-trial hidden>
+              <span>Fecha de tu Clase de Prueba *</span>
+              <input type="date" name="trial_date" data-inscription-trial-input />
             </label>
           </fieldset>
 

@@ -1303,6 +1303,11 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
   margin-top: 0.2rem;
   accent-color: var(--yellow);
 }
+.inscription-trial-date {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

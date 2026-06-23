@@ -717,6 +717,8 @@
     const promoApplyBtn = $('[data-inscription-promo-apply]', root);
     const promoNote = $('[data-inscription-promo-note]', root);
     const paymodeWrap = $('[data-inscription-paymode]', root);
+    const trialWrap = $('[data-inscription-trial]', root);
+    const trialInput = trialWrap ? $('[data-inscription-trial-input]', trialWrap) : null;
     const summaryLabel = $('[data-inscription-summary-label]', root);
     const summaryTotal = $('[data-inscription-summary-total]', root);
     const resultEl = $('[data-inscription-result]', root);
@@ -745,6 +747,19 @@
       !!paymodeWrap &&
       !paymodeWrap.hidden &&
       $('input[name="payment_mode"]:checked', form)?.value === 'later';
+
+    // Restrict the trial date picker to today or later.
+    if (trialInput) {
+      trialInput.min = new Date().toISOString().slice(0, 10);
+    }
+
+    function updateTrialUi() {
+      if (!trialWrap || !trialInput) return;
+      const isTrial = selectedPlan()?.value === 'trial';
+      trialWrap.hidden = !isTrial;
+      trialInput.required = isTrial;
+      if (!isTrial) trialInput.value = '';
+    }
 
     function setPlanPrices(plans, monthly) {
       (plans || []).forEach((p) => {
@@ -780,6 +795,7 @@
 
     function updateSummary() {
       const plan = selectedPlan();
+      updateTrialUi();
       if (!plan) {
         if (summaryLabel) summaryLabel.textContent = '—';
         if (summaryTotal) summaryTotal.textContent = money(0);
@@ -899,6 +915,7 @@
         add_inscription: addonWrap && !addonWrap.hidden && addonInput && addonInput.checked ? 1 : 0,
         promocode: (fd.get('promocode') || '').toString().trim(),
         payment_mode: payLaterSelected() ? 'later' : 'now',
+        trial_date: (fd.get('trial_date') || '').toString().trim(),
         first_name: (fd.get('first_name') || '').toString().trim(),
         last_name: (fd.get('last_name') || '').toString().trim(),
         parent_name: (fd.get('parent_name') || '').toString().trim(),
