@@ -731,19 +731,56 @@
     const money = (n) =>
       new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n) + ' MXN';
 
-    // Capture the default plan prices/notes so we can restore them if a code is cleared.
-    const defaults = {};
-    $$('input[name="plan"]', form).forEach((input) => {
-      const id = input.value;
-      defaults[id] = {
-        amount: input.getAttribute('data-amount'),
-        price: $(`[data-plan-price="${id}"]`, form)?.textContent || '',
-        note: $(`[data-plan-note="${id}"]`, form)?.textContent || '',
-      };
-    });
+    // Base monthly tuition (MXN, pesos) per age group. Kids get a lower base
+    // rate; promo codes and package discounts apply on top, same as adults.
+    const GROUP_MONTHLY = { adult: 1150, kids: 1000 };
+    const currentGroup = () =>
+      $('input[name="inscription_group"]:checked', form)?.value || 'adult';
 
-    // Promo state for the current session.
-    const promoState = { type: 'none', free: false, paymentOptional: false };
+    // Promo state for the current session. `monthly` (pesos) is set when a
+    // current-student code overrides the group's base monthly rate.
+    const promoState = { type: 'none', free: false, paymentOptional: false, monthly: null };
+
+    const effectiveMonthly = () =>
+      promoState.type === 'current' && typeof promoState.monthly === 'number'
+        ? promoState.monthly
+        : GROUP_MONTHLY[currentGroup()];
+
+    // Derive every plan's price (pesos) from a monthly rate, mirroring the
+    // server formulas (quarter -15%, year -20%; trial/inscription are fixed).
+    function planAmounts(monthly) {
+      const cents = Math.round(monthly * 100);
+      return {
+        trial: 200,
+        inscription: 1500,
+        inscription_month: 1500 + monthly,
+        month: monthly,
+        quarter: Math.round(cents * 3 * 0.85) / 100,
+        year: Math.round(cents * 12 * 0.8) / 100,
+      };
+    }
+
+    function applyPlanPrices(monthly) {
+      const amounts = planAmounts(monthly);
+      Object.keys(amounts).forEach((id) => {
+        const input = $(`input[name="plan"][value="${id}"]`, form);
+        if (input) input.setAttribute('data-amount', String(amounts[id]));
+        const priceEl = $(`[data-plan-price="${id}"]`, form);
+        if (priceEl) priceEl.textContent = money(amounts[id]);
+      });
+      const noteEl = $('[data-plan-note="inscription_month"]', form);
+      if (noteEl) {
+        noteEl.textContent = `Inscripción ($1,500) + primera mensualidad (${money(monthly)}).`;
+      }
+    }
+
+    function resetPromoPricing() {
+      promoState.type = 'none';
+      promoState.free = false;
+      promoState.paymentOptional = false;
+      promoState.monthly = null;
+      applyPlanPrices(effectiveMonthly());
+    }
 
     const selectedPlan = () => $('input[name="plan"]:checked', form);
     const payLaterSelected = () =>
@@ -790,30 +827,6 @@
       if (!isTrial) trialInput.value = '';
     }
 
-    function setPlanPrices(plans, monthly) {
-      (plans || []).forEach((p) => {
-        const input = $(`input[name="plan"][value="${p.id}"]`, form);
-        if (input) input.setAttribute('data-amount', String(p.amount));
-        const priceEl = $(`[data-plan-price="${p.id}"]`, form);
-        if (priceEl) priceEl.textContent = money(p.amount);
-      });
-      const noteEl = $('[data-plan-note="inscription_month"]', form);
-      if (noteEl && typeof monthly === 'number') {
-        noteEl.textContent = `Inscripción ($1,500) + primera mensualidad (${money(monthly)}).`;
-      }
-    }
-
-    function restoreDefaultPrices() {
-      Object.keys(defaults).forEach((id) => {
-        const input = $(`input[name="plan"][value="${id}"]`, form);
-        if (input) input.setAttribute('data-amount', defaults[id].amount);
-        const priceEl = $(`[data-plan-price="${id}"]`, form);
-        if (priceEl) priceEl.textContent = defaults[id].price;
-        const noteEl = $(`[data-plan-note="${id}"]`, form);
-        if (noteEl) noteEl.textContent = defaults[id].note;
-      });
-    }
-
     function updatePaymodeUi() {
       if (paymodeWrap) paymodeWrap.hidden = !promoState.paymentOptional;
       if (submitBtn) {
@@ -858,7 +871,22 @@
       if (e.target.name === 'inscription_mode') {
         updateModeUi();
       }
+      if (e.target.name === 'inscription_group') {
+        updateGroup();
+      }
     });
+
+    function updateGroup() {
+      const code = (promoInput?.value || '').trim();
+      // A current-student promo's monthly rate is group-specific, so re-validate
+      // it against the new group; otherwise just recompute from the base rate.
+      if (code !== '' && promoState.type !== 'none') {
+        applyPromo();
+      } else {
+        applyPlanPrices(effectiveMonthly());
+        updateSummary();
+      }
+    }
 
     async function applyPromo() {
       const code = (promoInput?.value || '').trim();
@@ -867,10 +895,7 @@
       promoNote.classList.remove('is-success');
 
       if (code === '') {
-        promoState.type = 'none';
-        promoState.free = false;
-        promoState.paymentOptional = false;
-        restoreDefaultPrices();
+        resetPromoPricing();
         promoNote.textContent = 'Escribe un código para aplicarlo.';
         updateSummary();
         return;
@@ -881,16 +906,13 @@
         const res = await fetch('api/checkout.php?action=validate-promo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ promocode: code }),
+          body: JSON.stringify({ promocode: code, group: currentGroup() }),
         });
         const json = await res.json();
         if (!res.ok || !json.ok) throw new Error(json.error || 'No se pudo validar el código');
 
         if (!json.valid) {
-          promoState.type = 'none';
-          promoState.free = false;
-          promoState.paymentOptional = false;
-          restoreDefaultPrices();
+          resetPromoPricing();
           promoNote.textContent = 'Código no válido. Se aplican los precios normales.';
           updateSummary();
           return;
@@ -899,12 +921,13 @@
         promoState.type = json.type;
         promoState.free = !!json.free;
         promoState.paymentOptional = !!json.payment_optional;
+        promoState.monthly = json.type === 'current' ? json.monthly : null;
 
         if (json.type === 'beca') {
-          restoreDefaultPrices();
+          applyPlanPrices(effectiveMonthly());
           promoNote.textContent = '¡Beca del 100% aplicada! Tu inscripción será gratuita.';
         } else if (json.type === 'current') {
-          setPlanPrices(json.plans, json.monthly);
+          applyPlanPrices(effectiveMonthly());
           promoNote.textContent =
             '¡Código de alumno aplicado! Mensualidad de ' +
             money(json.monthly) +
@@ -945,6 +968,7 @@
       const fd = new FormData(form);
       const payload = {
         plan: fd.get('plan'),
+        group: currentGroup(),
         add_inscription: addonWrap && !addonWrap.hidden && addonInput && addonInput.checked ? 1 : 0,
         promocode: (fd.get('promocode') || '').toString().trim(),
         payment_mode: payLaterSelected() ? 'later' : 'now',
@@ -998,10 +1022,7 @@
         if (json.free) {
           showResult(json.message || '¡Inscripción registrada!', true);
           form.reset();
-          promoState.type = 'none';
-          promoState.free = false;
-          promoState.paymentOptional = false;
-          restoreDefaultPrices();
+          resetPromoPricing();
           updateModeUi();
           updateSummary();
           if (submitBtn) submitBtn.disabled = false;
@@ -1029,6 +1050,7 @@
     }
 
     updateModeUi();
+    applyPlanPrices(effectiveMonthly());
     updateSummary();
   }
 

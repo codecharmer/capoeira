@@ -106,14 +106,22 @@ function priceMultiplier(): float
     return 1.0;
 }
 
+/** Normalize an age-group value to one of the supported groups. */
+function inscriptionGroup($raw): string
+{
+    $group = strtolower(trim((string) $raw));
+    return $group === 'kids' ? 'kids' : 'adult';
+}
+
 /**
  * Inscription (membership) plans. Amounts are in MXN cents to avoid float drift.
- * Monthly tuition: $1,150 MXN. Inscription fee: $1,500 MXN.
+ * Monthly tuition: $1,150 MXN adults / $1,000 MXN kids. Inscription fee: $1,500 MXN.
+ * Trial class is a fixed $200 MXN for every group.
  * Quarterly = 3 months -15%. Yearly = 12 months -20%.
  */
-function inscriptionPlans(?int $monthlyCents = null): array
+function inscriptionPlans(?int $monthlyCents = null, string $group = 'adult'): array
 {
-    $monthly = $monthlyCents !== null ? $monthlyCents : 115000; // default $1,150.00 MXN
+    $monthly = $monthlyCents !== null ? $monthlyCents : inscriptionMonthlyAmount($group);
     $inscription = 150000; // $1,500.00 MXN
 
     return [
@@ -156,16 +164,16 @@ function inscriptionAddonAmount(): int
     return 150000;
 }
 
-/** Default monthly tuition (MXN cents). */
-function inscriptionMonthlyAmount(): int
+/** Default monthly tuition (MXN cents) for the given age group. */
+function inscriptionMonthlyAmount(string $group = 'adult'): int
 {
-    return 115000; // $1,150.00 MXN
+    return $group === 'kids' ? 100000 : 115000; // kids $1,000.00 / adults $1,150.00 MXN
 }
 
-/** Discounted monthly tuition for current students (MXN cents). */
-function inscriptionCurrentMonthlyAmount(): int
+/** Discounted monthly tuition for current students (MXN cents) by age group. */
+function inscriptionCurrentMonthlyAmount(string $group = 'adult'): int
 {
-    return 75000; // $750.00 MXN
+    return $group === 'kids' ? 100000 : 75000; // kids $1,000.00 / adults $750.00 MXN
 }
 
 /** Read a configurable code from env, then a file outside the web root, else a default. */
@@ -206,16 +214,16 @@ function inscriptionCurrentCode(): string
  * Resolve a typed promo code to its effect.
  * Returns ['type' => 'beca'|'current'|'none', 'monthly' => cents, 'payment_optional' => bool, 'free' => bool].
  */
-function resolveInscriptionPromo(string $code): array
+function resolveInscriptionPromo(string $code, string $group = 'adult'): array
 {
     $code = trim($code);
     if ($code !== '' && strcasecmp($code, inscriptionPromoCode()) === 0) {
-        return ['type' => 'beca', 'monthly' => inscriptionMonthlyAmount(), 'payment_optional' => true, 'free' => true];
+        return ['type' => 'beca', 'monthly' => inscriptionMonthlyAmount($group), 'payment_optional' => true, 'free' => true];
     }
     if ($code !== '' && strcasecmp($code, inscriptionCurrentCode()) === 0) {
-        return ['type' => 'current', 'monthly' => inscriptionCurrentMonthlyAmount(), 'payment_optional' => true, 'free' => false];
+        return ['type' => 'current', 'monthly' => inscriptionCurrentMonthlyAmount($group), 'payment_optional' => true, 'free' => false];
     }
-    return ['type' => 'none', 'monthly' => inscriptionMonthlyAmount(), 'payment_optional' => false, 'free' => false];
+    return ['type' => 'none', 'monthly' => inscriptionMonthlyAmount($group), 'payment_optional' => false, 'free' => false];
 }
 
 
@@ -617,6 +625,7 @@ function notifyInscription(array $entry): void
         'Nueva inscripción en Pura Capoeira Cuernavaca',
         '',
         'Tipo: ' . (!empty($entry['member']) ? 'Pago de mensualidad (alumno existente)' : 'Nueva inscripción'),
+        'Grupo: ' . (($entry['group'] ?? 'adult') === 'kids' ? 'Niños (3-7)' : 'Adultos / mixto (8+)'),
         'Estado: ' . $statusText,
         'Paquete: ' . (string) ($entry['label'] ?? ($entry['plan'] ?? '')),
     ];
@@ -856,8 +865,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'config') {
  * 0b) INSCRIPTION CONFIG (membership plan prices for the inscriptions page)
  * ------------------------------------------------------------------------- */
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'inscription-config') {
+    $group = inscriptionGroup($_GET['group'] ?? 'adult');
     $plans = [];
-    foreach (inscriptionPlans() as $id => $p) {
+    foreach (inscriptionPlans(null, $group) as $id => $p) {
         $plans[] = [
             'id' => $id,
             'label' => $p['label'],
@@ -868,6 +878,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'inscription-config') {
     jsonResponse(200, [
         'ok' => true,
         'currency' => storeCurrency(),
+        'group' => $group,
         'addon_amount' => inscriptionAddonAmount() / 100,
         'plans' => $plans,
     ]);
@@ -882,14 +893,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'validate-promo') {
     if ($code === '') {
         jsonResponse(400, ['ok' => false, 'error' => 'Escribe un código para validarlo']);
     }
+    $group = inscriptionGroup($data['group'] ?? 'adult');
 
-    $promo = resolveInscriptionPromo($code);
+    $promo = resolveInscriptionPromo($code, $group);
     if ($promo['type'] === 'none') {
         jsonResponse(200, ['ok' => true, 'valid' => false]);
     }
 
     $plans = [];
-    foreach (inscriptionPlans($promo['monthly']) as $id => $p) {
+    foreach (inscriptionPlans($promo['monthly'], $group) as $id => $p) {
         $plans[] = [
             'id' => $id,
             'label' => $p['label'],
@@ -905,6 +917,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'validate-promo') {
         'free' => $promo['free'],
         'payment_optional' => $promo['payment_optional'],
         'monthly' => $promo['monthly'] / 100,
+        'group' => $group,
         'addon_amount' => inscriptionAddonAmount() / 100,
         'plans' => $plans,
     ]);
@@ -1156,6 +1169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'webhook') {
                 'student_name' => $meta['student_name'] ?? '',
                 'email' => $meta['email'] ?? ($session['customer_email'] ?? ''),
                 'trial_date' => $meta['trial_date'] ?? '',
+                'group' => $meta['group'] ?? 'adult',
                 'session_id' => $session['id'] ?? '',
             ];
             logInscription($paidEntry);
@@ -1178,6 +1192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
     // Existing students can pay a recurring fee with just their email. New
     // students must complete the full form.
     $isMember = !empty($data['member']);
+    $group = inscriptionGroup($data['group'] ?? 'adult');
 
     if ($isMember) {
         $memberEmail = trim((string) ($data['email'] ?? ''));
@@ -1219,7 +1234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
         }
     }
 
-    $plans = inscriptionPlans();
+    $plans = inscriptionPlans(null, $group);
     $planId = (string) ($data['plan'] ?? '');
     if (!isset($plans[$planId])) {
         jsonResponse(400, ['ok' => false, 'error' => 'Selecciona un plan válido']);
@@ -1243,8 +1258,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
 
     // Resolve the promo code first so plan prices reflect the right monthly rate.
     $promo = trim((string) ($data['promocode'] ?? ''));
-    $promoEffect = resolveInscriptionPromo($promo);
-    $plans = inscriptionPlans($promoEffect['monthly']);
+    $promoEffect = resolveInscriptionPromo($promo, $group);
+    $plans = inscriptionPlans($promoEffect['monthly'], $group);
     $plan = $plans[$planId];
 
     $amount = $plan['amount']; // MXN cents
@@ -1284,6 +1299,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
             'promocode' => $promo,
             'promo_type' => $promoEffect['type'],
             'trial_date' => $trialDate,
+            'group' => $group,
             'member' => $isMember ? 1 : 0,
             'student' => $student,
         ];
@@ -1313,6 +1329,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
         'promocode' => $promo,
         'promo_type' => $promoEffect['type'],
         'trial_date' => $trialDate,
+        'group' => $group,
         'member' => $isMember ? 1 : 0,
         'student' => $student,
     ]);
@@ -1326,6 +1343,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
         'promocode' => $promo,
         'promo_type' => $promoEffect['type'],
         'trial_date' => $trialDate,
+        'group' => $group,
         'member' => $isMember ? 1 : 0,
         'student' => $student,
     ]);
@@ -1354,6 +1372,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
             'emergency_phone' => $student['emergency_phone'],
             'dob' => $student['dob'],
             'trial_date' => $trialDate,
+            'group' => $group,
             'member' => $isMember ? '1' : '0',
         ],
     ];
