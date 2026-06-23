@@ -719,6 +719,9 @@
     const paymodeWrap = $('[data-inscription-paymode]', root);
     const trialWrap = $('[data-inscription-trial]', root);
     const trialInput = trialWrap ? $('[data-inscription-trial-input]', trialWrap) : null;
+    const studentWrap = $('[data-inscription-student]', root);
+    const memberWrap = $('[data-inscription-member]', root);
+    const memberEmailInput = memberWrap ? $('[data-inscription-member-email]', memberWrap) : null;
     const summaryLabel = $('[data-inscription-summary-label]', root);
     const summaryTotal = $('[data-inscription-summary-total]', root);
     const resultEl = $('[data-inscription-result]', root);
@@ -747,6 +750,32 @@
       !!paymodeWrap &&
       !paymodeWrap.hidden &&
       $('input[name="payment_mode"]:checked', form)?.value === 'later';
+
+    // Remember which student fields are required so we can restore them after
+    // toggling the "already enrolled" (email-only) flow.
+    const requiredStudentInputs = studentWrap
+      ? $$('input[required], select[required], textarea[required]', studentWrap)
+      : [];
+
+    const currentMode = () =>
+      $('input[name="inscription_mode"]:checked', form)?.value || 'new';
+
+    function updateModeUi() {
+      const isMember = currentMode() === 'member';
+      if (studentWrap) {
+        studentWrap.hidden = isMember;
+        requiredStudentInputs.forEach((input) => {
+          input.required = !isMember;
+        });
+      }
+      if (memberWrap) {
+        memberWrap.hidden = !isMember;
+      }
+      if (memberEmailInput) {
+        memberEmailInput.required = isMember;
+        if (!isMember) memberEmailInput.value = '';
+      }
+    }
 
     // Restrict the trial date picker to today or later.
     if (trialInput) {
@@ -825,6 +854,9 @@
     form.addEventListener('change', (e) => {
       if (e.target.name === 'plan' || e.target.name === 'add_inscription' || e.target.name === 'payment_mode') {
         updateSummary();
+      }
+      if (e.target.name === 'inscription_mode') {
+        updateModeUi();
       }
     });
 
@@ -909,6 +941,7 @@
         return;
       }
 
+      const isMember = currentMode() === 'member';
       const fd = new FormData(form);
       const payload = {
         plan: fd.get('plan'),
@@ -916,19 +949,25 @@
         promocode: (fd.get('promocode') || '').toString().trim(),
         payment_mode: payLaterSelected() ? 'later' : 'now',
         trial_date: (fd.get('trial_date') || '').toString().trim(),
-        first_name: (fd.get('first_name') || '').toString().trim(),
-        last_name: (fd.get('last_name') || '').toString().trim(),
-        parent_name: (fd.get('parent_name') || '').toString().trim(),
-        address: (fd.get('address') || '').toString().trim(),
-        email: (fd.get('email') || '').toString().trim(),
-        phone: (fd.get('phone') || '').toString().trim(),
-        parent_phone: (fd.get('parent_phone') || '').toString().trim(),
-        emergency_phone: (fd.get('emergency_phone') || '').toString().trim(),
-        dob: (fd.get('dob') || '').toString().trim(),
       };
 
+      if (isMember) {
+        payload.member = true;
+        payload.email = (memberEmailInput?.value || '').toString().trim();
+      } else {
+        payload.first_name = (fd.get('first_name') || '').toString().trim();
+        payload.last_name = (fd.get('last_name') || '').toString().trim();
+        payload.parent_name = (fd.get('parent_name') || '').toString().trim();
+        payload.address = (fd.get('address') || '').toString().trim();
+        payload.email = (fd.get('email') || '').toString().trim();
+        payload.phone = (fd.get('phone') || '').toString().trim();
+        payload.parent_phone = (fd.get('parent_phone') || '').toString().trim();
+        payload.emergency_phone = (fd.get('emergency_phone') || '').toString().trim();
+        payload.dob = (fd.get('dob') || '').toString().trim();
+      }
+
       if (submitBtn) submitBtn.disabled = true;
-      showResult('Procesando tu inscripción...', true);
+      showResult(isMember ? 'Buscando tu registro...' : 'Procesando tu inscripción...', true);
 
       try {
         const res = await fetch('api/checkout.php?action=inscription', {
@@ -937,8 +976,24 @@
           body: JSON.stringify(payload),
         });
         const json = await res.json();
+
+        // Existing-student email not found: switch to the full inscription form.
+        if (json && json.not_registered) {
+          const newModeRadio = $('input[name="inscription_mode"][value="new"]', form);
+          if (newModeRadio) newModeRadio.checked = true;
+          updateModeUi();
+          const emailField = studentWrap ? $('input[name="email"]', studentWrap) : null;
+          if (emailField) emailField.value = payload.email || '';
+          showResult(
+            json.error || 'No encontramos tu registro. Completa el formulario para inscribirte.',
+            false
+          );
+          if (submitBtn) submitBtn.disabled = false;
+          return;
+        }
+
         if (!res.ok || !json.ok) {
-          throw new Error(json.error || 'No se pudo procesar la inscripción');
+          throw new Error(json.error || 'No se pudo procesar la solicitud');
         }
         if (json.free) {
           showResult(json.message || '¡Inscripción registrada!', true);
@@ -947,6 +1002,7 @@
           promoState.free = false;
           promoState.paymentOptional = false;
           restoreDefaultPrices();
+          updateModeUi();
           updateSummary();
           if (submitBtn) submitBtn.disabled = false;
           return;
@@ -958,7 +1014,7 @@
         throw new Error('Respuesta inesperada del servidor');
       } catch (err) {
         console.warn('Inscription failed:', err);
-        showResult(err.message || 'No se pudo procesar la inscripción. Intenta de nuevo.', false);
+        showResult(err.message || 'No se pudo procesar la solicitud. Intenta de nuevo.', false);
         if (submitBtn) submitBtn.disabled = false;
       }
     });
@@ -972,6 +1028,7 @@
       showResult('El pago fue cancelado. Puedes intentarlo de nuevo cuando quieras.', false);
     }
 
+    updateModeUi();
     updateSummary();
   }
 

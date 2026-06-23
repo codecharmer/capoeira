@@ -91,6 +91,26 @@
       <div class="container inscription-layout" data-inscription-root>
         <form class="inscription-form" data-inscription-form novalidate>
           <!-- Step 1: choose plan -->
+          <fieldset class="inscription-block inscription-mode" data-inscription-mode-block>
+            <legend>¿Qué deseas hacer?</legend>
+            <div class="mode-options">
+              <label class="mode-option">
+                <input type="radio" name="inscription_mode" value="new" checked data-inscription-mode />
+                <span class="mode-option__body">
+                  <span class="mode-option__title">Quiero inscribirme</span>
+                  <span class="mode-option__note">Soy alumno nuevo. Completaré mis datos.</span>
+                </span>
+              </label>
+              <label class="mode-option">
+                <input type="radio" name="inscription_mode" value="member" data-inscription-mode />
+                <span class="mode-option__body">
+                  <span class="mode-option__title">Ya estoy inscrito</span>
+                  <span class="mode-option__note">Solo quiero pagar mi mensualidad con mi correo.</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
           <fieldset class="inscription-block">
             <legend>1. Elige tu paquete</legend>
             <div class="plan-grid">
@@ -160,8 +180,18 @@
             </label>
           </fieldset>
 
+          <!-- Existing student: pay with just the registered email -->
+          <fieldset class="inscription-block" data-inscription-member hidden>
+            <legend>Tu correo</legend>
+            <label class="field field--full">
+              <span>Correo electrónico registrado *</span>
+              <input type="email" name="member_email" autocomplete="email" placeholder="tu@correo.com" data-inscription-member-email />
+            </label>
+            <p class="promo-note">Usaremos el correo con el que te inscribiste para identificar tu cuenta. Si no encontramos un registro, te pediremos completar la inscripción.</p>
+          </fieldset>
+
           <!-- Step 2: student data -->
-          <fieldset class="inscription-block">
+          <fieldset class="inscription-block" data-inscription-student>
             <legend>2. Datos del alumno</legend>
             <div class="form-grid">
               <label class="field">

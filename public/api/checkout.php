@@ -241,6 +241,98 @@ function logInscription(array $entry): void
 }
 
 /**
+ * Look up a previously-registered student by email in inscriptions.jsonl.
+ * Returns a normalized student array (first_name, last_name, email, phone,
+ * parent_name, parent_phone, emergency_phone, address, dob) for the most
+ * recent matching record, or null if the email was never registered.
+ */
+function findInscriptionByEmail(string $email): ?array
+{
+    $email = strtolower(trim($email));
+    if ($email === '') {
+        return null;
+    }
+
+    $candidates = [
+        dirname(__DIR__, 2) . '/inscriptions.jsonl',
+        __DIR__ . '/inscriptions.jsonl',
+    ];
+    $path = null;
+    foreach ($candidates as $candidate) {
+        if (is_readable($candidate)) {
+            $path = $candidate;
+            break;
+        }
+    }
+    if ($path === null) {
+        return null;
+    }
+
+    $fh = @fopen($path, 'r');
+    if ($fh === false) {
+        return null;
+    }
+
+    $match = null; // last (most recent) matching record wins
+    while (($raw = fgets($fh)) !== false) {
+        $line = trim($raw);
+        if ($line === '') {
+            continue;
+        }
+        $entry = json_decode($line, true);
+        if (!is_array($entry)) {
+            continue;
+        }
+
+        $student = isset($entry['student']) && is_array($entry['student']) ? $entry['student'] : [];
+        $entryEmail = strtolower(trim((string) ($student['email'] ?? ($entry['email'] ?? ''))));
+        if ($entryEmail === '' || $entryEmail !== $email) {
+            continue;
+        }
+
+        // Prefer a record that carries full student details over a flat one.
+        if (!empty($student)) {
+            $match = [
+                'first_name' => (string) ($student['first_name'] ?? ''),
+                'last_name' => (string) ($student['last_name'] ?? ''),
+                'parent_name' => (string) ($student['parent_name'] ?? ''),
+                'address' => (string) ($student['address'] ?? ''),
+                'email' => $entryEmail,
+                'phone' => (string) ($student['phone'] ?? ''),
+                'parent_phone' => (string) ($student['parent_phone'] ?? ''),
+                'emergency_phone' => (string) ($student['emergency_phone'] ?? ''),
+                'dob' => (string) ($student['dob'] ?? ''),
+            ];
+        } else {
+            // Flat record (e.g. webhook "paid"): only name + email available.
+            $name = trim((string) ($entry['student_name'] ?? ''));
+            $first = $name;
+            $last = '';
+            if ($name !== '' && strpos($name, ' ') !== false) {
+                $parts = explode(' ', $name, 2);
+                $first = $parts[0];
+                $last = $parts[1] ?? '';
+            }
+            $match = [
+                'first_name' => $first,
+                'last_name' => $last,
+                'parent_name' => '',
+                'address' => '',
+                'email' => $entryEmail,
+                'phone' => '',
+                'parent_phone' => '',
+                'emergency_phone' => '',
+                'dob' => '',
+            ];
+        }
+    }
+
+    @fclose($fh);
+    return $match;
+}
+
+
+/**
  * Email address(es) that should be notified of new inscriptions. Reads
  * INSCRIPTION_NOTIFY_EMAIL (env) or an .inscription-notify file outside the web
  * root. Multiple recipients may be comma-separated. Returns [] if unset.
@@ -524,6 +616,7 @@ function notifyInscription(array $entry): void
     $lines = [
         'Nueva inscripción en Pura Capoeira Cuernavaca',
         '',
+        'Tipo: ' . (!empty($entry['member']) ? 'Pago de mensualidad (alumno existente)' : 'Nueva inscripción'),
         'Estado: ' . $statusText,
         'Paquete: ' . (string) ($entry['label'] ?? ($entry['plan'] ?? '')),
     ];
@@ -1082,26 +1175,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'webhook') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
     $data = readJsonBody();
 
-    $student = [
-        'first_name' => trim((string) ($data['first_name'] ?? '')),
-        'last_name' => trim((string) ($data['last_name'] ?? '')),
-        'parent_name' => trim((string) ($data['parent_name'] ?? '')),
-        'address' => trim((string) ($data['address'] ?? '')),
-        'email' => trim((string) ($data['email'] ?? '')),
-        'phone' => trim((string) ($data['phone'] ?? '')),
-        'parent_phone' => trim((string) ($data['parent_phone'] ?? '')),
-        'emergency_phone' => trim((string) ($data['emergency_phone'] ?? '')),
-        'dob' => trim((string) ($data['dob'] ?? '')),
-    ];
+    // Existing students can pay a recurring fee with just their email. New
+    // students must complete the full form.
+    $isMember = !empty($data['member']);
 
-    $required = ['first_name', 'last_name', 'address', 'email', 'phone', 'emergency_phone', 'dob'];
-    foreach ($required as $field) {
-        if ($student[$field] === '') {
-            jsonResponse(400, ['ok' => false, 'error' => 'Faltan datos obligatorios del formulario']);
+    if ($isMember) {
+        $memberEmail = trim((string) ($data['email'] ?? ''));
+        if ($memberEmail === '' || !filter_var($memberEmail, FILTER_VALIDATE_EMAIL)) {
+            jsonResponse(400, ['ok' => false, 'error' => 'Ingresa un correo electrónico válido']);
         }
-    }
-    if (!filter_var($student['email'], FILTER_VALIDATE_EMAIL)) {
-        jsonResponse(400, ['ok' => false, 'error' => 'El correo electrónico no es válido']);
+        $found = findInscriptionByEmail($memberEmail);
+        if ($found === null) {
+            // No prior registration: steer them to the full inscription form.
+            jsonResponse(404, [
+                'ok' => false,
+                'not_registered' => true,
+                'error' => 'No encontramos un registro con ese correo. Completa el formulario de inscripción para continuar.',
+            ]);
+        }
+        $student = $found;
+        $student['email'] = $memberEmail;
+    } else {
+        $student = [
+            'first_name' => trim((string) ($data['first_name'] ?? '')),
+            'last_name' => trim((string) ($data['last_name'] ?? '')),
+            'parent_name' => trim((string) ($data['parent_name'] ?? '')),
+            'address' => trim((string) ($data['address'] ?? '')),
+            'email' => trim((string) ($data['email'] ?? '')),
+            'phone' => trim((string) ($data['phone'] ?? '')),
+            'parent_phone' => trim((string) ($data['parent_phone'] ?? '')),
+            'emergency_phone' => trim((string) ($data['emergency_phone'] ?? '')),
+            'dob' => trim((string) ($data['dob'] ?? '')),
+        ];
+
+        $required = ['first_name', 'last_name', 'address', 'email', 'phone', 'emergency_phone', 'dob'];
+        foreach ($required as $field) {
+            if ($student[$field] === '') {
+                jsonResponse(400, ['ok' => false, 'error' => 'Faltan datos obligatorios del formulario']);
+            }
+        }
+        if (!filter_var($student['email'], FILTER_VALIDATE_EMAIL)) {
+            jsonResponse(400, ['ok' => false, 'error' => 'El correo electrónico no es válido']);
+        }
     }
 
     $plans = inscriptionPlans();
@@ -1169,6 +1284,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
             'promocode' => $promo,
             'promo_type' => $promoEffect['type'],
             'trial_date' => $trialDate,
+            'member' => $isMember ? 1 : 0,
             'student' => $student,
         ];
         logInscription($offlineEntry);
@@ -1197,6 +1313,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
         'promocode' => $promo,
         'promo_type' => $promoEffect['type'],
         'trial_date' => $trialDate,
+        'member' => $isMember ? 1 : 0,
         'student' => $student,
     ]);
 
@@ -1209,6 +1326,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
         'promocode' => $promo,
         'promo_type' => $promoEffect['type'],
         'trial_date' => $trialDate,
+        'member' => $isMember ? 1 : 0,
         'student' => $student,
     ]);
 
@@ -1236,6 +1354,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'inscription') {
             'emergency_phone' => $student['emergency_phone'],
             'dob' => $student['dob'],
             'trial_date' => $trialDate,
+            'member' => $isMember ? '1' : '0',
         ],
     ];
 
