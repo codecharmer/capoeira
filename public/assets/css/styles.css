@@ -1318,6 +1318,9 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
   flex-direction: column;
   gap: 0.4rem;
 }
+.field[hidden] {
+  display: none;
+}
 .field--full {
   grid-column: 1 / -1;
 }
