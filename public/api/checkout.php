@@ -599,6 +599,7 @@ function notifyInscription(array $entry): void
 {
     $recipients = inscriptionNotifyEmails();
     if (empty($recipients)) {
+        error_log('notifyInscription: no recipients configured (set INSCRIPTION_NOTIFY_EMAIL env var or an .inscription-notify file outside the web root). Email not sent.');
         return;
     }
 
@@ -670,7 +671,10 @@ function notifyInscription(array $entry): void
         $fromEmail = $smtp['from'] !== '' ? $smtp['from'] : inscriptionNotifyFrom();
         $fromName = $smtp['from_name'] !== '' ? $smtp['from_name'] : 'Pura Capoeira';
         foreach ($recipients as $to) {
-            smtpSend($smtp, $fromEmail, $fromName, $to, $subject, $body, $replyTo);
+            $sent = smtpSend($smtp, $fromEmail, $fromName, $to, $subject, $body, $replyTo);
+            if (!$sent) {
+                error_log('notifyInscription: SMTP send to ' . $to . ' failed (see preceding "SMTP error" log).');
+            }
         }
         return;
     }
@@ -687,7 +691,9 @@ function notifyInscription(array $entry): void
 
     $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
     foreach ($recipients as $to) {
-        @mail($to, $encodedSubject, $body, implode("\r\n", $headers));
+        if (!@mail($to, $encodedSubject, $body, implode("\r\n", $headers))) {
+            error_log('notifyInscription: PHP mail() to ' . $to . ' failed. No SMTP is configured (.smtp file or SMTP_* env vars); the host mail() function may be disabled.');
+        }
     }
 }
 
@@ -881,6 +887,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'inscription-config') {
         'group' => $group,
         'addon_amount' => inscriptionAddonAmount() / 100,
         'plans' => $plans,
+    ]);
+}
+
+/* ---------------------------------------------------------------------------
+ * 0b-diag) NOTIFY STATUS (safe diagnostics for inscription email delivery)
+ * Reports whether recipients + SMTP are configured. Reveals no secrets:
+ * recipient addresses and the SMTP user are masked, the password is never shown.
+ * ------------------------------------------------------------------------- */
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'notify-status') {
+    $mask = static function (string $value): string {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+        $at = strpos($value, '@');
+        if ($at === false) {
+            return substr($value, 0, 1) . str_repeat('*', max(1, strlen($value) - 1));
+        }
+        $local = substr($value, 0, $at);
+        $domain = substr($value, $at + 1);
+        $localMasked = strlen($local) <= 2
+            ? substr($local, 0, 1) . '*'
+            : substr($local, 0, 1) . str_repeat('*', strlen($local) - 2) . substr($local, -1);
+        return $localMasked . '@' . $domain;
+    };
+
+    $recipients = inscriptionNotifyEmails();
+    $smtp = smtpSettings();
+
+    // Report the exact paths the code searches for config files, and whether a
+    // file exists/readable at each, so the operator can place files correctly.
+    $describePaths = static function (array $paths): array {
+        $out = [];
+        foreach ($paths as $p) {
+            $out[] = [
+                'path' => $p,
+                'exists' => file_exists($p),
+                'readable' => is_readable($p),
+            ];
+        }
+        return $out;
+    };
+    $smtpPaths = [
+        __DIR__ . '/.smtp',
+        dirname(__DIR__, 2) . '/.smtp',
+    ];
+    $notifyPaths = [
+        __DIR__ . '/.inscription-notify',
+        dirname(__DIR__, 2) . '/.inscription-notify',
+    ];
+
+    jsonResponse(200, [
+        'ok' => true,
+        'recipients_configured' => count($recipients),
+        'recipients_masked' => array_map($mask, $recipients),
+        'notify_from' => $mask(inscriptionNotifyFrom()),
+        'smtp_configured' => $smtp !== null,
+        'smtp_host' => $smtp['host'] ?? null,
+        'smtp_port' => $smtp['port'] ?? null,
+        'smtp_secure' => $smtp['secure'] ?? null,
+        'smtp_auth' => $smtp !== null ? ($smtp['user'] !== '' && $smtp['pass'] !== '') : false,
+        'delivery_method' => $smtp !== null ? 'smtp' : 'php_mail',
+        'php_mail_available' => function_exists('mail'),
+        'script_dir' => __DIR__,
+        'smtp_file_search' => $describePaths($smtpPaths),
+        'notify_file_search' => $describePaths($notifyPaths),
     ]);
 }
 
