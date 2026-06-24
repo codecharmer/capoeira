@@ -468,7 +468,7 @@ function smtpCommand($conn, string $cmd, array $expected): array
  * Minimal dependency-free SMTP sender. Supports implicit TLS (ssl), STARTTLS
  * (tls) and plain (none), with AUTH LOGIN. Returns true on success.
  */
-function smtpSend(array $cfg, string $fromEmail, string $fromName, string $to, string $subject, string $body, string $replyTo = ''): bool
+function smtpSend(array $cfg, string $fromEmail, string $fromName, string $to, string $subject, string $body, string $replyTo = '', string $cc = ''): bool
 {
     $host = $cfg['host'];
     $port = (int) $cfg['port'];
@@ -555,6 +555,15 @@ function smtpSend(array $cfg, string $fromEmail, string $fromName, string $to, s
     if (!$ok) {
         return $fail('RCPT TO rejected');
     }
+    $ccValid = $cc !== '' && filter_var($cc, FILTER_VALIDATE_EMAIL) && strcasecmp($cc, $to) !== 0;
+    if ($ccValid) {
+        // A rejected Cc shouldn't abort the message to the primary recipient.
+        [$ccOk] = smtpCommand($conn, 'RCPT TO:<' . $cc . '>', [250, 251]);
+        if (!$ccOk) {
+            error_log('SMTP warning: Cc recipient ' . $cc . ' rejected; continuing without it.');
+            $ccValid = false;
+        }
+    }
     [$ok] = smtpCommand($conn, 'DATA', [354]);
     if (!$ok) {
         return $fail('DATA rejected');
@@ -572,6 +581,9 @@ function smtpSend(array $cfg, string $fromEmail, string $fromName, string $to, s
         'Content-Type: text/plain; charset=UTF-8',
         'Content-Transfer-Encoding: 8bit',
     ];
+    if ($ccValid) {
+        $headers[] = 'Cc: ' . $cc;
+    }
     if ($replyTo !== '') {
         $headers[] = 'Reply-To: ' . $replyTo;
     }
@@ -664,15 +676,24 @@ function notifyInscription(array $entry): void
     $body = implode("\n", $lines);
 
     $replyTo = ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) ? $email : '';
+    // CC the person who registered so they get a copy/confirmation. Only added
+    // to the first admin message so the student receives a single email.
+    $studentCc = ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)
+        && !in_array(strtolower($email), array_map('strtolower', $recipients), true))
+        ? $email
+        : '';
 
     // Prefer SMTP when configured; fall back to PHP mail().
     $smtp = smtpSettings();
     if ($smtp !== null) {
         $fromEmail = $smtp['from'] !== '' ? $smtp['from'] : inscriptionNotifyFrom();
         $fromName = $smtp['from_name'] !== '' ? $smtp['from_name'] : 'Pura Capoeira';
+        $ccPending = $studentCc;
         foreach ($recipients as $to) {
-            $sent = smtpSend($smtp, $fromEmail, $fromName, $to, $subject, $body, $replyTo);
-            if (!$sent) {
+            $sent = smtpSend($smtp, $fromEmail, $fromName, $to, $subject, $body, $replyTo, $ccPending);
+            if ($sent) {
+                $ccPending = ''; // student already received their copy
+            } else {
                 error_log('notifyInscription: SMTP send to ' . $to . ' failed (see preceding "SMTP error" log).');
             }
         }
@@ -680,19 +701,26 @@ function notifyInscription(array $entry): void
     }
 
     $from = inscriptionNotifyFrom();
-    $headers = [
+    $baseHeaders = [
         'From: Pura Capoeira <' . $from . '>',
         'Content-Type: text/plain; charset=UTF-8',
         'X-Mailer: PHP/' . phpversion(),
     ];
     if ($replyTo !== '') {
-        $headers[] = 'Reply-To: ' . $replyTo;
+        $baseHeaders[] = 'Reply-To: ' . $replyTo;
     }
 
     $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    $ccPending = $studentCc;
     foreach ($recipients as $to) {
+        $headers = $baseHeaders;
+        if ($ccPending !== '') {
+            $headers[] = 'Cc: ' . $ccPending;
+        }
         if (!@mail($to, $encodedSubject, $body, implode("\r\n", $headers))) {
             error_log('notifyInscription: PHP mail() to ' . $to . ' failed. No SMTP is configured (.smtp file or SMTP_* env vars); the host mail() function may be disabled.');
+        } else {
+            $ccPending = '';
         }
     }
 }
@@ -953,6 +981,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'notify-status') {
         'script_dir' => __DIR__,
         'smtp_file_search' => $describePaths($smtpPaths),
         'notify_file_search' => $describePaths($notifyPaths),
+    ]);
+}
+
+/* ---------------------------------------------------------------------------
+ * 0b-test) SEND TEST NOTIFICATION (verify email delivery end-to-end)
+ * Sends a real test email to the CONFIGURED recipients only (no arbitrary
+ * address is accepted, so this can't be abused as an open mailer). Reports the
+ * outcome per recipient so the operator can confirm delivery + SMTP auth.
+ * ------------------------------------------------------------------------- */
+if ($action === 'send-test-notification') {
+    $recipients = inscriptionNotifyEmails();
+    if (empty($recipients)) {
+        jsonResponse(400, [
+            'ok' => false,
+            'error' => 'No hay destinatarios configurados. Crea el archivo .inscription-notify (o define INSCRIPTION_NOTIFY_EMAIL) antes de enviar una prueba.',
+        ]);
+    }
+
+    $subject = 'Prueba de notificación — Pura Capoeira';
+    $body = implode("\n", [
+        'Este es un correo de PRUEBA del sistema de inscripciones de Pura Capoeira Cuernavaca.',
+        '',
+        'Si lo recibiste, las notificaciones por correo están funcionando correctamente.',
+        '',
+        'Fecha: ' . date('c'),
+        'Método: ' . (smtpSettings() !== null ? 'SMTP' : 'PHP mail()'),
+    ]);
+
+    $results = [];
+    $smtp = smtpSettings();
+    if ($smtp !== null) {
+        $fromEmail = $smtp['from'] !== '' ? $smtp['from'] : inscriptionNotifyFrom();
+        $fromName = $smtp['from_name'] !== '' ? $smtp['from_name'] : 'Pura Capoeira';
+        foreach ($recipients as $to) {
+            $results[] = ['to' => $to, 'sent' => smtpSend($smtp, $fromEmail, $fromName, $to, $subject, $body)];
+        }
+    } else {
+        $from = inscriptionNotifyFrom();
+        $headers = [
+            'From: Pura Capoeira <' . $from . '>',
+            'Content-Type: text/plain; charset=UTF-8',
+            'X-Mailer: PHP/' . phpversion(),
+        ];
+        $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+        foreach ($recipients as $to) {
+            $results[] = ['to' => $to, 'sent' => @mail($to, $encodedSubject, $body, implode("\r\n", $headers))];
+        }
+    }
+
+    $allSent = !in_array(false, array_column($results, 'sent'), true);
+    jsonResponse($allSent ? 200 : 502, [
+        'ok' => $allSent,
+        'delivery_method' => $smtp !== null ? 'smtp' : 'php_mail',
+        'sent_count' => count(array_filter($results, static fn ($r) => $r['sent'])),
+        'total' => count($results),
+        'results' => $results,
+        'message' => $allSent
+            ? 'Correo de prueba enviado. Revisa la bandeja de entrada (y spam) de los destinatarios.'
+            : 'No se pudieron enviar todos los correos de prueba. Revisa la configuración SMTP y los logs del servidor.',
     ]);
 }
 
