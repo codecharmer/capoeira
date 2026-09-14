@@ -439,7 +439,7 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
   grid-template-columns: 1fr;
 }
 @media (min-width: 768px) {
-  .info-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+  .info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
 }
 .info-card {
   background: var(--bg-2);
@@ -1496,3 +1496,22 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
     justify-content: center;
   }
 }
+
+/* --- Home: statement hero + values grid --- */
+.hero__title--statement {
+  font-size: clamp(2.6rem, 6.5vw, 5rem);
+  line-height: 0.95;
+  max-width: 14ch;
+}
+.hero__title--statement span { display: block; }
+.hero__support--wide { max-width: 52ch; }
+@media (min-width: 900px) {
+  .features--three { grid-template-columns: repeat(3, 1fr); }
+}
+.features--three .feature__title { text-transform: none; font-size: 1.5rem; }
+
+/* Anchor targets sit below the fixed header */
+[id="adultos"], [id="kids"] { scroll-margin-top: 12rem; }
+
+.info-card .btn { white-space: normal; text-align: center; }
+.hero__ctas .btn { white-space: normal; text-align: center; justify-content: center; max-width: 100%; }
