@@ -12,13 +12,13 @@
 $pura_logo = esc_url( get_theme_file_uri( 'assets/images/pura-capoeira-logo.png' ) );
 ?>
 <!-- wp:cover {"url":"https://images.unsplash.com/photo-1641688587256-7b6549157cef?crop=entropy&cs=srgb&fm=jpg&w=2000&q=80","dimRatio":0,"minHeight":100,"minHeightUnit":"vh","isDark":true,"tagName":"section","align":"full","className":"hero","layout":{"type":"constrained"}} -->
-<section class="wp-block-cover alignfull hero"><img class="wp-block-cover__image-background" alt="" src="https://images.unsplash.com/photo-1641688587256-7b6549157cef?crop=entropy&cs=srgb&fm=jpg&w=2000&q=80" data-object-fit="cover"/><span aria-hidden="true" class="wp-block-cover__background has-background-dim-0 has-background-dim"></span><div class="wp-block-cover__inner-container">
+<section class="wp-block-cover alignfull hero" style="min-height:100vh"><img class="wp-block-cover__image-background" alt="" src="https://images.unsplash.com/photo-1641688587256-7b6549157cef?crop=entropy&cs=srgb&fm=jpg&w=2000&q=80" data-object-fit="cover"/><span aria-hidden="true" class="wp-block-cover__background has-background-dim-0 has-background-dim"></span><div class="wp-block-cover__inner-container">
 	<!-- wp:group {"className":"hero__inner","layout":{"type":"default"}} -->
 	<div class="wp-block-group hero__inner">
 		<!-- wp:group {"className":"hero-logo-wrap","layout":{"type":"default"}} -->
 		<div class="wp-block-group hero-logo-wrap">
 			<!-- wp:image {"width":"240px","className":"hero-logos"} -->
-			<figure class="wp-block-image is-resized hero-logos"><img src="<?php echo $pura_logo; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" alt="Pura Capoeira Cuernavaca" class="hero-logo" style="width:240px"/></figure>
+			<figure class="wp-block-image is-resized hero-logos"><img src="<?php echo $pura_logo; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" alt="Pura Capoeira Cuernavaca" style="width:240px;height:auto"/></figure>
 			<!-- /wp:image -->
 
 			<!-- wp:paragraph {"className":"overline"} -->

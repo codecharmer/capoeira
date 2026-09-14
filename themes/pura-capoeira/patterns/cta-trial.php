@@ -12,8 +12,8 @@
 ?>
 <!-- wp:group {"tagName":"section","align":"full","className":"section section--dark","layout":{"type":"constrained"}} -->
 <section class="wp-block-group alignfull section section--dark">
-	<!-- wp:group {"className":"reveal","style":{"typography":{"textAlign":"center"}},"layout":{"type":"constrained","contentSize":"600px"}} -->
-	<div class="wp-block-group reveal" style="text-align:center">
+	<!-- wp:group {"className":"reveal cta-center","layout":{"type":"constrained","contentSize":"600px"}} -->
+	<div class="wp-block-group reveal cta-center">
 		<!-- wp:paragraph {"className":"overline"} --><p class="overline">Empieza hoy</p><!-- /wp:paragraph -->
 		<!-- wp:heading {"style":{"spacing":{"margin":{"top":"1rem"}}}} --><h2 class="wp-block-heading" style="margin-top:1rem">Agenda tu clase de prueba</h2><!-- /wp:heading -->
 		<!-- wp:paragraph {"className":"lead","style":{"spacing":{"margin":{"top":"1rem","bottom":"2rem"}}}} --><p class="lead" style="margin-top:1rem;margin-bottom:2rem">Una clase para conocernos y para que descubras cómo se siente. Reserva en línea según tu grupo (Adultos o Kids) o escríbenos por WhatsApp.</p><!-- /wp:paragraph -->

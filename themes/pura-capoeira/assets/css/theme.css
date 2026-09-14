@@ -372,7 +372,7 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
   margin: 0 0 1.5rem 0;
   flex-wrap: nowrap;
 }
-.hero-logo {
+.hero-logos img {
   width: 100%;
   max-width: 240px;
   height: auto;
@@ -398,7 +398,7 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
   .hero {
     padding-top: 11rem;
   }
-  .hero-logo {
+  .hero-logos img {
     max-width: 200px;
   }
 }
@@ -406,7 +406,7 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
   .hero {
     padding-top: 10rem;
   }
-  .hero-logo {
+  .hero-logos img {
     max-width: 160px;
     margin: 0;
   }
@@ -1683,3 +1683,6 @@ p.is-style-muted { color: var(--text-2); }
 .wp-block-pura-price.info-card__price .price__suffix { font-size: 1rem; color: var(--text-2); }
 .pura-notice { padding: 1rem; border: 1px dashed var(--yellow); color: var(--text-2); font-size: 1rem; }
 .gallery-grid .video-card[hidden] { display: none; }
+
+.cta-center { text-align: center; }
+.cta-center .wp-block-buttons { justify-content: center; }
