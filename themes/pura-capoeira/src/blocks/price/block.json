@@ -1,0 +1,23 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/price",
+	"version": "1.0.0",
+	"title": "Precio",
+	"category": "pura",
+	"icon": "money-alt",
+	"description": "Un precio de inscripción tomado de los ajustes, con sufijo opcional.",
+	"textdomain": "pura",
+	"attributes": {
+		"key": { "type": "string", "default": "month" },
+		"group": { "type": "string", "default": "adult" },
+		"suffix": { "type": "string", "default": "MXN / mes" },
+		"tagName": { "type": "string", "default": "div" }
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

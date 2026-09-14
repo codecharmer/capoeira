@@ -1,0 +1,29 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/inscription-form",
+	"version": "1.0.0",
+	"title": "Formulario de inscripción",
+	"category": "pura",
+	"icon": "clipboard",
+	"description": "Paquetes, datos del alumno, código promocional y pago con Stripe. Los precios vienen de los ajustes.",
+	"textdomain": "pura",
+	"attributes": {
+		"modeNewTitle": { "type": "string", "default": "Quiero inscribirme" },
+		"modeNewNote": { "type": "string", "default": "Soy alumno nuevo. Completaré mis datos." },
+		"modeMemberTitle": { "type": "string", "default": "Ya estoy inscrito" },
+		"modeMemberNote": { "type": "string", "default": "Solo quiero pagar mi mensualidad con mi correo." },
+		"groupAdultTitle": { "type": "string", "default": "Adultos / mixto" },
+		"groupAdultNote": { "type": "string", "default": "Edades 8 años en adelante." },
+		"groupKidsTitle": { "type": "string", "default": "Niños" },
+		"groupKidsNote": { "type": "string", "default": "Edades 3 a 7 años." },
+		"footnote": { "type": "string", "default": "Pago seguro con Stripe. Si tienes un código de beca, el descuento se valida al confirmar." }
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"viewScript": "file:./view.js",
+	"render": "file:./render.php"
+}

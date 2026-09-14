@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/contact-link",
+	"version": "1.0.0",
+	"title": "Enlace de contacto",
+	"category": "pura",
+	"icon": "phone",
+	"description": "Enlace o botón a WhatsApp, Instagram, Facebook, Google Maps o Calendly, tomado de los ajustes.",
+	"textdomain": "pura",
+	"attributes": {
+		"channel": { "type": "string", "default": "whatsapp" },
+		"label": { "type": "string", "default": "WhatsApp" },
+		"showValue": { "type": "boolean", "default": false },
+		"variant": { "type": "string", "default": "link" },
+		"message": { "type": "string", "default": "" }
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

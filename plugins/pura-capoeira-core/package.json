@@ -1,0 +1,15 @@
+{
+	"name": "@pura/core",
+	"version": "1.0.0",
+	"private": true,
+	"description": "Pura Capoeira core plugin (admin scripts)",
+	"scripts": {
+		"build": "wp-scripts build --webpack-src-dir=src --output-path=build",
+		"start": "wp-scripts start --webpack-src-dir=src --output-path=build",
+		"lint": "wp-scripts lint-js src",
+		"format": "wp-scripts format src"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^30.0.0"
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/timeline",
+	"version": "1.0.0",
+	"title": "Línea de tiempo",
+	"category": "pura",
+	"icon": "backup",
+	"description": "Lista de años con un texto cada uno.",
+	"textdomain": "pura",
+	"allowedBlocks": [ "pura/timeline-item" ],
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js"
+}

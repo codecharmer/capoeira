@@ -1,0 +1,18 @@
+/* Editor-only adjustments so patterns look like the front end while staying editable. */
+
+/* Reveal animation must never hide content in the editor. */
+.editor-styles-wrapper .reveal,
+.editor-styles-wrapper .js .reveal {
+	opacity: 1;
+	transform: none;
+}
+
+/* The fixed header would cover the canvas; render it in flow. */
+.editor-styles-wrapper .site-header {
+	position: static;
+}
+
+/* Hero backgrounds rely on 100vh; cap them in the editor canvas. */
+.editor-styles-wrapper .hero {
+	min-height: 60vh;
+}

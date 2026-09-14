@@ -1,0 +1,25 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/gallery",
+	"version": "1.0.0",
+	"title": "Galería de videos",
+	"category": "pura",
+	"icon": "video-alt3",
+	"description": "Videos con filtros por categoría. Los videos se gestionan en Pura Capoeira → Videos.",
+	"textdomain": "pura",
+	"attributes": {
+		"showFilters": { "type": "boolean", "default": true },
+		"limit": { "type": "number", "default": 48 },
+		"fallbackUrl": { "type": "string", "default": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR" },
+		"fallbackText": { "type": "string", "default": "Ver galería completa en iCloud" }
+	},
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ],
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"viewScript": "file:./view.js",
+	"render": "file:./render.php"
+}

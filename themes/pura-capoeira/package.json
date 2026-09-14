@@ -1,0 +1,18 @@
+{
+	"name": "@pura/theme",
+	"version": "1.0.0",
+	"private": true,
+	"description": "Pura Capoeira block theme",
+	"scripts": {
+		"build": "wp-scripts build --webpack-src-dir=src --output-path=build --blocks-manifest",
+		"start": "wp-scripts start --webpack-src-dir=src --output-path=build --blocks-manifest",
+		"lint": "npm run lint:js && npm run lint:css",
+		"lint:js": "wp-scripts lint-js src assets/js",
+		"lint:css": "wp-scripts lint-style 'assets/css/**/*.css' 'src/**/*.css'",
+		"format": "wp-scripts format src assets/js",
+		"packages-update": "wp-scripts packages-update"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^30.0.0"
+	}
+}
