@@ -17,18 +17,54 @@ final class Student_Post_Type {
 
 	/** @var array<string, array{type:string,label:string}> */
 	public const FIELDS = array(
-		'_pura_email'             => array( 'type' => 'string', 'label' => 'Correo' ),
-		'_pura_first_name'        => array( 'type' => 'string', 'label' => 'Nombre(s)' ),
-		'_pura_last_name'         => array( 'type' => 'string', 'label' => 'Apellidos' ),
-		'_pura_parent_name'       => array( 'type' => 'string', 'label' => 'Padre/madre/tutor' ),
-		'_pura_phone'             => array( 'type' => 'string', 'label' => 'Teléfono' ),
-		'_pura_parent_phone'      => array( 'type' => 'string', 'label' => 'Teléfono del tutor' ),
-		'_pura_emergency_phone'   => array( 'type' => 'string', 'label' => 'Teléfono de emergencia' ),
-		'_pura_address'           => array( 'type' => 'string', 'label' => 'Dirección' ),
-		'_pura_dob'               => array( 'type' => 'string', 'label' => 'Fecha de nacimiento' ),
-		'_pura_group'             => array( 'type' => 'string', 'label' => 'Grupo' ),
-		'_pura_last_paid_at'      => array( 'type' => 'string', 'label' => 'Último pago' ),
-		'_pura_inscription_count' => array( 'type' => 'integer', 'label' => 'Inscripciones' ),
+		'_pura_email'             => array(
+			'type'  => 'string',
+			'label' => 'Correo',
+		),
+		'_pura_first_name'        => array(
+			'type'  => 'string',
+			'label' => 'Nombre(s)',
+		),
+		'_pura_last_name'         => array(
+			'type'  => 'string',
+			'label' => 'Apellidos',
+		),
+		'_pura_parent_name'       => array(
+			'type'  => 'string',
+			'label' => 'Padre/madre/tutor',
+		),
+		'_pura_phone'             => array(
+			'type'  => 'string',
+			'label' => 'Teléfono',
+		),
+		'_pura_parent_phone'      => array(
+			'type'  => 'string',
+			'label' => 'Teléfono del tutor',
+		),
+		'_pura_emergency_phone'   => array(
+			'type'  => 'string',
+			'label' => 'Teléfono de emergencia',
+		),
+		'_pura_address'           => array(
+			'type'  => 'string',
+			'label' => 'Dirección',
+		),
+		'_pura_dob'               => array(
+			'type'  => 'string',
+			'label' => 'Fecha de nacimiento',
+		),
+		'_pura_group'             => array(
+			'type'  => 'string',
+			'label' => 'Grupo',
+		),
+		'_pura_last_paid_at'      => array(
+			'type'  => 'string',
+			'label' => 'Último pago',
+		),
+		'_pura_inscription_count' => array(
+			'type'  => 'integer',
+			'label' => 'Inscripciones',
+		),
 	);
 
 	private const NONCE = 'pura_student_meta';
@@ -178,7 +214,16 @@ final class Student_Post_Type {
 		$search = trim( (string) $query->get( 's' ) );
 		if ( '' !== $search && str_contains( $search, '@' ) ) {
 			$query->set( 's', '' );
-			$query->set( 'meta_query', array( array( 'key' => '_pura_email', 'value' => strtolower( $search ), 'compare' => 'LIKE' ) ) ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- admin search, small volume.
+			$query->set(
+				'meta_query',
+				array(
+					array(
+						'key'     => '_pura_email',
+						'value'   => strtolower( $search ),
+						'compare' => 'LIKE',
+					),
+				)
+			); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- admin search, small volume.
 		}
 	}
 }

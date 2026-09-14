@@ -1,0 +1,9 @@
+{
+	"config": {
+		"PURA_STRIPE_SECRET_KEY": "sk_test_replace_me",
+		"PURA_STRIPE_WEBHOOK_SECRET": "whsec_from_stripe_listen",
+		"PURA_PRINTFUL_API_KEY": "",
+		"PURA_PRINTFUL_MOCK": true,
+		"PURA_PRINTFUL_CONFIRM_DISABLED": true
+	}
+}

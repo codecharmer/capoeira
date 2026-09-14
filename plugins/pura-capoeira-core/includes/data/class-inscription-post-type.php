@@ -256,15 +256,25 @@ final class Inscription_Post_Type {
 		// phpcs:enable
 
 		if ( '' !== $status && isset( self::STATUSES[ $status ] ) ) {
-			$meta_query[] = array( 'key' => '_pura_status', 'value' => $status );
+			$meta_query[] = array(
+				'key'   => '_pura_status',
+				'value' => $status,
+			);
 		}
 		if ( in_array( $group, Pricing::GROUPS, true ) ) {
-			$meta_query[] = array( 'key' => '_pura_group', 'value' => $group );
+			$meta_query[] = array(
+				'key'   => '_pura_group',
+				'value' => $group,
+			);
 		}
 
 		$search = trim( (string) $query->get( 's' ) );
 		if ( '' !== $search && str_contains( $search, '@' ) ) {
-			$meta_query[] = array( 'key' => '_pura_email', 'value' => strtolower( $search ), 'compare' => 'LIKE' );
+			$meta_query[] = array(
+				'key'     => '_pura_email',
+				'value'   => strtolower( $search ),
+				'compare' => 'LIKE',
+			);
 			$query->set( 's', '' );
 		}
 

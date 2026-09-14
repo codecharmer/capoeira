@@ -65,12 +65,30 @@ final class Inscriptions_Controller extends Base_Controller {
 						'required' => true,
 					),
 					'group'           => $this->group_arg(),
-					'add_inscription' => array( 'type' => array( 'boolean', 'integer', 'string' ), 'default' => 0 ),
+					'add_inscription' => array(
+						'type'    => array( 'boolean', 'integer', 'string' ),
+						'default' => 0,
+					),
 					'promocode'       => $this->text_arg( 64 ),
-					'payment_mode'    => array( 'type' => 'string', 'enum' => array( 'now', 'later' ), 'default' => 'now' ),
-					'trial_date'      => array( 'type' => 'string', 'pattern' => '^(\d{4}-\d{2}-\d{2})?$', 'default' => '' ),
-					'member'          => array( 'type' => array( 'boolean', 'integer', 'string' ), 'default' => false ),
-					'email'           => array( 'type' => 'string', 'default' => '', 'sanitize_callback' => 'sanitize_email' ),
+					'payment_mode'    => array(
+						'type'    => 'string',
+						'enum'    => array( 'now', 'later' ),
+						'default' => 'now',
+					),
+					'trial_date'      => array(
+						'type'    => 'string',
+						'pattern' => '^(\d{4}-\d{2}-\d{2})?$',
+						'default' => '',
+					),
+					'member'          => array(
+						'type'    => array( 'boolean', 'integer', 'string' ),
+						'default' => false,
+					),
+					'email'           => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_email',
+					),
 					'first_name'      => $this->text_arg( 100 ),
 					'last_name'       => $this->text_arg( 100 ),
 					'parent_name'     => $this->text_arg( 150 ),
@@ -78,8 +96,12 @@ final class Inscriptions_Controller extends Base_Controller {
 					'phone'           => $this->text_arg( 40 ),
 					'parent_phone'    => $this->text_arg( 40 ),
 					'emergency_phone' => $this->text_arg( 40 ),
-					'dob'             => array( 'type' => 'string', 'pattern' => '^(\d{4}-\d{2}-\d{2})?$', 'default' => '' ),
-					'website'         => $this->text_arg( 200 ), // honeypot
+					'dob'             => array(
+						'type'    => 'string',
+						'pattern' => '^(\d{4}-\d{2}-\d{2})?$',
+						'default' => '',
+					),
+					'website'         => $this->text_arg( 200 ), // Honeypot.
 				),
 			)
 		);
@@ -146,7 +168,10 @@ final class Inscriptions_Controller extends Base_Controller {
 					array( 'not_registered' => true )
 				);
 			}
-			$profile = array( 'email' => $email, 'group' => $group );
+			$profile = array(
+				'email' => $email,
+				'group' => $group,
+			);
 		} else {
 			$profile  = array(
 				'email'           => $email,
@@ -214,17 +239,17 @@ final class Inscriptions_Controller extends Base_Controller {
 		}
 
 		$base = array(
-			'plan'       => $plan_id,
-			'label'      => $label,
+			'plan'         => $plan_id,
+			'label'        => $label,
 			'amount_cents' => $amount,
-			'currency'   => (string) Settings::get( 'currency', 'MXN' ),
-			'group'      => $group,
-			'promocode'  => $promocode,
-			'promo_type' => $promo['type'],
-			'trial_date' => $trial_date,
-			'member'     => $is_member,
-			'student_id' => $student_id,
-			'email'      => $email,
+			'currency'     => (string) Settings::get( 'currency', 'MXN' ),
+			'group'        => $group,
+			'promocode'    => $promocode,
+			'promo_type'   => $promo['type'],
+			'trial_date'   => $trial_date,
+			'member'       => $is_member,
+			'student_id'   => $student_id,
+			'email'        => $email,
 		);
 
 		// Branch A: nothing to charge now (beca, or pay in person under a promo).
@@ -242,7 +267,13 @@ final class Inscriptions_Controller extends Base_Controller {
 				: 'Inscripción registrada. Te contactaremos para coordinar el pago de ' . number_format( $amount / 100, 2 ) . ' ' . $base['currency'] . '.';
 
 			// `free: true` is returned for both cases; the form keys off it (legacy contract).
-			return $this->ok( array( 'free' => true, 'message' => $message, 'status' => $status ) );
+			return $this->ok(
+				array(
+					'free'    => true,
+					'message' => $message,
+					'status'  => $status,
+				)
+			);
 		}
 
 		// Branch B: Stripe Checkout. Create the record first so the session can reference it.
@@ -303,7 +334,12 @@ final class Inscriptions_Controller extends Base_Controller {
 
 		Inscription_Repository::set_session( $post_id, (string) $session['id'] );
 
-		return $this->ok( array( 'url' => (string) $session['url'], 'inscription_id' => $post_id ) );
+		return $this->ok(
+			array(
+				'url'            => (string) $session['url'],
+				'inscription_id' => $post_id,
+			)
+		);
 	}
 
 	/**

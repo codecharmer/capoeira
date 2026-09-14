@@ -1,0 +1,23 @@
+{
+	"code": 200,
+	"result": [
+		{
+			"id": 301,
+			"external_id": "pura-tee-black",
+			"name": "Playera Pura Capoeira — Negra",
+			"variants": 3,
+			"synced": 3,
+			"thumbnail_url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=70",
+			"is_ignored": false
+		},
+		{
+			"id": 302,
+			"external_id": "pura-hoodie",
+			"name": "Hoodie Pura Capoeira",
+			"variants": 2,
+			"synced": 2,
+			"thumbnail_url": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=70",
+			"is_ignored": false
+		}
+	]
+}

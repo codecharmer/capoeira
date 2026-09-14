@@ -20,12 +20,12 @@ final class Autoloader {
 
 	public static function register( string $base_dir ): void {
 		spl_autoload_register(
-			static function ( string $class ) use ( $base_dir ): void {
-				if ( 0 !== strpos( $class, self::PREFIX ) ) {
+			static function ( string $class_name ) use ( $base_dir ): void {
+				if ( 0 !== strpos( $class_name, self::PREFIX ) ) {
 					return;
 				}
 
-				$relative = substr( $class, strlen( self::PREFIX ) );
+				$relative = substr( $class_name, strlen( self::PREFIX ) );
 				$parts    = explode( '\\', $relative );
 				$name     = array_pop( $parts );
 				$dir      = strtolower( implode( '/', $parts ) );

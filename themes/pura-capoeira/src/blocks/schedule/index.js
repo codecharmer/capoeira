@@ -22,7 +22,10 @@ function Edit( { attributes, setAttributes } ) {
 				</PanelBody>
 			</InspectorControls>
 			<div { ...useBlockProps() }>
-				<ServerSideRender block={ metadata.name } attributes={ attributes } />
+				<ServerSideRender
+					block={ metadata.name }
+					attributes={ attributes }
+				/>
 			</div>
 		</>
 	);

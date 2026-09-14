@@ -26,7 +26,7 @@ interface Printful_Client_Interface {
 	public function get_product( int $id );
 
 	/**
-	 * @param array<string, mixed>            $recipient Recipient.
+	 * @param array<string, mixed>             $recipient Recipient.
 	 * @param array<int, array<string, mixed>> $items     Items with variant_id + quantity.
 	 * @return array<int, array<string, mixed>>|WP_Error Shipping rates.
 	 */

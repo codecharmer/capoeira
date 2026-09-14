@@ -19,9 +19,13 @@
 		"format": "npm run format --workspaces --if-present"
 	},
 	"devDependencies": {
-		"@wordpress/env": "^11.15.0"
+		"@wordpress/env": "^11.15.0",
+		"typescript": "^5.8.0"
 	},
 	"engines": {
 		"node": ">=20"
+	},
+	"overrides": {
+		"typescript": "^5.8.0"
 	}
 }

@@ -1,7 +1,12 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { PanelBody, Placeholder, RangeControl, SelectControl } from '@wordpress/components';
+import {
+	PanelBody,
+	Placeholder,
+	RangeControl,
+	SelectControl,
+} from '@wordpress/components';
 import metadata from './block.json';
 
 function Edit( { attributes, setAttributes } ) {
@@ -34,8 +39,14 @@ function Edit( { attributes, setAttributes } ) {
 					label={ __( 'Agenda Calendly', 'pura' ) }
 					instructions={
 						attributes.group === 'kids'
-							? __( 'Calendario de clase de prueba para niños (la URL viene de Ajustes).', 'pura' )
-							: __( 'Calendario de clase de prueba para adultos (la URL viene de Ajustes).', 'pura' )
+							? __(
+									'Calendario de clase de prueba para niños (la URL viene de Ajustes).',
+									'pura'
+							  )
+							: __(
+									'Calendario de clase de prueba para adultos (la URL viene de Ajustes).',
+									'pura'
+							  )
 					}
 				/>
 			</div>

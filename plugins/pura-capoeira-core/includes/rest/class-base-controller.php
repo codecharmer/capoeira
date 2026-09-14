@@ -43,7 +43,16 @@ abstract class Base_Controller {
 	 * @param array<string, mixed> $extra Extra keys.
 	 */
 	protected function error( string $message, int $status = 400, array $extra = array() ): WP_REST_Response {
-		return new WP_REST_Response( array_merge( array( 'ok' => false, 'error' => $message ), $extra ), $status );
+		return new WP_REST_Response(
+			array_merge(
+				array(
+					'ok'    => false,
+					'error' => $message,
+				),
+				$extra
+			),
+			$status
+		);
 	}
 
 	/**

@@ -83,7 +83,10 @@ final class Student_Repository {
 	 * @return array<string, string>
 	 */
 	public static function to_array( int $id ): array {
-		$out = array( 'id' => (string) $id, 'email' => (string) get_post_meta( $id, '_pura_email', true ) );
+		$out = array(
+			'id'    => (string) $id,
+			'email' => (string) get_post_meta( $id, '_pura_email', true ),
+		);
 		foreach ( self::PROFILE_FIELDS as $field ) {
 			$out[ $field ] = (string) get_post_meta( $id, '_pura_' . $field, true );
 		}
@@ -130,8 +133,13 @@ final class Student_Repository {
 		}
 
 		$title = self::title_from( self::to_array( $id ), $email );
-		if ( $title !== get_the_title( $id ) ) {
-			wp_update_post( array( 'ID' => $id, 'post_title' => $title ) );
+		if ( get_the_title( $id ) !== $title ) {
+			wp_update_post(
+				array(
+					'ID'         => $id,
+					'post_title' => $title,
+				)
+			);
 		}
 
 		self::flush_cache( $email );

@@ -18,12 +18,17 @@ function Edit( { attributes, setAttributes } ) {
 					<TextControl
 						label={ __( 'Texto del botón', 'pura' ) }
 						value={ attributes.submitLabel }
-						onChange={ ( submitLabel ) => setAttributes( { submitLabel } ) }
+						onChange={ ( submitLabel ) =>
+							setAttributes( { submitLabel } )
+						}
 					/>
 				</PanelBody>
 			</InspectorControls>
 			<div { ...useBlockProps() }>
-				<ServerSideRender block={ metadata.name } attributes={ attributes } />
+				<ServerSideRender
+					block={ metadata.name }
+					attributes={ attributes }
+				/>
 			</div>
 		</>
 	);

@@ -5,6 +5,7 @@
  * are handled by core blocks; interactive features are per-block view scripts.
  */
 
+/* global IntersectionObserver */
 const REVEAL_SELECTOR = '.reveal';
 const VISIBLE_CLASS = 'is-visible';
 
@@ -18,7 +19,9 @@ function initReveal() {
 		return;
 	}
 
-	const reduceMotion = window.matchMedia?.( '(prefers-reduced-motion: reduce)' ).matches;
+	const reduceMotion = window.matchMedia?.(
+		'(prefers-reduced-motion: reduce)'
+	).matches;
 	if ( reduceMotion || ! ( 'IntersectionObserver' in window ) ) {
 		revealAll( elements );
 		return;

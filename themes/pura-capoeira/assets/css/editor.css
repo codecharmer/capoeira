@@ -1,4 +1,7 @@
-/* Editor-only adjustments so patterns look like the front end while staying editable. */
+/*
+ * Editor-only adjustments so patterns look like the front end while
+ * staying editable.
+ */
 
 /* Reveal animation must never hide content in the editor. */
 .editor-styles-wrapper .reveal,

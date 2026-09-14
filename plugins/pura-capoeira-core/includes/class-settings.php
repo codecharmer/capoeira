@@ -33,41 +33,61 @@ final class Settings {
 	public static function defaults(): array {
 		return array(
 			// Pagos.
-			'currency'             => 'MXN',
-			'store_page_id'        => 0,
-			'inscriptions_page_id' => 0,
+			'currency'                 => 'MXN',
+			'store_page_id'            => 0,
+			'inscriptions_page_id'     => 0,
 
 			// Printful.
-			'price_multiplier'     => 1.0,
-			'catalog_cache_ttl'    => 300,
+			'price_multiplier'         => 1.0,
+			'catalog_cache_ttl'        => 300,
 
 			// Precios (MXN cents).
-			'monthly_adult'         => 115000,
-			'monthly_kids'          => 100000,
-			'inscription_fee'       => 150000,
-			'trial_price'           => 20000,
-			'quarter_discount_pct'  => 15,
-			'year_discount_pct'     => 20,
-			'current_monthly_adult' => 75000,
-			'current_monthly_kids'  => 100000,
+			'monthly_adult'            => 115000,
+			'monthly_kids'             => 100000,
+			'inscription_fee'          => 150000,
+			'trial_price'              => 20000,
+			'quarter_discount_pct'     => 15,
+			'year_discount_pct'        => 20,
+			'current_monthly_adult'    => 75000,
+			'current_monthly_kids'     => 100000,
 
 			// Códigos.
-			'promo_beca_code'    => 'BECADOPC26',
-			'promo_current_code' => 'ACTUALPC26',
+			'promo_beca_code'          => 'BECADOPC26',
+			'promo_current_code'       => 'ACTUALPC26',
 
 			// Horarios.
-			'schedule'           => array(
-				array( 'group' => 'adult', 'day' => 'Martes', 'start' => '17:30', 'end' => '19:30' ),
-				array( 'group' => 'adult', 'day' => 'Jueves', 'start' => '17:30', 'end' => '19:30' ),
-				array( 'group' => 'kids', 'day' => 'Miércoles', 'start' => '17:00', 'end' => '18:00' ),
-				array( 'group' => 'kids', 'day' => 'Viernes', 'start' => '17:00', 'end' => '18:00' ),
+			'schedule'                 => array(
+				array(
+					'group' => 'adult',
+					'day'   => 'Martes',
+					'start' => '17:30',
+					'end'   => '19:30',
+				),
+				array(
+					'group' => 'adult',
+					'day'   => 'Jueves',
+					'start' => '17:30',
+					'end'   => '19:30',
+				),
+				array(
+					'group' => 'kids',
+					'day'   => 'Miércoles',
+					'start' => '17:00',
+					'end'   => '18:00',
+				),
+				array(
+					'group' => 'kids',
+					'day'   => 'Viernes',
+					'start' => '17:00',
+					'end'   => '18:00',
+				),
 			),
 
 			// Notificaciones.
-			'notify_emails'     => '',
-			'notify_from_email' => '',
-			'notify_from_name'  => 'Pura Capoeira',
-			'cc_student'        => true,
+			'notify_emails'            => '',
+			'notify_from_email'        => '',
+			'notify_from_name'         => 'Pura Capoeira',
+			'cc_student'               => true,
 
 			// Contacto y redes.
 			'whatsapp_number'          => '18056385603',
@@ -96,13 +116,13 @@ final class Settings {
 	}
 
 	/**
-	 * @param mixed $default Fallback when the key is unknown.
+	 * @param mixed $fallback Fallback when the key is unknown.
 	 * @return mixed
 	 */
-	public static function get( string $key, $default = null ) {
+	public static function get( string $key, $fallback = null ) {
 		$all = self::all();
 
-		return array_key_exists( $key, $all ) ? $all[ $key ] : $default;
+		return array_key_exists( $key, $all ) ? $all[ $key ] : $fallback;
 	}
 
 	/**

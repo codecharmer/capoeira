@@ -34,8 +34,16 @@ function Save( { attributes } ) {
 
 	return (
 		<div { ...blockProps }>
-			<RichText.Content tagName="span" className="tl-year" value={ attributes.year } />
-			<RichText.Content tagName="p" className="tl-text" value={ attributes.text } />
+			<RichText.Content
+				tagName="span"
+				className="tl-year"
+				value={ attributes.year }
+			/>
+			<RichText.Content
+				tagName="p"
+				className="tl-text"
+				value={ attributes.text }
+			/>
 		</div>
 	);
 }

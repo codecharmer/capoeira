@@ -59,7 +59,13 @@ final class Cli {
 			WP_CLI::error( "No se puede leer {$file}" );
 		}
 
-		$counts = array( 'imported' => 0, 'skipped_duplicate' => 0, 'skipped_invalid' => 0, 'skipped_date' => 0, 'students_upserted' => 0 );
+		$counts    = array(
+			'imported'          => 0,
+			'skipped_duplicate' => 0,
+			'skipped_invalid'   => 0,
+			'skipped_date'      => 0,
+			'students_upserted' => 0,
+		);
 		$by_status = array();
 
 		$handle = fopen( $file, 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- CLI migration of a local file.
@@ -67,7 +73,11 @@ final class Cli {
 			WP_CLI::error( 'No se pudo abrir el archivo.' );
 		}
 
-		while ( ( $raw = fgets( $handle ) ) !== false ) {
+		while ( ! feof( $handle ) ) {
+			$raw = fgets( $handle );
+			if ( false === $raw ) {
+				break;
+			}
 			$line = trim( $raw );
 			if ( '' === $line ) {
 				continue;
@@ -97,7 +107,10 @@ final class Cli {
 				continue;
 			}
 
-			$profile = array( 'email' => $email, 'group' => (string) ( $entry['group'] ?? 'adult' ) );
+			$profile = array(
+				'email' => $email,
+				'group' => (string) ( $entry['group'] ?? 'adult' ),
+			);
 			if ( $student ) {
 				foreach ( array( 'first_name', 'last_name', 'parent_name', 'address', 'phone', 'parent_phone', 'emergency_phone', 'dob' ) as $field ) {
 					$profile[ $field ] = (string) ( $student[ $field ] ?? '' );
@@ -108,7 +121,7 @@ final class Cli {
 				$profile['last_name']  = $parts[1] ?? '';
 			}
 
-			$status = (string) $entry['status'];
+			$status               = (string) $entry['status'];
 			$by_status[ $status ] = ( $by_status[ $status ] ?? 0 ) + 1;
 
 			if ( $dry_run ) {
@@ -194,7 +207,12 @@ final class Cli {
 			'no_found_rows'  => true,
 		);
 		if ( ! empty( $assoc_args['status'] ) ) {
-			$query_args['meta_query'] = array( array( 'key' => '_pura_status', 'value' => sanitize_key( $assoc_args['status'] ) ) ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- CLI export.
+			$query_args['meta_query'] = array(
+				array(
+					'key'   => '_pura_status',
+					'value' => sanitize_key( $assoc_args['status'] ),
+				),
+			); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- CLI export.
 		}
 		$date_query = array();
 		if ( ! empty( $assoc_args['from'] ) ) {
@@ -236,7 +254,7 @@ final class Cli {
 		$checks = array();
 
 		foreach ( Settings::SECRET_KEYS as $key ) {
-			$source          = Settings::secret_source( $key );
+			$source         = Settings::secret_source( $key );
 			$checks[ $key ] = 'missing' === $source ? array( false, 'no configurado' ) : array( true, $source );
 		}
 

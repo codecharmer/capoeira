@@ -61,7 +61,11 @@ final class Mock_Printful_Client implements Printful_Client_Interface {
 	}
 
 	public function confirm_order( int $order_id ) {
-		return array( 'id' => $order_id, 'status' => 'pending', 'mock' => true );
+		return array(
+			'id'     => $order_id,
+			'status' => 'pending',
+			'mock'   => true,
+		);
 	}
 
 	/**
@@ -73,7 +77,7 @@ final class Mock_Printful_Client implements Printful_Client_Interface {
 			return new WP_Error( 'pura_printful_fixture', 'Fixture no encontrado: ' . $file, array( 'status' => 500 ) );
 		}
 
-		$decoded = json_decode( (string) file_get_contents( $path ), true ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown -- local fixture.
+		$decoded = json_decode( (string) file_get_contents( $path ), true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local fixture file.
 		if ( ! is_array( $decoded ) ) {
 			return new WP_Error( 'pura_printful_fixture', 'Fixture inválido: ' . $file, array( 'status' => 500 ) );
 		}

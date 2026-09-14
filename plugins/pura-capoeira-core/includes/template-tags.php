@@ -20,11 +20,11 @@ if ( ! function_exists( 'pura_settings' ) ) {
 
 if ( ! function_exists( 'pura_setting' ) ) {
 	/**
-	 * @param mixed $default Fallback value.
+	 * @param mixed $fallback Fallback value.
 	 * @return mixed
 	 */
-	function pura_setting( string $key, $default = null ) {
-		return Pura\Core\Settings::get( $key, $default );
+	function pura_setting( string $key, $fallback = null ) {
+		return Pura\Core\Settings::get( $key, $fallback );
 	}
 }
 

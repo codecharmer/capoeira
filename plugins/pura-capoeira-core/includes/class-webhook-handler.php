@@ -46,7 +46,7 @@ final class Webhook_Handler {
 		} catch ( \Throwable $e ) {
 			Stripe_Events_Table::mark_failed( $event_id );
 			error_log( '[pura] webhook ' . $event_id . ' failed: ' . $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			throw new \RuntimeException( $e->getMessage(), 0, $e );
+			throw new \RuntimeException( esc_html( $e->getMessage() ), 0, $e );
 		}
 	}
 
@@ -73,7 +73,7 @@ final class Webhook_Handler {
 			if ( $order_id > 0 ) {
 				$result = Printful_Client::resolve()->confirm_order( $order_id );
 				if ( is_wp_error( $result ) ) {
-					throw new \RuntimeException( 'Printful confirm failed: ' . $result->get_error_message() );
+					throw new \RuntimeException( esc_html( 'Printful confirm failed: ' . $result->get_error_message() ) );
 				}
 			}
 			return self::RESULT_PROCESSED;
@@ -85,12 +85,12 @@ final class Webhook_Handler {
 				$post_id = Inscription_Repository::find_by_session( (string) ( $session['id'] ?? '' ) );
 			}
 			if ( ! $post_id || ! get_post( $post_id ) ) {
-				throw new \RuntimeException( 'Inscripción no encontrada para la sesión ' . (string) ( $session['id'] ?? '' ) );
+				throw new \RuntimeException( esc_html( 'Inscripción no encontrada para la sesión ' . (string) ( $session['id'] ?? '' ) ) );
 			}
 
 			$stored = (string) get_post_meta( $post_id, '_pura_stripe_session_id', true );
 			if ( '' !== $stored && ! empty( $session['id'] ) && $stored !== $session['id'] ) {
-				throw new \RuntimeException( 'La sesión no coincide con la inscripción ' . $post_id );
+				throw new \RuntimeException( esc_html( 'La sesión no coincide con la inscripción ' . $post_id ) );
 			}
 
 			if ( 'paid' !== get_post_meta( $post_id, '_pura_status', true ) ) {

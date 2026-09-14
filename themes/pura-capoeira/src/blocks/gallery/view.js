@@ -3,7 +3,9 @@
  */
 
 function initGallery( root ) {
-	const buttons = Array.from( root.querySelectorAll( '[data-js="gallery-filter"]' ) );
+	const buttons = Array.from(
+		root.querySelectorAll( '[data-js="gallery-filter"]' )
+	);
 	const cards = Array.from( root.querySelectorAll( '.video-card' ) );
 	if ( ! buttons.length || ! cards.length ) {
 		return;
@@ -22,7 +24,9 @@ function initGallery( root ) {
 	}
 
 	buttons.forEach( ( btn ) => {
-		btn.addEventListener( 'click', () => apply( btn.dataset.category || '' ) );
+		btn.addEventListener( 'click', () =>
+			apply( btn.dataset.category || '' )
+		);
 	} );
 }
 

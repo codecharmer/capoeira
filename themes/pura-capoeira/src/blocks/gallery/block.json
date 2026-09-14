@@ -11,8 +11,14 @@
 	"attributes": {
 		"showFilters": { "type": "boolean", "default": true },
 		"limit": { "type": "number", "default": 48 },
-		"fallbackUrl": { "type": "string", "default": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR" },
-		"fallbackText": { "type": "string", "default": "Ver galería completa en iCloud" }
+		"fallbackUrl": {
+			"type": "string",
+			"default": "https://www.icloud.com/sharedalbum/#B1g5qXGF1qQGwbR"
+		},
+		"fallbackText": {
+			"type": "string",
+			"default": "Ver galería completa en iCloud"
+		}
 	},
 	"supports": {
 		"html": false,

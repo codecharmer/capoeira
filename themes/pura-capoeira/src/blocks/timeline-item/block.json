@@ -10,8 +10,17 @@
 	"textdomain": "pura",
 	"parent": [ "pura/timeline" ],
 	"attributes": {
-		"year": { "type": "string", "source": "html", "selector": ".tl-year", "default": "" },
-		"text": { "type": "rich-text", "source": "rich-text", "selector": ".tl-text" }
+		"year": {
+			"type": "string",
+			"source": "html",
+			"selector": ".tl-year",
+			"default": ""
+		},
+		"text": {
+			"type": "rich-text",
+			"source": "rich-text",
+			"selector": ".tl-text"
+		}
 	},
 	"supports": {
 		"html": false,

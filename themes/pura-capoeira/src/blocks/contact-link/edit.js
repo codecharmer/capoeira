@@ -1,6 +1,11 @@
 import { __ } from '@wordpress/i18n';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { PanelBody, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
+import {
+	PanelBody,
+	SelectControl,
+	TextControl,
+	ToggleControl,
+} from '@wordpress/components';
 import ServerSideRender from '@wordpress/server-side-render';
 import metadata from './block.json';
 
@@ -33,35 +38,54 @@ export default function Edit( { attributes, setAttributes } ) {
 						label={ __( 'Canal', 'pura' ) }
 						value={ channel }
 						options={ CHANNELS }
-						onChange={ ( value ) => setAttributes( { channel: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { channel: value } )
+						}
 					/>
 					<TextControl
 						label={ __( 'Texto', 'pura' ) }
 						value={ label }
-						onChange={ ( value ) => setAttributes( { label: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { label: value } )
+						}
 					/>
 					<ToggleControl
-						label={ __( 'Mostrar el valor (número, usuario…)', 'pura' ) }
+						label={ __(
+							'Mostrar el valor (número, usuario…)',
+							'pura'
+						) }
 						checked={ showValue }
-						onChange={ ( value ) => setAttributes( { showValue: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { showValue: value } )
+						}
 					/>
 					<SelectControl
 						label={ __( 'Estilo', 'pura' ) }
 						value={ variant }
 						options={ VARIANTS }
-						onChange={ ( value ) => setAttributes( { variant: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { variant: value } )
+						}
 					/>
 					{ channel === 'whatsapp' && (
 						<TextControl
-							label={ __( 'Mensaje prellenado (opcional)', 'pura' ) }
+							label={ __(
+								'Mensaje prellenado (opcional)',
+								'pura'
+							) }
 							value={ message }
-							onChange={ ( value ) => setAttributes( { message: value } ) }
+							onChange={ ( value ) =>
+								setAttributes( { message: value } )
+							}
 						/>
 					) }
 				</PanelBody>
 			</InspectorControls>
 			<div { ...useBlockProps() }>
-				<ServerSideRender block={ metadata.name } attributes={ attributes } />
+				<ServerSideRender
+					block={ metadata.name }
+					attributes={ attributes }
+				/>
 			</div>
 		</>
 	);

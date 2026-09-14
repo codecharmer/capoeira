@@ -193,6 +193,7 @@ final class Settings_Page {
 				break;
 
 			case 'page':
+				// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- core escapes its own markup.
 				wp_dropdown_pages(
 					array(
 						'id'                => $id,
@@ -202,6 +203,7 @@ final class Settings_Page {
 						'option_none_value' => '0',
 					)
 				);
+				// phpcs:enable
 				break;
 
 			case 'textarea':
@@ -356,10 +358,18 @@ final class Settings_Page {
 
 		$result  = Mailer::send_test();
 		$message = $result['ok']
+			/* translators: %d: number of recipients. */
 			? sprintf( __( 'Correo de prueba enviado a %d destinatario(s).', 'pura' ), (int) $result['sent_count'] )
 			: __( 'No se pudo enviar el correo de prueba: ', 'pura' ) . $result['message'];
 
-		set_transient( 'pura_settings_notice_' . get_current_user_id(), array( 'ok' => $result['ok'], 'message' => $message ), 60 );
+		set_transient(
+			'pura_settings_notice_' . get_current_user_id(),
+			array(
+				'ok'      => $result['ok'],
+				'message' => $message,
+			),
+			60
+		);
 		wp_safe_redirect( admin_url( 'admin.php?page=' . Menu::SLUG ) );
 		exit;
 	}

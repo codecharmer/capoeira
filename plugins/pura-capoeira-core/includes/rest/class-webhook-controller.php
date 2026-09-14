@@ -39,18 +39,36 @@ final class Webhook_Controller extends Base_Controller {
 		$secret    = Settings::get_secret( 'stripe_webhook_secret' );
 
 		if ( ! Stripe_Signature::verify( $payload, $signature, $secret ) ) {
-			return new WP_REST_Response( array( 'received' => false, 'error' => 'Firma inválida.' ), 400 );
+			return new WP_REST_Response(
+				array(
+					'received' => false,
+					'error'    => 'Firma inválida.',
+				),
+				400
+			);
 		}
 
 		$event = json_decode( $payload, true );
 		if ( ! is_array( $event ) || empty( $event['id'] ) ) {
-			return new WP_REST_Response( array( 'received' => false, 'error' => 'Evento inválido.' ), 400 );
+			return new WP_REST_Response(
+				array(
+					'received' => false,
+					'error'    => 'Evento inválido.',
+				),
+				400
+			);
 		}
 
 		try {
 			$result = ( new Webhook_Handler() )->handle( $event );
 		} catch ( \RuntimeException $e ) {
-			return new WP_REST_Response( array( 'received' => false, 'error' => $e->getMessage() ), 500 );
+			return new WP_REST_Response(
+				array(
+					'received' => false,
+					'error'    => $e->getMessage(),
+				),
+				500
+			);
 		}
 
 		$body = array( 'received' => true );

@@ -14,9 +14,9 @@ defined( 'ABSPATH' ) || exit;
 
 final class Stripe_Events_Table {
 
-	public const CLAIM_NEW        = 'new';
-	public const CLAIM_RECLAIMED  = 'reclaimed';
-	public const CLAIM_DUPLICATE  = 'duplicate';
+	public const CLAIM_NEW       = 'new';
+	public const CLAIM_RECLAIMED = 'reclaimed';
+	public const CLAIM_DUPLICATE = 'duplicate';
 
 	public static function table(): string {
 		global $wpdb;
@@ -54,7 +54,7 @@ final class Stripe_Events_Table {
 		$table = self::table();
 		$now   = current_time( 'mysql', true );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- custom table, atomic claim; table name is internal.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- custom table, atomic claim; table name is internal.
 		$result = $wpdb->query(
 			$wpdb->prepare(
 				"INSERT INTO {$table} (event_id, type, status, created_at, updated_at)
@@ -68,6 +68,7 @@ final class Stripe_Events_Table {
 				$now
 			)
 		);
+		// phpcs:enable
 
 		if ( false === $result ) {
 			return self::CLAIM_DUPLICATE;
@@ -108,7 +109,10 @@ final class Stripe_Events_Table {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update(
 			self::table(),
-			array( 'status' => $status, 'updated_at' => current_time( 'mysql', true ) ),
+			array(
+				'status'     => $status,
+				'updated_at' => current_time( 'mysql', true ),
+			),
 			array( 'event_id' => $event_id ),
 			array( '%s', '%s' ),
 			array( '%s' )

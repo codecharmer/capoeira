@@ -9,7 +9,10 @@ function initContactForm( form ) {
 			return;
 		}
 
-		const number = form.dataset.whatsapp || ( window.puraConfig && window.puraConfig.whatsapp ) || '';
+		const number =
+			form.dataset.whatsapp ||
+			( window.puraConfig && window.puraConfig.whatsapp ) ||
+			'';
 		const intro = form.dataset.intro || '';
 		const name = ( form.elements.name?.value || '' ).trim();
 		const phone = ( form.elements.phone?.value || '' ).trim();
@@ -26,9 +29,13 @@ function initContactForm( form ) {
 			lines.push( `Mensaje: ${ message }` );
 		}
 
-		const url = `https://wa.me/${ number }?text=${ encodeURIComponent( lines.filter( Boolean ).join( '\n' ) ) }`;
+		const url = `https://wa.me/${ number }?text=${ encodeURIComponent(
+			lines.filter( Boolean ).join( '\n' )
+		) }`;
 		window.open( url, '_blank', 'noopener' );
 	} );
 }
 
-document.querySelectorAll( '[data-js="contact-form"]' ).forEach( initContactForm );
+document
+	.querySelectorAll( '[data-js="contact-form"]' )
+	.forEach( initContactForm );

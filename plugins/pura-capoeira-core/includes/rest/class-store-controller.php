@@ -47,7 +47,12 @@ final class Store_Controller extends Base_Controller {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'products' ),
 				'permission_callback' => '__return_true',
-				'args'                => array( 'refresh' => array( 'type' => 'boolean', 'default' => false ) ),
+				'args'                => array(
+					'refresh' => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
+				),
 			)
 		);
 
@@ -58,7 +63,13 @@ final class Store_Controller extends Base_Controller {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'product' ),
 				'permission_callback' => '__return_true',
-				'args'                => array( 'id' => array( 'type' => 'integer', 'required' => true, 'minimum' => 1 ) ),
+				'args'                => array(
+					'id' => array(
+						'type'     => 'integer',
+						'required' => true,
+						'minimum'  => 1,
+					),
+				),
 			)
 		);
 
@@ -86,10 +97,24 @@ final class Store_Controller extends Base_Controller {
 				'args'                => array(
 					'recipient'     => $this->recipient_arg(),
 					'items'         => $this->items_arg( 'sync_variant_id' ),
-					'shipping_id'   => array( 'type' => 'string', 'required' => true, 'sanitize_callback' => 'sanitize_text_field' ),
-					'shipping_name' => array( 'type' => 'string', 'default' => '', 'sanitize_callback' => 'sanitize_text_field' ),
-					'shipping_rate' => array( 'type' => array( 'number', 'string' ), 'default' => 0 ),
-					'website'       => array( 'type' => 'string', 'default' => '' ),
+					'shipping_id'   => array(
+						'type'              => 'string',
+						'required'          => true,
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'shipping_name' => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'shipping_rate' => array(
+						'type'    => array( 'number', 'string' ),
+						'default' => 0,
+					),
+					'website'       => array(
+						'type'    => 'string',
+						'default' => '',
+					),
 				),
 			)
 		);
@@ -135,7 +160,12 @@ final class Store_Controller extends Base_Controller {
 			return $this->from_error( $rates );
 		}
 
-		return $this->ok( array( 'currency' => $currency, 'rates' => array_values( (array) $rates ) ) );
+		return $this->ok(
+			array(
+				'currency' => $currency,
+				'rates'    => array_values( (array) $rates ),
+			)
+		);
 	}
 
 	public function checkout( WP_REST_Request $request ): WP_REST_Response {
@@ -163,9 +193,9 @@ final class Store_Controller extends Base_Controller {
 		}
 
 		// Server-side prices for every variant.
-		$line_items    = array();
+		$line_items     = array();
 		$printful_items = array();
-		$rate_items    = array();
+		$rate_items     = array();
 		foreach ( $items as $item ) {
 			$variant = $this->find_variant( (int) $item['sync_variant_id'] );
 			if ( is_wp_error( $variant ) ) {
@@ -173,7 +203,7 @@ final class Store_Controller extends Base_Controller {
 			}
 			$unit_cents = (int) round( (float) $variant['retail_price'] * $multiplier * 100 );
 
-			$line_items[] = array(
+			$line_items[]     = array(
 				'quantity'   => (int) $item['quantity'],
 				'price_data' => array(
 					'currency'     => strtolower( $currency ),
@@ -186,7 +216,7 @@ final class Store_Controller extends Base_Controller {
 				'quantity'        => (int) $item['quantity'],
 				'retail_price'    => number_format( (float) $variant['retail_price'] * $multiplier, 2, '.', '' ),
 			);
-			$rate_items[] = array(
+			$rate_items[]     = array(
 				'variant_id' => (int) $variant['variant_id'],
 				'quantity'   => (int) $item['quantity'],
 			);
@@ -224,11 +254,14 @@ final class Store_Controller extends Base_Controller {
 		$external_id = 'capoeira-' . wp_generate_password( 12, false, false );
 		$draft       = $this->client()->create_draft_order(
 			array(
-				'external_id' => $external_id,
-				'recipient'   => $recipient,
-				'items'       => $printful_items,
-				'shipping'    => $shipping_id,
-				'retail_costs' => array( 'currency' => $currency, 'shipping' => number_format( $shipping_cents / 100, 2, '.', '' ) ),
+				'external_id'  => $external_id,
+				'recipient'    => $recipient,
+				'items'        => $printful_items,
+				'shipping'     => $shipping_id,
+				'retail_costs' => array(
+					'currency' => $currency,
+					'shipping' => number_format( $shipping_cents / 100, 2, '.', '' ),
+				),
 			)
 		);
 		if ( is_wp_error( $draft ) ) {
@@ -264,7 +297,12 @@ final class Store_Controller extends Base_Controller {
 			return $this->error( is_wp_error( $session ) ? $session->get_error_message() : 'No se pudo iniciar el pago.', 502 );
 		}
 
-		return $this->ok( array( 'url' => (string) $session['url'], 'printful_order_id' => $printful_order_id ) );
+		return $this->ok(
+			array(
+				'url'               => (string) $session['url'],
+				'printful_order_id' => $printful_order_id,
+			)
+		);
 	}
 
 	// ---- Catalog cache -------------------------------------------------------------------
@@ -465,7 +503,10 @@ final class Store_Controller extends Base_Controller {
 			if ( $id <= 0 || $qty <= 0 ) {
 				continue;
 			}
-			$items[] = array( $id_key => $id, 'quantity' => min( 20, $qty ) );
+			$items[] = array(
+				$id_key    => $id,
+				'quantity' => min( 20, $qty ),
+			);
 		}
 
 		return $items;

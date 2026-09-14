@@ -10,14 +10,19 @@ const $ = ( sel, ctx = document ) => ctx.querySelector( sel );
 const $$ = ( sel, ctx = document ) => Array.from( ctx.querySelectorAll( sel ) );
 
 function restUrl( path ) {
-	const base = ( window.puraConfig && window.puraConfig.restUrl ) || '/wp-json/pura/v1/';
+	const base =
+		( window.puraConfig && window.puraConfig.restUrl ) ||
+		'/wp-json/pura/v1/';
 	return base.replace( /\/?$/, '/' ) + path;
 }
 
 async function postJson( path, payload ) {
 	const res = await fetch( restUrl( path ), {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+		headers: {
+			'Content-Type': 'application/json',
+			Accept: 'application/json',
+		},
 		body: JSON.stringify( payload ),
 	} );
 	let json = {};
@@ -35,9 +40,16 @@ function initInscription( root ) {
 		return;
 	}
 
-	let config = { currency: 'MXN', addon_amount: 1500, plans: { adult: [], kids: [] } };
+	let config = {
+		currency: 'MXN',
+		addon_amount: 1500,
+		plans: { adult: [], kids: [] },
+	};
 	try {
-		config = Object.assign( config, JSON.parse( root.dataset.config || '{}' ) );
+		config = Object.assign(
+			config,
+			JSON.parse( root.dataset.config || '{}' )
+		);
 	} catch ( _err ) {
 		// keep defaults
 	}
@@ -49,10 +61,14 @@ function initInscription( root ) {
 	const promoNote = $( '[data-inscription-promo-note]', root );
 	const paymodeWrap = $( '[data-inscription-paymode]', root );
 	const trialWrap = $( '[data-inscription-trial]', root );
-	const trialInput = trialWrap ? $( '[data-inscription-trial-input]', trialWrap ) : null;
+	const trialInput = trialWrap
+		? $( '[data-inscription-trial-input]', trialWrap )
+		: null;
 	const studentWrap = $( '[data-inscription-student]', root );
 	const memberWrap = $( '[data-inscription-member]', root );
-	const memberEmailInput = memberWrap ? $( '[data-inscription-member-email]', memberWrap ) : null;
+	const memberEmailInput = memberWrap
+		? $( '[data-inscription-member-email]', memberWrap )
+		: null;
 	const summaryLabel = $( '[data-inscription-summary-label]', root );
 	const summaryTotal = $( '[data-inscription-summary-total]', root );
 	const resultEl = $( '[data-inscription-result]', root );
@@ -60,24 +76,44 @@ function initInscription( root ) {
 
 	const currency = config.currency || 'MXN';
 	const money = ( n ) =>
-		new Intl.NumberFormat( 'es-MX', { style: 'currency', currency } ).format( n ) + ' ' + currency;
+		new Intl.NumberFormat( 'es-MX', {
+			style: 'currency',
+			currency,
+		} ).format( n ) +
+		' ' +
+		currency;
 
-	const currentGroup = () => $( 'input[name="inscription_group"]:checked', form )?.value || 'adult';
-	const currentMode = () => $( 'input[name="inscription_mode"]:checked', form )?.value || 'new';
+	const currentGroup = () =>
+		$( 'input[name="inscription_group"]:checked', form )?.value || 'adult';
+	const currentMode = () =>
+		$( 'input[name="inscription_mode"]:checked', form )?.value || 'new';
 	const selectedPlan = () => $( 'input[name="plan"]:checked', form );
 
 	// Promo state for the current session. `plans` holds promo-priced plans for the group.
-	const promoState = { type: 'none', free: false, paymentOptional: false, plans: null, monthly: null };
+	const promoState = {
+		type: 'none',
+		free: false,
+		paymentOptional: false,
+		plans: null,
+		monthly: null,
+	};
 
-	const basePlans = () => config.plans[ currentGroup() ] || config.plans.adult || [];
-	const effectivePlans = () => ( promoState.type === 'current' && promoState.plans ? promoState.plans : basePlans() );
+	const basePlans = () =>
+		config.plans[ currentGroup() ] || config.plans.adult || [];
+	const effectivePlans = () =>
+		promoState.type === 'current' && promoState.plans
+			? promoState.plans
+			: basePlans();
 
 	function applyPlanPrices( plans ) {
 		plans.forEach( ( plan ) => {
 			const input = $( `input[name="plan"][value="${ plan.id }"]`, form );
 			if ( input ) {
 				input.setAttribute( 'data-amount', String( plan.amount ) );
-				input.setAttribute( 'data-allow-addon', plan.allow_addon ? '1' : '0' );
+				input.setAttribute(
+					'data-allow-addon',
+					plan.allow_addon ? '1' : '0'
+				);
 			}
 			const priceEl = $( `[data-plan-price="${ plan.id }"]`, form );
 			if ( priceEl ) {
@@ -100,9 +136,16 @@ function initInscription( root ) {
 	}
 
 	const payLaterSelected = () =>
-		!! paymodeWrap && ! paymodeWrap.hidden && $( 'input[name="payment_mode"]:checked', form )?.value === 'later';
+		!! paymodeWrap &&
+		! paymodeWrap.hidden &&
+		$( 'input[name="payment_mode"]:checked', form )?.value === 'later';
 
-	const requiredStudentInputs = studentWrap ? $$( 'input[required], select[required], textarea[required]', studentWrap ) : [];
+	const requiredStudentInputs = studentWrap
+		? $$(
+				'input[required], select[required], textarea[required]',
+				studentWrap
+		  )
+		: [];
 
 	function updateModeUi() {
 		const isMember = currentMode() === 'member';
@@ -144,7 +187,10 @@ function initInscription( root ) {
 			paymodeWrap.hidden = ! promoState.paymentOptional;
 		}
 		if ( submitBtn ) {
-			submitBtn.textContent = promoState.free || payLaterSelected() ? 'Registrar inscripción' : 'Continuar al pago';
+			submitBtn.textContent =
+				promoState.free || payLaterSelected()
+					? 'Registrar inscripción'
+					: 'Continuar al pago';
 		}
 	}
 
@@ -169,7 +215,9 @@ function initInscription( root ) {
 			}
 		}
 		let amount = parseFloat( plan.getAttribute( 'data-amount' ) ) || 0;
-		let label = $( '.plan-card__title', plan.closest( '.plan-card' ) )?.textContent || 'Paquete';
+		let label =
+			$( '.plan-card__title', plan.closest( '.plan-card' ) )
+				?.textContent || 'Paquete';
 		if ( allowAddon && addonInput && addonInput.checked ) {
 			amount += Number( config.addon_amount ) || 0;
 			label += ' + inscripción';
@@ -199,7 +247,11 @@ function initInscription( root ) {
 
 	form.addEventListener( 'change', ( e ) => {
 		const name = e.target.name;
-		if ( name === 'plan' || name === 'add_inscription' || name === 'payment_mode' ) {
+		if (
+			name === 'plan' ||
+			name === 'add_inscription' ||
+			name === 'payment_mode'
+		) {
 			updateSummary();
 		}
 		if ( name === 'inscription_mode' ) {
@@ -211,10 +263,10 @@ function initInscription( root ) {
 	} );
 
 	async function applyPromo() {
-		const code = ( promoInput?.value || '' ).trim();
 		if ( ! promoNote ) {
 			return;
 		}
+		const code = ( promoInput?.value || '' ).trim();
 		promoNote.hidden = false;
 		promoNote.classList.remove( 'is-success' );
 
@@ -227,14 +279,20 @@ function initInscription( root ) {
 
 		promoNote.textContent = 'Validando código...';
 		try {
-			const { res, json } = await postJson( 'inscriptions/validate-promo', { promocode: code, group: currentGroup() } );
+			const { res, json } = await postJson(
+				'inscriptions/validate-promo',
+				{ promocode: code, group: currentGroup() }
+			);
 			if ( ! res.ok || ! json.ok ) {
-				throw new Error( json.error || json.message || 'No se pudo validar el código' );
+				throw new Error(
+					json.error || json.message || 'No se pudo validar el código'
+				);
 			}
 
 			if ( ! json.valid ) {
 				resetPromoPricing();
-				promoNote.textContent = 'Código no válido. Se aplican los precios normales.';
+				promoNote.textContent =
+					'Código no válido. Se aplican los precios normales.';
 				updateSummary();
 				return;
 			}
@@ -242,20 +300,27 @@ function initInscription( root ) {
 			promoState.type = json.type;
 			promoState.free = !! json.free;
 			promoState.paymentOptional = !! json.payment_optional;
-			promoState.plans = json.type === 'current' && Array.isArray( json.plans ) ? json.plans : null;
+			promoState.plans =
+				json.type === 'current' && Array.isArray( json.plans )
+					? json.plans
+					: null;
 			promoState.monthly = json.type === 'current' ? json.monthly : null;
 
 			applyPlanPrices( effectivePlans() );
 			if ( json.type === 'beca' ) {
-				promoNote.textContent = '¡Beca del 100% aplicada! Tu inscripción será gratuita.';
+				promoNote.textContent =
+					'¡Beca del 100% aplicada! Tu inscripción será gratuita.';
 			} else if ( json.type === 'current' ) {
 				promoNote.textContent =
-					'¡Código de alumno aplicado! Mensualidad de ' + money( json.monthly ) + '. El pago es opcional: puedes pagar ahora o después.';
+					'¡Código de alumno aplicado! Mensualidad de ' +
+					money( json.monthly ) +
+					'. El pago es opcional: puedes pagar ahora o después.';
 			}
 			promoNote.classList.add( 'is-success' );
 			updateSummary();
 		} catch ( err ) {
-			promoNote.textContent = 'No se pudo validar el código. Intenta de nuevo.';
+			promoNote.textContent =
+				'No se pudo validar el código. Intenta de nuevo.';
 		}
 	}
 
@@ -291,7 +356,13 @@ function initInscription( root ) {
 		const payload = {
 			plan: fd.get( 'plan' ),
 			group: currentGroup(),
-			add_inscription: addonWrap && ! addonWrap.hidden && addonInput && addonInput.checked ? 1 : 0,
+			add_inscription:
+				addonWrap &&
+				! addonWrap.hidden &&
+				addonInput &&
+				addonInput.checked
+					? 1
+					: 0,
 			promocode: ( fd.get( 'promocode' ) || '' ).toString().trim(),
 			payment_mode: payLaterSelected() ? 'later' : 'now',
 			trial_date: ( fd.get( 'trial_date' ) || '' ).toString().trim(),
@@ -302,7 +373,17 @@ function initInscription( root ) {
 			payload.member = true;
 			payload.email = ( memberEmailInput?.value || '' ).toString().trim();
 		} else {
-			[ 'first_name', 'last_name', 'parent_name', 'address', 'email', 'phone', 'parent_phone', 'emergency_phone', 'dob' ].forEach( ( key ) => {
+			[
+				'first_name',
+				'last_name',
+				'parent_name',
+				'address',
+				'email',
+				'phone',
+				'parent_phone',
+				'emergency_phone',
+				'dob',
+			].forEach( ( key ) => {
 				payload[ key ] = ( fd.get( key ) || '' ).toString().trim();
 			} );
 		}
@@ -310,22 +391,36 @@ function initInscription( root ) {
 		if ( submitBtn ) {
 			submitBtn.disabled = true;
 		}
-		showResult( isMember ? 'Buscando tu registro...' : 'Procesando tu inscripción...', true );
+		showResult(
+			isMember
+				? 'Buscando tu registro...'
+				: 'Procesando tu inscripción...',
+			true
+		);
 
 		try {
 			const { res, json } = await postJson( 'inscriptions', payload );
 
 			if ( json && json.not_registered ) {
-				const newModeRadio = $( 'input[name="inscription_mode"][value="new"]', form );
+				const newModeRadio = $(
+					'input[name="inscription_mode"][value="new"]',
+					form
+				);
 				if ( newModeRadio ) {
 					newModeRadio.checked = true;
 				}
 				updateModeUi();
-				const emailField = studentWrap ? $( 'input[name="email"]', studentWrap ) : null;
+				const emailField = studentWrap
+					? $( 'input[name="email"]', studentWrap )
+					: null;
 				if ( emailField ) {
 					emailField.value = payload.email || '';
 				}
-				showResult( json.error || 'No encontramos tu registro. Completa el formulario para inscribirte.', false );
+				showResult(
+					json.error ||
+						'No encontramos tu registro. Completa el formulario para inscribirte.',
+					false
+				);
 				if ( submitBtn ) {
 					submitBtn.disabled = false;
 				}
@@ -333,7 +428,11 @@ function initInscription( root ) {
 			}
 
 			if ( ! res.ok || ! json.ok ) {
-				throw new Error( json.error || json.message || 'No se pudo procesar la solicitud' );
+				throw new Error(
+					json.error ||
+						json.message ||
+						'No se pudo procesar la solicitud'
+				);
 			}
 			if ( json.free ) {
 				showResult( json.message || '¡Inscripción registrada!', true );
@@ -352,7 +451,11 @@ function initInscription( root ) {
 			}
 			throw new Error( 'Respuesta inesperada del servidor' );
 		} catch ( err ) {
-			showResult( err.message || 'No se pudo procesar la solicitud. Intenta de nuevo.', false );
+			showResult(
+				err.message ||
+					'No se pudo procesar la solicitud. Intenta de nuevo.',
+				false
+			);
 			if ( submitBtn ) {
 				submitBtn.disabled = false;
 			}
@@ -363,15 +466,25 @@ function initInscription( root ) {
 	const params = new URLSearchParams( window.location.search );
 	const status = params.get( 'inscription' );
 	if ( status === 'success' ) {
-		showResult( '¡Pago recibido! Tu inscripción quedó registrada. Te contactaremos pronto.', true );
+		showResult(
+			'¡Pago recibido! Tu inscripción quedó registrada. Te contactaremos pronto.',
+			true
+		);
 	} else if ( status === 'cancel' ) {
-		showResult( 'El pago fue cancelado. Puedes intentarlo de nuevo cuando quieras.', false );
+		showResult(
+			'El pago fue cancelado. Puedes intentarlo de nuevo cuando quieras.',
+			false
+		);
 	}
 	if ( status ) {
 		params.delete( 'inscription' );
 		params.delete( 'session_id' );
 		const query = params.toString();
-		window.history.replaceState( {}, '', window.location.pathname + ( query ? `?${ query }` : '' ) );
+		window.history.replaceState(
+			{},
+			'',
+			window.location.pathname + ( query ? `?${ query }` : '' )
+		);
 	}
 
 	updateModeUi();
@@ -379,4 +492,6 @@ function initInscription( root ) {
 	updateSummary();
 }
 
-document.querySelectorAll( '[data-inscription-root]' ).forEach( initInscription );
+document
+	.querySelectorAll( '[data-inscription-root]' )
+	.forEach( initInscription );

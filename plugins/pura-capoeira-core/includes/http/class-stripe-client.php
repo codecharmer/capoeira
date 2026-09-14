@@ -92,7 +92,14 @@ final class Stripe_Client {
 		if ( $code < 200 || $code >= 300 || ! is_array( $body ) ) {
 			$message = is_array( $body ) && isset( $body['error']['message'] ) ? (string) $body['error']['message'] : 'Respuesta inesperada de Stripe.';
 
-			return new WP_Error( 'pura_stripe_api', $message, array( 'status' => 502, 'stripe_status' => $code ) );
+			return new WP_Error(
+				'pura_stripe_api',
+				$message,
+				array(
+					'status'        => 502,
+					'stripe_status' => $code,
+				)
+			);
 		}
 
 		return $body;

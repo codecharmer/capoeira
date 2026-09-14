@@ -26,18 +26,25 @@ function Edit( { attributes, setAttributes } ) {
 							key={ key }
 							label={ label }
 							value={ attributes[ key ] }
-							onChange={ ( value ) => setAttributes( { [ key ]: value } ) }
+							onChange={ ( value ) =>
+								setAttributes( { [ key ]: value } )
+							}
 						/>
 					) ) }
 					<TextareaControl
 						label={ __( 'Nota al pie', 'pura' ) }
 						value={ attributes.footnote }
-						onChange={ ( footnote ) => setAttributes( { footnote } ) }
+						onChange={ ( footnote ) =>
+							setAttributes( { footnote } )
+						}
 					/>
 				</PanelBody>
 			</InspectorControls>
 			<div { ...useBlockProps() }>
-				<ServerSideRender block={ metadata.name } attributes={ attributes } />
+				<ServerSideRender
+					block={ metadata.name }
+					attributes={ attributes }
+				/>
 			</div>
 		</>
 	);

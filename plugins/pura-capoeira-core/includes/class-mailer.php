@@ -72,11 +72,16 @@ final class Mailer {
 	public static function send_test(): array {
 		$recipients = self::recipients();
 		if ( ! $recipients ) {
-			return array( 'ok' => false, 'sent_count' => 0, 'total' => 0, 'message' => 'No hay destinatarios configurados.' );
+			return array(
+				'ok'         => false,
+				'sent_count' => 0,
+				'total'      => 0,
+				'message'    => 'No hay destinatarios configurados.',
+			);
 		}
 
 		$subject = 'Prueba de notificaciones — Pura Capoeira';
-		$body    = "Este es un correo de prueba enviado desde " . home_url( '/' ) . " el " . wp_date( 'Y-m-d H:i:s' ) . ".\n\nSi lo recibes, las notificaciones de inscripción funcionan.";
+		$body    = 'Este es un correo de prueba enviado desde ' . home_url( '/' ) . ' el ' . wp_date( 'Y-m-d H:i:s' ) . ".\n\nSi lo recibes, las notificaciones de inscripción funcionan.";
 		$ok      = self::send( $recipients, $subject, $body, self::headers() );
 
 		return array(
@@ -94,23 +99,23 @@ final class Mailer {
 		$lines = array( 'Nueva inscripción recibida en ' . home_url( '/' ), '' );
 
 		$rows = array(
-			'Tipo'                   => ! empty( $data['member'] ) ? 'Alumno existente (pago con correo)' : 'Alumno nuevo',
-			'Grupo'                  => 'kids' === ( $data['group'] ?? '' ) ? 'Niños' : 'Adultos',
-			'Estado'                 => Inscription_Post_Type::status_label( (string) ( $data['status'] ?? '' ) ),
-			'Paquete'                => (string) ( $data['label'] ?? '' ),
-			'Monto'                  => Pricing::format_pesos( (int) ( $data['amount_cents'] ?? 0 ) ) . ' ' . (string) ( $data['currency'] ?? 'MXN' ),
-			'Alumno'                 => (string) ( $data['student_name'] ?? '' ),
-			'Correo'                 => (string) ( $data['email'] ?? '' ),
-			'Teléfono'               => (string) ( $data['phone'] ?? '' ),
+			'Tipo'                     => ! empty( $data['member'] ) ? 'Alumno existente (pago con correo)' : 'Alumno nuevo',
+			'Grupo'                    => 'kids' === ( $data['group'] ?? '' ) ? 'Niños' : 'Adultos',
+			'Estado'                   => Inscription_Post_Type::status_label( (string) ( $data['status'] ?? '' ) ),
+			'Paquete'                  => (string) ( $data['label'] ?? '' ),
+			'Monto'                    => Pricing::format_pesos( (int) ( $data['amount_cents'] ?? 0 ) ) . ' ' . (string) ( $data['currency'] ?? 'MXN' ),
+			'Alumno'                   => (string) ( $data['student_name'] ?? '' ),
+			'Correo'                   => (string) ( $data['email'] ?? '' ),
+			'Teléfono'                 => (string) ( $data['phone'] ?? '' ),
 			'Fecha de clase de prueba' => (string) ( $data['trial_date'] ?? '' ),
-			'Código promocional'     => (string) ( $data['promocode'] ?? '' ),
-			'Padre/madre/tutor'      => (string) ( $data['parent_name'] ?? '' ),
-			'Teléfono del tutor'     => (string) ( $data['parent_phone'] ?? '' ),
-			'Teléfono de emergencia' => (string) ( $data['emergency_phone'] ?? '' ),
-			'Dirección'              => (string) ( $data['address'] ?? '' ),
-			'Fecha de nacimiento'    => (string) ( $data['dob'] ?? '' ),
-			'Stripe session'         => (string) ( $data['stripe_session_id'] ?? '' ),
-			'Fecha de registro'      => (string) ( $data['created_at'] ?? wp_date( 'Y-m-d H:i:s' ) ),
+			'Código promocional'       => (string) ( $data['promocode'] ?? '' ),
+			'Padre/madre/tutor'        => (string) ( $data['parent_name'] ?? '' ),
+			'Teléfono del tutor'       => (string) ( $data['parent_phone'] ?? '' ),
+			'Teléfono de emergencia'   => (string) ( $data['emergency_phone'] ?? '' ),
+			'Dirección'                => (string) ( $data['address'] ?? '' ),
+			'Fecha de nacimiento'      => (string) ( $data['dob'] ?? '' ),
+			'Stripe session'           => (string) ( $data['stripe_session_id'] ?? '' ),
+			'Fecha de registro'        => (string) ( $data['created_at'] ?? wp_date( 'Y-m-d H:i:s' ) ),
 		);
 
 		foreach ( $rows as $label => $value ) {

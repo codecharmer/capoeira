@@ -9,8 +9,14 @@
 	"description": "Nombre, teléfono y mensaje; al enviar se abre WhatsApp con el texto listo.",
 	"textdomain": "pura",
 	"attributes": {
-		"intro": { "type": "string", "default": "¡Hola! Quiero información sobre Pura Capoeira Cuernavaca." },
-		"submitLabel": { "type": "string", "default": "Enviar mensaje por WhatsApp" }
+		"intro": {
+			"type": "string",
+			"default": "¡Hola! Quiero información sobre Pura Capoeira Cuernavaca."
+		},
+		"submitLabel": {
+			"type": "string",
+			"default": "Enviar mensaje por WhatsApp"
+		}
 	},
 	"supports": {
 		"html": false,

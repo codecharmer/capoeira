@@ -1,0 +1,19 @@
+{
+	"code": 200,
+	"result": {
+		"sync_product": {
+			"id": 301,
+			"external_id": "pura-tee-black",
+			"name": "Playera Pura Capoeira — Negra",
+			"variants": 3,
+			"synced": 3,
+			"thumbnail_url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=70",
+			"is_ignored": false
+		},
+		"sync_variants": [
+			{ "id": 30101, "external_id": "pura-tee-black-s", "sync_product_id": 301, "name": "Playera Pura Capoeira — Negra / S", "synced": true, "variant_id": 4012, "retail_price": "25.00", "currency": "USD", "product": { "variant_id": 4012, "product_id": 71, "name": "Bella + Canvas 3001 Unisex Short Sleeve Jersey T-Shirt (Black / S)" } },
+			{ "id": 30102, "external_id": "pura-tee-black-m", "sync_product_id": 301, "name": "Playera Pura Capoeira — Negra / M", "synced": true, "variant_id": 4013, "retail_price": "25.00", "currency": "USD", "product": { "variant_id": 4013, "product_id": 71, "name": "Bella + Canvas 3001 Unisex Short Sleeve Jersey T-Shirt (Black / M)" } },
+			{ "id": 30103, "external_id": "pura-tee-black-l", "sync_product_id": 301, "name": "Playera Pura Capoeira — Negra / L", "synced": true, "variant_id": 4014, "retail_price": "25.00", "currency": "USD", "product": { "variant_id": 4014, "product_id": 71, "name": "Bella + Canvas 3001 Unisex Short Sleeve Jersey T-Shirt (Black / L)" } }
+		]
+	}
+}

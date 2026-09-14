@@ -69,7 +69,11 @@ final class Printful_Client implements Printful_Client_Interface {
 		if ( defined( 'PURA_PRINTFUL_CONFIRM_DISABLED' ) && PURA_PRINTFUL_CONFIRM_DISABLED ) {
 			error_log( '[pura] Printful confirm skipped for order ' . $order_id . ' (PURA_PRINTFUL_CONFIRM_DISABLED).' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 
-			return array( 'id' => $order_id, 'status' => 'draft', 'confirm_skipped' => true );
+			return array(
+				'id'              => $order_id,
+				'status'          => 'draft',
+				'confirm_skipped' => true,
+			);
 		}
 
 		return $this->request( 'POST', '/orders/' . $order_id . '/confirm' );
@@ -110,7 +114,14 @@ final class Printful_Client implements Printful_Client_Interface {
 		if ( ! $ok ) {
 			$message = is_array( $decoded ) ? (string) ( $decoded['result'] ?? $decoded['error']['message'] ?? 'Error de Printful.' ) : 'Respuesta inesperada de Printful.';
 
-			return new WP_Error( 'pura_printful_api', $message, array( 'status' => 502, 'printful_status' => $code ) );
+			return new WP_Error(
+				'pura_printful_api',
+				$message,
+				array(
+					'status'          => 502,
+					'printful_status' => $code,
+				)
+			);
 		}
 
 		return $decoded['result'] ?? array();

@@ -1,0 +1,31 @@
+# Production .htaccess for capoeiracuernavaca.com (WordPress document root).
+# Managed on the server; this file is the template. Keep everything above the
+# "# BEGIN WordPress" block — WordPress rewrites only what is inside its markers.
+
+RewriteEngine On
+
+# Never serve dotfiles (legacy secret files, .git, .env) except ACME challenges.
+RedirectMatch 404 /\.(?!well-known/)
+
+# Legacy static URLs → WordPress permalinks (query strings are preserved, so a
+# late Stripe return to /inscripciones.html?inscription=success still lands).
+RewriteRule ^index\.html$ / [R=301,L]
+RewriteRule ^(trayectoria|clases|inscripciones|galeria|tienda|contacto)\.html$ /$1/ [R=301,L]
+RewriteRule ^contact\.html$ /contacto/ [R=301,L]
+
+# The old PHP API is gone. Tell bots and stale integrations so.
+RewriteRule ^api/ - [R=410,L]
+
+# BEGIN WordPress
+# The directives (lines) between "BEGIN WordPress" and "END WordPress" are
+# dynamically generated, and should only be modified via WordPress filters.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress

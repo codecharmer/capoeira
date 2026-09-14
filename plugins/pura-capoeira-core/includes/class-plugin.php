@@ -37,6 +37,7 @@ final class Plugin {
 		if ( is_admin() ) {
 			( new Admin\Menu() )->register();
 			( new Admin\Settings_Page() )->register();
+			( new Admin\Csv_Export() )->register();
 		}
 
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );

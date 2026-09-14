@@ -7,12 +7,17 @@ const CART_KEY = 'pura_cart_v1';
 const CART_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 function restUrl( path ) {
-	const base = ( window.puraConfig && window.puraConfig.restUrl ) || '/wp-json/pura/v1/';
+	const base =
+		( window.puraConfig && window.puraConfig.restUrl ) ||
+		'/wp-json/pura/v1/';
 	return base.replace( /\/?$/, '/' ) + path;
 }
 
 async function getJson( path ) {
-	const res = await fetch( restUrl( path ), { headers: { Accept: 'application/json' }, cache: 'no-store' } );
+	const res = await fetch( restUrl( path ), {
+		headers: { Accept: 'application/json' },
+		cache: 'no-store',
+	} );
 	const json = await res.json().catch( () => ( {} ) );
 	return { res, json };
 }
@@ -20,7 +25,10 @@ async function getJson( path ) {
 async function postJson( path, payload ) {
 	const res = await fetch( restUrl( path ), {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+		headers: {
+			'Content-Type': 'application/json',
+			Accept: 'application/json',
+		},
 		body: JSON.stringify( payload ),
 	} );
 	const json = await res.json().catch( () => ( {} ) );
@@ -28,7 +36,17 @@ async function postJson( path, payload ) {
 }
 
 function escapeHtml( value ) {
-	return String( value ?? '' ).replace( /[&<>"']/g, ( c ) => ( { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ c ] ) );
+	return String( value ?? '' ).replace(
+		/[&<>"']/g,
+		( c ) =>
+			( {
+				'&': '&amp;',
+				'<': '&lt;',
+				'>': '&gt;',
+				'"': '&quot;',
+				"'": '&#39;',
+			} )[ c ]
+	);
 }
 
 function readStoredCart() {
@@ -38,7 +56,11 @@ function readStoredCart() {
 			return [];
 		}
 		const parsed = JSON.parse( raw );
-		if ( ! parsed || ! Array.isArray( parsed.items ) || Date.now() - ( parsed.savedAt || 0 ) > CART_TTL_MS ) {
+		if (
+			! parsed ||
+			! Array.isArray( parsed.items ) ||
+			Date.now() - ( parsed.savedAt || 0 ) > CART_TTL_MS
+		) {
 			return [];
 		}
 		return parsed.items;
@@ -49,8 +71,15 @@ function readStoredCart() {
 
 function writeStoredCart( cart ) {
 	try {
-		const items = cart.map( ( item ) => ( { productId: item.productId, variantId: item.variant.id, quantity: item.quantity } ) );
-		window.localStorage.setItem( CART_KEY, JSON.stringify( { items, savedAt: Date.now() } ) );
+		const items = cart.map( ( item ) => ( {
+			productId: item.productId,
+			variantId: item.variant.id,
+			quantity: item.quantity,
+		} ) );
+		window.localStorage.setItem(
+			CART_KEY,
+			JSON.stringify( { items, savedAt: Date.now() } )
+		);
 	} catch ( _err ) {
 		// storage unavailable
 	}
@@ -67,21 +96,24 @@ function clearStoredCart() {
 function initStore( root ) {
 	const grid = root.querySelector( '[data-store-grid]' );
 	const feedback = root.querySelector( '[data-store-feedback]' );
-	const refreshBtn = root.querySelector( '[data-store-refresh]' );
 	const cartItemsEl = root.querySelector( '[data-store-cart-items]' );
 	const totalEl = root.querySelector( '[data-store-total]' );
-	const subtotalEl = root.querySelector( '[data-store-subtotal]' );
-	const shippingCostEl = root.querySelector( '[data-store-shipping-cost]' );
-	const shippingBox = root.querySelector( '[data-store-shipping]' );
-	const shippingOptionsEl = root.querySelector( '[data-store-shipping-options]' );
-	const payBtn = root.querySelector( '[data-store-pay]' );
-	const resultEl = root.querySelector( '[data-store-result]' );
 	const orderForm = root.querySelector( '[data-store-order-form]' );
-	const placeholder = root.dataset.placeholder || '';
 
 	if ( ! grid || ! feedback || ! cartItemsEl || ! totalEl || ! orderForm ) {
 		return;
 	}
+
+	const refreshBtn = root.querySelector( '[data-store-refresh]' );
+	const subtotalEl = root.querySelector( '[data-store-subtotal]' );
+	const shippingCostEl = root.querySelector( '[data-store-shipping-cost]' );
+	const shippingBox = root.querySelector( '[data-store-shipping]' );
+	const shippingOptionsEl = root.querySelector(
+		'[data-store-shipping-options]'
+	);
+	const payBtn = root.querySelector( '[data-store-pay]' );
+	const resultEl = root.querySelector( '[data-store-result]' );
+	const placeholder = root.dataset.placeholder || '';
 
 	const state = {
 		products: [],
@@ -101,7 +133,10 @@ function initStore( root ) {
 
 	const money = ( value ) => {
 		try {
-			return new Intl.NumberFormat( 'es-MX', { style: 'currency', currency: state.currency || 'MXN' } ).format( asNumber( value ) );
+			return new Intl.NumberFormat( 'es-MX', {
+				style: 'currency',
+				currency: state.currency || 'MXN',
+			} ).format( asNumber( value ) );
 		} catch ( _err ) {
 			return `$${ asNumber( value ).toFixed( 2 ) }`;
 		}
@@ -112,17 +147,30 @@ function initStore( root ) {
 		feedback.classList.toggle( 'is-error', Boolean( isError ) );
 	};
 
-	const getProductTitle = ( product ) => product?.sync_product?.name || product?.name || 'Producto';
-	const getProductThumb = ( product ) => product?.sync_product?.thumbnail_url || product?.thumbnail_url || placeholder;
+	const getProductTitle = ( product ) =>
+		product?.sync_product?.name || product?.name || 'Producto';
+	const getProductThumb = ( product ) =>
+		product?.sync_product?.thumbnail_url ||
+		product?.thumbnail_url ||
+		placeholder;
 	const getProductVariants = ( productId ) => {
 		const detail = state.details.get( productId );
-		return Array.isArray( detail?.sync_variants ) ? detail.sync_variants : [];
+		return Array.isArray( detail?.sync_variants )
+			? detail.sync_variants
+			: [];
 	};
-	const getVariantPrice = ( variant ) => asNumber( variant?.retail_price || variant?.price || 0 );
-	const displayPrice = ( variant ) => getVariantPrice( variant ) * ( state.priceMultiplier || 1 );
+	const getVariantPrice = ( variant ) =>
+		asNumber( variant?.retail_price || variant?.price || 0 );
+	const displayPrice = ( variant ) =>
+		getVariantPrice( variant ) * ( state.priceMultiplier || 1 );
 
-	const subtotal = () => state.cart.reduce( ( sum, item ) => sum + displayPrice( item.variant ) * item.quantity, 0 );
-	const shippingCost = () => ( state.shipping ? asNumber( state.shipping.rate ) : 0 );
+	const subtotal = () =>
+		state.cart.reduce(
+			( sum, item ) => sum + displayPrice( item.variant ) * item.quantity,
+			0
+		);
+	const shippingCost = () =>
+		state.shipping ? asNumber( state.shipping.rate ) : 0;
 	const grandTotal = () => subtotal() + shippingCost();
 
 	const syncTotals = () => {
@@ -130,7 +178,9 @@ function initStore( root ) {
 			subtotalEl.textContent = money( subtotal() );
 		}
 		if ( shippingCostEl ) {
-			shippingCostEl.textContent = state.shipping ? money( shippingCost() ) : '—';
+			shippingCostEl.textContent = state.shipping
+				? money( shippingCost() )
+				: '—';
 		}
 		totalEl.textContent = money( grandTotal() );
 	};
@@ -166,7 +216,9 @@ function initStore( root ) {
 			.map(
 				( r, i ) => `
 			<label class="store-shipping__option">
-				<input type="radio" name="shipping-rate" value="${ i }" ${ i === 0 ? 'checked' : '' } />
+				<input type="radio" name="shipping-rate" value="${ i }" ${
+					i === 0 ? 'checked' : ''
+				} />
 				<span>${ escapeHtml( r.name || 'Envío' ) }</span>
 				<strong>${ money( r.rate ) }</strong>
 			</label>`
@@ -181,7 +233,8 @@ function initStore( root ) {
 	const renderCart = () => {
 		cartItemsEl.innerHTML = '';
 		if ( ! state.cart.length ) {
-			cartItemsEl.innerHTML = '<p class="store-empty">Tu carrito está vacío.</p>';
+			cartItemsEl.innerHTML =
+				'<p class="store-empty">Tu carrito está vacío.</p>';
 			syncTotals();
 			writeStoredCart( state.cart );
 			return;
@@ -211,11 +264,16 @@ function initStore( root ) {
 	const addToCart = ( product, variant, quantity = 1, quiet = false ) => {
 		if ( ! variant || ! variant.id ) {
 			if ( ! quiet ) {
-				setFeedback( 'Selecciona una variante disponible para comprar.', true );
+				setFeedback(
+					'Selecciona una variante disponible para comprar.',
+					true
+				);
 			}
 			return;
 		}
-		const existing = state.cart.find( ( entry ) => entry.variant.id === variant.id );
+		const existing = state.cart.find(
+			( entry ) => entry.variant.id === variant.id
+		);
 		if ( existing ) {
 			existing.quantity += quantity;
 		} else {
@@ -242,10 +300,19 @@ function initStore( root ) {
 		const pending = state.pendingCart;
 		state.pendingCart = [];
 		pending.forEach( ( saved ) => {
-			const product = state.products.find( ( p ) => p.id === saved.productId );
-			const variant = getProductVariants( saved.productId ).find( ( v ) => v.id === saved.variantId );
+			const product = state.products.find(
+				( p ) => p.id === saved.productId
+			);
+			const variant = getProductVariants( saved.productId ).find(
+				( v ) => v.id === saved.variantId
+			);
 			if ( product && variant ) {
-				addToCart( product, variant, Math.max( 1, Number( saved.quantity ) || 1 ), true );
+				addToCart(
+					product,
+					variant,
+					Math.max( 1, Number( saved.quantity ) || 1 ),
+					true
+				);
 			}
 		} );
 		if ( state.cart.length ) {
@@ -256,7 +323,8 @@ function initStore( root ) {
 	const renderProducts = () => {
 		grid.innerHTML = '';
 		if ( ! state.products.length ) {
-			grid.innerHTML = '<p class="store-empty">No hay productos publicados por ahora.</p>';
+			grid.innerHTML =
+				'<p class="store-empty">No hay productos publicados por ahora.</p>';
 			return;
 		}
 
@@ -269,23 +337,39 @@ function initStore( root ) {
 			card.className = 'store-card';
 			card.setAttribute( 'data-product-id', String( product.id ) );
 
-			const optionsHtml = variants.map( ( v ) => `<option value="${ v.id }">${ escapeHtml( v.name || 'Variante' ) }</option>` ).join( '' );
-			let variantControl = '<p class="store-card__loading">Cargando opciones...</p>';
+			const optionsHtml = variants
+				.map(
+					( v ) =>
+						`<option value="${ v.id }">${ escapeHtml(
+							v.name || 'Variante'
+						) }</option>`
+				)
+				.join( '' );
+			let variantControl =
+				'<p class="store-card__loading">Cargando opciones...</p>';
 			if ( hasDetail ) {
 				variantControl = variants.length
 					? `<select class="store-card__variant" data-variant-select aria-label="Variante">${ optionsHtml }</select>`
 					: '<p class="store-card__loading">Sin variantes disponibles.</p>';
 			}
-			const priceText = hasDetail ? money( displayPrice( firstVariant ) ) : '...';
+			const priceText = hasDetail
+				? money( displayPrice( firstVariant ) )
+				: '...';
 
 			card.innerHTML = `
-			<div class="store-card__image" style="background-image:url('${ escapeHtml( getProductThumb( product ) ) }')"></div>
+			<div class="store-card__image" style="background-image:url('${ escapeHtml(
+				getProductThumb( product )
+			) }')"></div>
 			<div class="store-card__body">
 				<h3>${ escapeHtml( getProductTitle( product ) ) }</h3>
 				${ variantControl }
 				<div class="store-card__bottom">
 					<strong data-price>${ priceText }</strong>
-					<button class="btn btn--primary" type="button" data-add-product="${ product.id }" ${ hasDetail && variants.length ? '' : 'disabled' }>Agregar</button>
+					<button class="btn btn--primary" type="button" data-add-product="${
+						product.id
+					}" ${
+						hasDetail && variants.length ? '' : 'disabled'
+					}>Agregar</button>
 				</div>
 			</div>`;
 			grid.appendChild( card );
@@ -297,7 +381,9 @@ function initStore( root ) {
 			return;
 		}
 		try {
-			const { res, json } = await getJson( `store/products/${ productId }` );
+			const { res, json } = await getJson(
+				`store/products/${ productId }`
+			);
 			if ( ! res.ok || ! json.ok || ! json.product ) {
 				throw new Error( json.error || 'detalle no disponible' );
 			}
@@ -316,19 +402,28 @@ function initStore( root ) {
 	const fetchProducts = async ( refresh = false ) => {
 		setFeedback( 'Consultando catálogo...' );
 		try {
-			const { res, json } = await getJson( refresh ? 'store/products?refresh=1' : 'store/products' );
+			const { res, json } = await getJson(
+				refresh ? 'store/products?refresh=1' : 'store/products'
+			);
 			if ( ! res.ok || ! json.ok ) {
 				throw new Error( json.error || 'Error al cargar productos' );
 			}
-			state.products = Array.isArray( json.products ) ? json.products : [];
+			state.products = Array.isArray( json.products )
+				? json.products
+				: [];
 			state.details.clear();
 			renderProducts();
-			setFeedback( `Catálogo actualizado: ${ state.products.length } productos.` );
+			setFeedback(
+				`Catálogo actualizado: ${ state.products.length } productos.`
+			);
 			await loadAllDetails();
 		} catch ( _err ) {
 			state.products = [];
 			renderProducts();
-			setFeedback( 'No fue posible cargar la tienda. Intenta de nuevo más tarde.', true );
+			setFeedback(
+				'No fue posible cargar la tienda. Intenta de nuevo más tarde.',
+				true
+			);
 		}
 	};
 
@@ -341,9 +436,14 @@ function initStore( root ) {
 		if ( ! card ) {
 			return;
 		}
-		const productId = Number.parseInt( card.getAttribute( 'data-product-id' ) || '', 10 );
+		const productId = Number.parseInt(
+			card.getAttribute( 'data-product-id' ) || '',
+			10
+		);
 		const variantId = Number.parseInt( select.value || '', 10 );
-		const variant = getProductVariants( productId ).find( ( v ) => v.id === variantId );
+		const variant = getProductVariants( productId ).find(
+			( v ) => v.id === variantId
+		);
 		const priceEl = card.querySelector( '[data-price]' );
 		if ( variant && priceEl ) {
 			priceEl.textContent = money( displayPrice( variant ) );
@@ -355,16 +455,26 @@ function initStore( root ) {
 		if ( ! btn ) {
 			return;
 		}
-		const productId = Number.parseInt( btn.getAttribute( 'data-add-product' ) || '', 10 );
+		const productId = Number.parseInt(
+			btn.getAttribute( 'data-add-product' ) || '',
+			10
+		);
 		const product = state.products.find( ( p ) => p.id === productId );
 		if ( ! product ) {
 			return;
 		}
 		const card = btn.closest( '[data-product-id]' );
-		const select = card ? card.querySelector( '[data-variant-select]' ) : null;
+		const select = card
+			? card.querySelector( '[data-variant-select]' )
+			: null;
 		const variants = getProductVariants( productId );
-		const variantId = select ? Number.parseInt( select.value || '', 10 ) : NaN;
-		const variant = variants.find( ( v ) => v.id === variantId ) || variants[ 0 ] || null;
+		const variantId = select
+			? Number.parseInt( select.value || '', 10 )
+			: NaN;
+		const variant =
+			variants.find( ( v ) => v.id === variantId ) ||
+			variants[ 0 ] ||
+			null;
 		addToCart( product, variant );
 	} );
 
@@ -374,7 +484,13 @@ function initStore( root ) {
 		const remove = e.target.closest( '[data-cart-remove]' );
 
 		if ( minus ) {
-			const item = state.cart[ Number.parseInt( minus.getAttribute( 'data-cart-minus' ) || '', 10 ) ];
+			const item =
+				state.cart[
+					Number.parseInt(
+						minus.getAttribute( 'data-cart-minus' ) || '',
+						10
+					)
+				];
 			if ( item ) {
 				item.quantity = Math.max( 1, item.quantity - 1 );
 				renderCart();
@@ -382,7 +498,13 @@ function initStore( root ) {
 			}
 		}
 		if ( plus ) {
-			const item = state.cart[ Number.parseInt( plus.getAttribute( 'data-cart-plus' ) || '', 10 ) ];
+			const item =
+				state.cart[
+					Number.parseInt(
+						plus.getAttribute( 'data-cart-plus' ) || '',
+						10
+					)
+				];
 			if ( item ) {
 				item.quantity += 1;
 				renderCart();
@@ -390,7 +512,10 @@ function initStore( root ) {
 			}
 		}
 		if ( remove ) {
-			const idx = Number.parseInt( remove.getAttribute( 'data-cart-remove' ) || '', 10 );
+			const idx = Number.parseInt(
+				remove.getAttribute( 'data-cart-remove' ) || '',
+				10
+			);
 			if ( Number.isFinite( idx ) ) {
 				state.cart.splice( idx, 1 );
 				renderCart();
@@ -405,7 +530,8 @@ function initStore( root ) {
 			if ( ! radio ) {
 				return;
 			}
-			state.shipping = state.rates[ Number.parseInt( radio.value || '', 10 ) ] || null;
+			state.shipping =
+				state.rates[ Number.parseInt( radio.value || '', 10 ) ] || null;
 			syncTotals();
 			updatePayState();
 		} );
@@ -419,16 +545,22 @@ function initStore( root ) {
 			address1: String( formData.get( 'address1' ) || '' ).trim(),
 			city: String( formData.get( 'city' ) || '' ).trim(),
 			state_code: String( formData.get( 'state_code' ) || '' ).trim(),
-			country_code: String( formData.get( 'country_code' ) || '' ).trim().toUpperCase(),
+			country_code: String( formData.get( 'country_code' ) || '' )
+				.trim()
+				.toUpperCase(),
 			zip: String( formData.get( 'zip' ) || '' ).trim(),
 		};
 	};
-	const recipientReady = ( r ) => r.name && r.email && r.address1 && r.city && r.country_code && r.zip;
+	const recipientReady = ( r ) =>
+		r.name && r.email && r.address1 && r.city && r.country_code && r.zip;
 
 	orderForm.addEventListener( 'submit', async ( e ) => {
 		e.preventDefault();
 		if ( ! state.cart.length ) {
-			setFeedback( 'Agrega al menos un producto antes de calcular el envío.', true );
+			setFeedback(
+				'Agrega al menos un producto antes de calcular el envío.',
+				true
+			);
 			return;
 		}
 		const recipient = getRecipient();
@@ -436,10 +568,16 @@ function initStore( root ) {
 			setFeedback( 'Completa todos los datos de envío.', true );
 			return;
 		}
-		const items = state.cart.map( ( item ) => ( { variant_id: item.variant.variant_id, quantity: item.quantity } ) );
+		const items = state.cart.map( ( item ) => ( {
+			variant_id: item.variant.variant_id,
+			quantity: item.quantity,
+		} ) );
 		setFeedback( 'Calculando envío...' );
 		try {
-			const { res, json } = await postJson( 'store/shipping', { recipient, items } );
+			const { res, json } = await postJson( 'store/shipping', {
+				recipient,
+				items,
+			} );
 			if ( ! res.ok || ! json.ok ) {
 				throw new Error( json.error || 'No se pudo calcular el envío' );
 			}
@@ -447,21 +585,31 @@ function initStore( root ) {
 			state.rates = Array.isArray( json.rates ) ? json.rates : [];
 			if ( ! state.rates.length ) {
 				invalidateShipping();
-				setFeedback( 'No hay métodos de envío para esa dirección.', true );
+				setFeedback(
+					'No hay métodos de envío para esa dirección.',
+					true
+				);
 				return;
 			}
 			renderShipping();
 			setFeedback( 'Selecciona un método de envío y continúa al pago.' );
 		} catch ( err ) {
 			invalidateShipping();
-			setFeedback( err.message || 'No se pudo calcular el envío. Verifica la dirección.', true );
+			setFeedback(
+				err.message ||
+					'No se pudo calcular el envío. Verifica la dirección.',
+				true
+			);
 		}
 	} );
 
 	if ( payBtn ) {
 		payBtn.addEventListener( 'click', async () => {
 			if ( ! state.cart.length || ! state.shipping ) {
-				setFeedback( 'Calcula el envío y selecciona un método antes de pagar.', true );
+				setFeedback(
+					'Calcula el envío y selecciona un método antes de pagar.',
+					true
+				);
 				return;
 			}
 			const recipient = getRecipient();
@@ -483,14 +631,23 @@ function initStore( root ) {
 			payBtn.disabled = true;
 			setFeedback( 'Redirigiendo a pago seguro con Stripe...' );
 			try {
-				const { res, json } = await postJson( 'store/checkout', payload );
+				const { res, json } = await postJson(
+					'store/checkout',
+					payload
+				);
 				if ( ! res.ok || ! json.ok || ! json.url ) {
-					throw new Error( json.error || 'No se pudo iniciar el pago' );
+					throw new Error(
+						json.error || 'No se pudo iniciar el pago'
+					);
 				}
 				window.location.href = json.url;
 			} catch ( err ) {
 				payBtn.disabled = false;
-				setFeedback( err.message || 'No se pudo iniciar el pago. Intenta de nuevo.', true );
+				setFeedback(
+					err.message ||
+						'No se pudo iniciar el pago. Intenta de nuevo.',
+					true
+				);
 			}
 		} );
 	}
@@ -512,7 +669,10 @@ function initStore( root ) {
 			return;
 		}
 		if ( status === 'success' ) {
-			showResult( '¡Pago recibido! Tu pedido se envió a producción. Recibirás un correo de confirmación.', true );
+			showResult(
+				'¡Pago recibido! Tu pedido se envió a producción. Recibirás un correo de confirmación.',
+				true
+			);
 			state.cart = [];
 			state.pendingCart = [];
 			clearStoredCart();
@@ -525,7 +685,11 @@ function initStore( root ) {
 		params.delete( 'checkout' );
 		params.delete( 'session_id' );
 		const query = params.toString();
-		window.history.replaceState( {}, '', window.location.pathname + ( query ? `?${ query }` : '' ) );
+		window.history.replaceState(
+			{},
+			'',
+			window.location.pathname + ( query ? `?${ query }` : '' )
+		);
 	};
 
 	if ( refreshBtn ) {

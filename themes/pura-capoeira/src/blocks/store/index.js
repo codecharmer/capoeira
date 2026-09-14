@@ -1,7 +1,12 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { PanelBody, Placeholder, TextareaControl, TextControl } from '@wordpress/components';
+import {
+	PanelBody,
+	Placeholder,
+	TextareaControl,
+	TextControl,
+} from '@wordpress/components';
 import metadata from './block.json';
 
 function Edit( { attributes, setAttributes } ) {
@@ -17,7 +22,9 @@ function Edit( { attributes, setAttributes } ) {
 					<TextareaControl
 						label={ __( 'Nota al pie del carrito', 'pura' ) }
 						value={ attributes.footnote }
-						onChange={ ( footnote ) => setAttributes( { footnote } ) }
+						onChange={ ( footnote ) =>
+							setAttributes( { footnote } )
+						}
 					/>
 				</PanelBody>
 			</InspectorControls>
@@ -25,7 +32,10 @@ function Edit( { attributes, setAttributes } ) {
 				<Placeholder
 					icon="cart"
 					label={ __( 'Tienda', 'pura' ) }
-					instructions={ __( 'El catálogo, el carrito y el pago se cargan en el sitio. Configura Printful y Stripe en Pura Capoeira → Ajustes.', 'pura' ) }
+					instructions={ __(
+						'El catálogo, el carrito y el pago se cargan en el sitio. Configura Printful y Stripe en Pura Capoeira → Ajustes.',
+						'pura'
+					) }
 				/>
 			</div>
 		</>
