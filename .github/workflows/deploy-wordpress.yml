@@ -26,6 +26,8 @@ jobs:
     name: Build, test, deploy (${{ inputs.environment || 'staging' }})
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment || 'staging' }}
+    # Skip silently until the environment defines WP_PATH (set it under Settings → Environments).
+    if: ${{ vars.WP_PATH != '' }}
     permissions:
       contents: read
 
