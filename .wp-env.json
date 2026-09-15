@@ -5,10 +5,9 @@
 		"./plugins/pura-capoeira-core",
 		"https://downloads.wordpress.org/plugin/fluent-smtp.latest-stable.zip"
 	],
-	"themes": [ "./themes/pura-capoeira" ],
-	"mappings": {
-		"wp-content/pura-source": "./public"
-	},
+	"themes": [
+		"./themes/pura-capoeira"
+	],
 	"port": 8888,
 	"testsEnvironment": false,
 	"config": {
