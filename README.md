@@ -4,8 +4,8 @@ Sitio de [capoeiracuernavaca.com](https://capoeiracuernavaca.com) en WordPress: 
 (`themes/pura-capoeira`) y un **plugin** (`plugins/pura-capoeira-core`) con los ajustes, las
 inscripciones, la tienda (Printful + Stripe), la galería y la API REST.
 
-> `public/` es el sitio estático anterior. Sigue desplegándose con `deploy.yml` hasta el cambio a
-> WordPress y sirve como fuente para el importador (`wp pura-theme import`). Ver
+> El sitio estático anterior (`public/`) se retiró tras el cambio a WordPress. En el servidor queda
+> una copia en `public_html_static_backup` durante 30 días. Ver
 > [`docs/cutover-runbook.md`](docs/cutover-runbook.md).
 
 ## Estructura
