@@ -1,0 +1,7 @@
+{
+	"code": 200,
+	"result": [
+		{ "id": "STANDARD", "name": "Envío estándar (5–8 días hábiles)", "rate": "189.00", "currency": "MXN", "minDeliveryDays": 5, "maxDeliveryDays": 8 },
+		{ "id": "PRINTFUL_FAST", "name": "Envío exprés (2–3 días hábiles)", "rate": "349.00", "currency": "MXN", "minDeliveryDays": 2, "maxDeliveryDays": 3 }
+	]
+}

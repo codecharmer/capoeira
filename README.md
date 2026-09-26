@@ -1,72 +1,70 @@
 # Pura Capoeira Cuernavaca
 
-Sitio estatico con despliegue por GitHub Actions al VPS.
+Sitio de [capoeiracuernavaca.com](https://capoeiracuernavaca.com) en WordPress: un **block theme**
+(`themes/pura-capoeira`) y un **plugin** (`plugins/pura-capoeira-core`) con los ajustes, las
+inscripciones, la tienda (Printful + Stripe), la galería y la API REST.
 
-## Tienda con Printful
+> El sitio estático anterior (`public/`) se retiró tras el cambio a WordPress. En el servidor queda
+> una copia en `public_html_static_backup` durante 30 días. Ver
+> [`docs/cutover-runbook.md`](docs/cutover-runbook.md).
 
-Se agrego una tienda conectada con la API de Printful:
+## Estructura
 
-- Frontend: `public/tienda.html`
-- JS de tienda: `public/assets/js/main.js`
-- API proxy (servidor): `public/api/printful.php`
+```
+themes/pura-capoeira/       theme.json, plantillas, partes, patrones, bloques (src/ → build/), importador WP-CLI
+plugins/pura-capoeira-core/ ajustes, precios, CPTs, REST (pura/v1), Stripe, Printful, correo, WP-CLI, tests
+docs/                       runbook de cambio, plantilla de .htaccess de producción
+bin/wp-env-seed.sh          semilla del entorno local
+.wp-env.json                entorno local (Docker) con @wordpress/env
+```
 
-### Por que hay un API proxy
+## Desarrollo local
 
-La llave de Printful nunca debe exponerse en el navegador. Por eso, el frontend llama a `public/api/printful.php` y este archivo PHP hace las llamadas a Printful desde el servidor.
+Requisitos: Node 20+, Docker Desktop, Composer (solo para lint/tests de PHP).
 
-### Configuracion requerida en el servidor
+```bash
+npm install                 # instala wp-env y wp-scripts (el tema es el único workspace con JS)
+npm run build               # compila los bloques del tema
+npx wp-env start            # http://localhost:8888  (admin / password)
+```
 
-Configura una de estas opciones:
+`bin/wp-env-seed.sh` corre solo tras `wp-env start`: idioma, permalinks, tema, plugins y, si el
+importador existe, `wp pura-theme import all` (páginas desde los patrones del tema, menú, logos y
+ajustes). Los videos de la galería solo se importan con `--source=/ruta/al/sitio/estatico`
+(la carpeta que contiene `data/gallery.json`); sin ella el importador los omite con un aviso.
 
-1. Variable de entorno `PRINTFUL_API_KEY` en Apache/PHP-FPM.
-2. Archivo local `public/api/.printful-token` con solo el token (sin espacios).
+Llaves locales: crea `.wp-env.override.json` (ignorado por git) con las constantes `PURA_*` del
+plugin (ver su [README](plugins/pura-capoeira-core/README.md)). Stripe local:
 
-Opcional:
+```bash
+stripe listen --forward-to http://localhost:8888/wp-json/pura/v1/stripe/webhook
+```
 
-- `PRINTFUL_API_BASE_URL` (por defecto usa `https://api.printful.com`).
+Printful no tiene sandbox: con `PURA_PRINTFUL_MOCK` el plugin sirve `tests/fixtures/printful/*.json`.
+Captura fixtures reales con `wp pura printful-fixtures`.
 
-### Endpoints internos
+Comandos útiles:
 
-- `GET /api/printful.php?action=products` lista productos del store.
-- `GET /api/printful.php?action=product&id=123` obtiene detalle de producto.
-- `POST /api/printful.php?action=order` crea orden borrador en Printful (legado).
-- `POST /api/checkout.php?action=shipping` calcula tarifas reales de envío (MXN).
-- `POST /api/checkout.php?action=create-checkout` crea la orden borrador + sesión de Stripe Checkout.
-- `POST /api/checkout.php?action=webhook` Stripe llama aquí tras el pago y se confirma la orden en Printful.
+```bash
+npm run start                                  # wp-scripts en modo watch
+npm run lint                                   # ESLint + Stylelint
+cd plugins/pura-capoeira-core && composer install && composer run lint && composer run test:unit
+npx wp-env run cli wp pura doctor
+```
 
-## Pagos en el sitio (Stripe + Printful)
+## Contenido editable
 
-El checkout completo se realiza en el sitio con Stripe (pago) y Printful (fulfillment).
+Todo se edita en el admin: copia de las páginas (bloques y patrones), horarios, precios, códigos,
+datos de contacto y redes (**Pura Capoeira → Ajustes**), videos de la galería (**Pura Capoeira →
+Videos**), inscripciones y alumnos (**Pura Capoeira → Inscripciones / Alumnos**).
 
-### Flujo de compra
+## Despliegue
 
-1. Se cargan productos desde Printful.
-2. El usuario agrega productos al carrito y captura su dirección.
-3. "Calcular envío" obtiene tarifas reales de Printful en MXN.
-4. El usuario elige método de envío y pulsa "Pagar con tarjeta".
-5. El backend crea una orden **borrador** en Printful y una **sesión de Stripe Checkout** (MXN), y redirige al pago seguro de Stripe.
-6. Al pagar, Stripe llama al **webhook**, que **confirma** la orden en Printful para producción automáticamente.
+`.github/workflows/deploy-wordpress.yml` compila, pasa PHPCS y PHPUnit y sube `themes/` y
+`plugins/` al `wp-content` del VPS por rsync, activa tema y plugin y limpia cachés. Un push a
+`master` despliega a **staging**; producción se lanza a mano (*Run workflow → production*). Cada
+entorno de GitHub define la variable `WP_PATH`; los secretos SSH son los mismos de siempre.
 
-### Configuración requerida (Stripe)
-
-Configura los secretos igual que el token de Printful (variable de entorno o archivo fuera del web root):
-
-| Secreto | Variable de entorno | Archivo (alternativa) |
-| --- | --- | --- |
-| Llave secreta de Stripe | `STRIPE_SECRET_KEY` | `.stripe-secret` |
-| Firma del webhook | `STRIPE_WEBHOOK_SECRET` | `.stripe-webhook-secret` |
-
-Opcionales:
-
-- `STORE_CURRENCY` (por defecto `MXN`).
-- `PRICE_MULTIPLIER` (por defecto `1`; úsalo si tus precios en Printful están en USD y quieres convertir a MXN).
-- `SITE_BASE_URL` (por defecto se detecta del host; ej. `https://capoeiracuernavaca.com`).
-
-Los archivos `.stripe-secret` y `.stripe-webhook-secret` deben guardarse **fuera** del web root (un nivel arriba de `public_html`, junto a `.printful-token`) o como variables de entorno. Nunca se suben al repo ni al servidor por rsync (ya están excluidos).
-
-### Registrar el webhook en Stripe
-
-1. En el panel de Stripe: Developers → Webhooks → Add endpoint.
-2. URL: `https://capoeiracuernavaca.com/api/checkout.php?action=webhook`
-3. Evento: `checkout.session.completed` (y opcional `checkout.session.async_payment_succeeded`).
-4. Copia el **Signing secret** (`whsec_...`) y guárdalo en `STRIPE_WEBHOOK_SECRET` / `.stripe-webhook-secret`.
+Los secretos de la app (`PURA_STRIPE_SECRET_KEY`, `PURA_STRIPE_WEBHOOK_SECRET`,
+`PURA_PRINTFUL_API_KEY`, `FLUENTMAIL_SMTP_PASSWORD`) viven como constantes en `wp-config.php`
+del servidor; nunca en el repo.

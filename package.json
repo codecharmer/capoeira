@@ -1,0 +1,30 @@
+{
+	"name": "capoeiracuernavaca",
+	"version": "1.0.0",
+	"private": true,
+	"description": "Pura Capoeira Cuernavaca — WordPress block theme and core plugin",
+	"workspaces": [
+		"themes/pura-capoeira"
+	],
+	"scripts": {
+		"env:start": "wp-env start",
+		"env:stop": "wp-env stop",
+		"env:destroy": "wp-env destroy",
+		"env:cli": "wp-env run cli",
+		"env:logs": "wp-env logs",
+		"build": "npm run build --workspaces --if-present",
+		"start": "npm run start --workspaces --if-present",
+		"lint": "npm run lint --workspaces --if-present",
+		"format": "npm run format --workspaces --if-present"
+	},
+	"devDependencies": {
+		"@wordpress/env": "^11.15.0",
+		"typescript": "^5.8.0"
+	},
+	"engines": {
+		"node": ">=20"
+	},
+	"overrides": {
+		"typescript": "^5.8.0"
+	}
+}

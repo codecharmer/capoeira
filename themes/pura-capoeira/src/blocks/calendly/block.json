@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/calendly",
+	"version": "1.0.0",
+	"title": "Agenda Calendly",
+	"category": "pura",
+	"icon": "clock",
+	"description": "Calendario de reserva de clase de prueba (adultos o niños).",
+	"textdomain": "pura",
+	"attributes": {
+		"group": { "type": "string", "default": "adult" },
+		"height": { "type": "number", "default": 700 }
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

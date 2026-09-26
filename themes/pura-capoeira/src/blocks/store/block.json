@@ -1,0 +1,28 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/store",
+	"version": "1.0.0",
+	"title": "Tienda",
+	"category": "pura",
+	"icon": "cart",
+	"description": "Catálogo de Printful con carrito, cálculo de envío y pago con Stripe.",
+	"textdomain": "pura",
+	"attributes": {
+		"note": {
+			"type": "string",
+			"default": "Productos sincronizados con Printful."
+		},
+		"footnote": {
+			"type": "string",
+			"default": "Pago seguro con Stripe. Tu pedido se envía a producción automáticamente al confirmarse el pago."
+		}
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"viewScript": "file:./view.js",
+	"render": "file:./render.php"
+}

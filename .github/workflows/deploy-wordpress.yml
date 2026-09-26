@@ -1,0 +1,118 @@
+name: Deploy WordPress theme and plugin
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'themes/**'
+      - 'plugins/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-wordpress.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [staging, production]
+        default: staging
+
+concurrency:
+  group: wordpress-deploy-${{ inputs.environment || 'staging' }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build, test, deploy (${{ inputs.environment || 'staging' }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || 'staging' }}
+    # Skip silently until the environment defines WP_PATH (set it under Settings → Environments).
+    if: ${{ vars.WP_PATH != '' }}
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Build blocks
+        run: npm run build
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+          coverage: none
+
+      - name: Install PHP dev dependencies
+        working-directory: plugins/pura-capoeira-core
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Lint PHP (WordPress coding standards)
+        working-directory: plugins/pura-capoeira-core
+        run: composer run lint
+
+      - name: Unit tests
+        working-directory: plugins/pura-capoeira-core
+        run: composer run test:unit
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy theme
+        run: |
+          rsync -az --delete \
+            --exclude='node_modules/' --exclude='src/' --exclude='package*.json' \
+            --exclude='.wp-env*' --exclude='*.md' \
+            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.SSH_PORT }}" \
+            themes/pura-capoeira/ \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.WP_PATH }}/wp-content/themes/pura-capoeira/"
+
+      - name: Deploy plugin
+        run: |
+          rsync -az --delete \
+            --exclude='node_modules/' --exclude='src/' --exclude='package*.json' \
+            --exclude='vendor/' --exclude='composer.*' --exclude='phpunit.xml.dist' --exclude='phpcs.xml.dist' \
+            --exclude='tests/unit/' --exclude='.phpunit.cache/' \
+            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.SSH_PORT }}" \
+            plugins/pura-capoeira-core/ \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.WP_PATH }}/wp-content/plugins/pura-capoeira-core/"
+
+      - name: Fix ownership and permissions
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "for d in '${{ vars.WP_PATH }}/wp-content/themes/pura-capoeira' '${{ vars.WP_PATH }}/wp-content/plugins/pura-capoeira-core'; do \
+               chown -R capoeiracuernava:capoeiracuernava \"\$d\" && \
+               find \"\$d\" -type d -exec chmod 755 {} \; && \
+               find \"\$d\" -type f -exec chmod 644 {} \; ; done"
+
+      - name: Activate, flush caches and rewrites
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "sudo -u capoeiracuernava -i -- wp --path='${{ vars.WP_PATH }}' plugin activate pura-capoeira-core && \
+             sudo -u capoeiracuernava -i -- wp --path='${{ vars.WP_PATH }}' theme activate pura-capoeira && \
+             sudo -u capoeiracuernava -i -- wp --path='${{ vars.WP_PATH }}' cache flush && \
+             sudo -u capoeiracuernava -i -- wp --path='${{ vars.WP_PATH }}' rewrite flush --hard"
+
+      - name: Clear cPanel NGINX cache
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "/usr/local/cpanel/scripts/ea-nginx clear_cache capoeiracuernava && /usr/local/cpanel/scripts/ea-nginx reload"

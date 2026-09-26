@@ -1,0 +1,208 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"settings": {
+		"appearanceTools": true,
+		"useRootPaddingAwareAlignments": true,
+		"color": {
+			"defaultPalette": false,
+			"defaultGradients": false,
+			"defaultDuotone": false,
+			"custom": false,
+			"customDuotone": false,
+			"customGradient": false,
+			"palette": [
+				{ "slug": "bg", "name": "Fondo", "color": "#0A0A0A" },
+				{ "slug": "bg-2", "name": "Fondo 2", "color": "#141414" },
+				{ "slug": "surface", "name": "Superficie", "color": "#1F1F1F" },
+				{ "slug": "text", "name": "Texto", "color": "#F5F5F5" },
+				{ "slug": "text-2", "name": "Texto 2", "color": "#A1A1AA" },
+				{ "slug": "muted", "name": "Apagado", "color": "#71717A" },
+				{ "slug": "yellow", "name": "Amarillo", "color": "#FFD700" },
+				{ "slug": "yellow-hover", "name": "Amarillo hover", "color": "#E6C200" },
+				{ "slug": "blue", "name": "Azul", "color": "#0047AB" },
+				{ "slug": "blue-2", "name": "Azul 2", "color": "#1d5dd1" },
+				{ "slug": "green", "name": "Verde", "color": "#009E60" },
+				{ "slug": "green-2", "name": "Verde 2", "color": "#00b870" }
+			]
+		},
+		"custom": {
+			"border": {
+				"default": "rgba(255, 255, 255, 0.10)",
+				"soft": "rgba(255, 255, 255, 0.05)"
+			},
+			"radius": {
+				"default": "6px",
+				"sm": "3px"
+			},
+			"shadow": {
+				"glow": "0 0 24px rgba(255, 215, 0, 0.25)"
+			},
+			"container": "1200px"
+		},
+		"layout": {
+			"contentSize": "1200px",
+			"wideSize": "1200px"
+		},
+		"spacing": {
+			"units": [ "px", "rem", "em", "vh", "vw", "%" ],
+			"spacingScale": { "steps": 0 },
+			"spacingSizes": [
+				{ "slug": "10", "name": "XS", "size": "0.5rem" },
+				{ "slug": "20", "name": "S", "size": "1rem" },
+				{ "slug": "30", "name": "M", "size": "1.5rem" },
+				{ "slug": "40", "name": "L", "size": "2rem" },
+				{ "slug": "50", "name": "XL", "size": "3rem" },
+				{ "slug": "60", "name": "Sección", "size": "5rem" },
+				{ "slug": "70", "name": "Sección grande", "size": "7rem" }
+			]
+		},
+		"typography": {
+			"fluid": true,
+			"customFontSize": false,
+			"dropCap": false,
+			"fontFamilies": [
+				{
+					"slug": "heading",
+					"name": "Anton",
+					"fontFamily": "'Anton', 'Bebas Neue', Impact, sans-serif",
+					"fontFace": [
+						{
+							"fontFamily": "Anton",
+							"fontStyle": "normal",
+							"fontWeight": "400",
+							"fontDisplay": "swap",
+							"src": [ "file:./assets/fonts/anton-400-latin.woff2" ]
+						}
+					]
+				},
+				{
+					"slug": "body",
+					"name": "Outfit",
+					"fontFamily": "'Outfit', system-ui, -apple-system, sans-serif",
+					"fontFace": [
+						{
+							"fontFamily": "Outfit",
+							"fontStyle": "normal",
+							"fontWeight": "300 700",
+							"fontDisplay": "swap",
+							"src": [ "file:./assets/fonts/outfit-300-700-latin.woff2" ]
+						}
+					]
+				},
+				{
+					"slug": "mono",
+					"name": "Space Mono",
+					"fontFamily": "'Space Mono', ui-monospace, monospace",
+					"fontFace": [
+						{
+							"fontFamily": "Space Mono",
+							"fontStyle": "normal",
+							"fontWeight": "400",
+							"fontDisplay": "swap",
+							"src": [ "file:./assets/fonts/space-mono-400-latin.woff2" ]
+						},
+						{
+							"fontFamily": "Space Mono",
+							"fontStyle": "normal",
+							"fontWeight": "700",
+							"fontDisplay": "swap",
+							"src": [ "file:./assets/fonts/space-mono-700-latin.woff2" ]
+						}
+					]
+				}
+			],
+			"fontSizes": [
+				{ "slug": "small", "name": "Pequeño", "size": "0.95rem", "fluid": false },
+				{ "slug": "base", "name": "Base", "size": "1.25rem", "fluid": false },
+				{ "slug": "copy", "name": "Párrafo", "size": "1.5rem", "fluid": false },
+				{ "slug": "lead", "name": "Lead", "size": "1.5rem", "fluid": { "min": "1.35rem", "max": "1.5rem" } },
+				{ "slug": "h3", "name": "Título 3", "size": "2.25rem", "fluid": { "min": "1.5rem", "max": "2.25rem" } },
+				{ "slug": "h2", "name": "Título 2", "size": "3.75rem", "fluid": { "min": "2rem", "max": "3.75rem" } },
+				{ "slug": "h1", "name": "Título 1", "size": "5.5rem", "fluid": { "min": "2.5rem", "max": "5.5rem" } },
+				{ "slug": "statement", "name": "Declaración", "size": "5rem", "fluid": { "min": "2.6rem", "max": "5rem" } },
+				{ "slug": "display", "name": "Display", "size": "8rem", "fluid": { "min": "3rem", "max": "8rem" } }
+			]
+		}
+	},
+	"styles": {
+		"color": {
+			"background": "var(--wp--preset--color--bg)",
+			"text": "var(--wp--preset--color--text)"
+		},
+		"typography": {
+			"fontFamily": "var(--wp--preset--font-family--body)",
+			"fontSize": "var(--wp--preset--font-size--base)",
+			"lineHeight": "1.6"
+		},
+		"spacing": {
+			"padding": {
+				"left": "clamp(1.5rem, 4vw, 3rem)",
+				"right": "clamp(1.5rem, 4vw, 3rem)"
+			}
+		},
+		"elements": {
+			"heading": {
+				"typography": {
+					"fontFamily": "var(--wp--preset--font-family--heading)",
+					"fontWeight": "400",
+					"lineHeight": "0.95",
+					"letterSpacing": "-0.01em",
+					"textTransform": "uppercase"
+				},
+				"spacing": { "margin": { "top": "0", "bottom": "0" } }
+			},
+			"h1": { "typography": { "fontSize": "var(--wp--preset--font-size--h-1)" } },
+			"h2": { "typography": { "fontSize": "var(--wp--preset--font-size--h-2)" } },
+			"h3": { "typography": { "fontSize": "var(--wp--preset--font-size--h-3)" } },
+			"link": {
+				"color": { "text": "inherit" },
+				"typography": { "textDecoration": "none" },
+				":hover": { "color": { "text": "var(--wp--preset--color--yellow)" } }
+			},
+			"button": {
+				"color": {
+					"background": "var(--wp--preset--color--yellow)",
+					"text": "var(--wp--preset--color--bg)"
+				},
+				"typography": {
+					"fontFamily": "var(--wp--preset--font-family--mono)",
+					"fontSize": "1.03rem",
+					"fontWeight": "700",
+					"letterSpacing": "0.2em",
+					"textTransform": "uppercase"
+				},
+				"border": { "radius": "999px" },
+				"spacing": { "padding": { "top": "0.95rem", "bottom": "0.95rem", "left": "1.5rem", "right": "1.5rem" } },
+				":hover": {
+					"color": {
+						"background": "var(--wp--preset--color--yellow-hover)",
+						"text": "var(--wp--preset--color--bg)"
+					}
+				}
+			}
+		},
+		"blocks": {
+			"core/paragraph": {
+				"typography": { "fontSize": "var(--wp--preset--font-size--copy)" },
+				"spacing": { "margin": { "top": "0", "bottom": "1rem" } }
+			},
+			"core/site-logo": {
+				"spacing": { "margin": { "top": "0", "bottom": "0" } }
+			},
+			"core/navigation": {
+				"typography": {
+					"fontFamily": "var(--wp--preset--font-family--mono)",
+					"fontSize": "0.95rem",
+					"letterSpacing": "0.15em",
+					"textTransform": "uppercase"
+				}
+			}
+		}
+	},
+	"templateParts": [
+		{ "name": "header", "title": "Encabezado", "area": "header" },
+		{ "name": "footer", "title": "Pie de página", "area": "footer" }
+	],
+	"customTemplates": []
+}

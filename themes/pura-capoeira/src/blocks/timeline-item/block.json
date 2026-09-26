@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/timeline-item",
+	"version": "1.0.0",
+	"title": "Año",
+	"category": "pura",
+	"icon": "marker",
+	"description": "Un año y su texto dentro de la línea de tiempo.",
+	"textdomain": "pura",
+	"parent": [ "pura/timeline" ],
+	"attributes": {
+		"year": {
+			"type": "string",
+			"source": "html",
+			"selector": ".tl-year",
+			"default": ""
+		},
+		"text": {
+			"type": "rich-text",
+			"source": "rich-text",
+			"selector": ".tl-text"
+		}
+	},
+	"supports": {
+		"html": false,
+		"reusable": false
+	},
+	"editorScript": "file:./index.js"
+}

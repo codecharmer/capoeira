@@ -1,0 +1,16 @@
+{
+	"code": 200,
+	"result": {
+		"id": 987654,
+		"external_id": "capoeira-mock",
+		"store": 1,
+		"status": "draft",
+		"shipping": "STANDARD",
+		"created": 1726300000,
+		"updated": 1726300000,
+		"recipient": {},
+		"items": [],
+		"costs": { "currency": "MXN", "subtotal": "0.00", "shipping": "189.00", "total": "0.00" },
+		"retail_costs": { "currency": "MXN", "subtotal": "0.00", "shipping": "189.00", "total": "0.00" }
+	}
+}

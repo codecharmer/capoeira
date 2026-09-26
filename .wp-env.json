@@ -1,0 +1,26 @@
+{
+	"core": null,
+	"phpVersion": "8.2",
+	"plugins": [
+		"./plugins/pura-capoeira-core",
+		"https://downloads.wordpress.org/plugin/fluent-smtp.latest-stable.zip"
+	],
+	"themes": [
+		"./themes/pura-capoeira"
+	],
+	"port": 8888,
+	"testsEnvironment": false,
+	"config": {
+		"WP_DEBUG": true,
+		"WP_DEBUG_LOG": true,
+		"WP_DEBUG_DISPLAY": false,
+		"SCRIPT_DEBUG": true,
+		"WP_ENVIRONMENT_TYPE": "local",
+		"WP_DEVELOPMENT_MODE": "theme",
+		"PURA_PRINTFUL_MOCK": true,
+		"PURA_PRINTFUL_CONFIRM_DISABLED": true
+	},
+	"lifecycleScripts": {
+		"afterStart": "bash bin/wp-env-seed.sh"
+	}
+}

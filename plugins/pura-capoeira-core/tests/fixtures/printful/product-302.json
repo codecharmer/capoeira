@@ -1,0 +1,18 @@
+{
+	"code": 200,
+	"result": {
+		"sync_product": {
+			"id": 302,
+			"external_id": "pura-hoodie",
+			"name": "Hoodie Pura Capoeira",
+			"variants": 2,
+			"synced": 2,
+			"thumbnail_url": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=70",
+			"is_ignored": false
+		},
+		"sync_variants": [
+			{ "id": 30201, "external_id": "pura-hoodie-m", "sync_product_id": 302, "name": "Hoodie Pura Capoeira / M", "synced": true, "variant_id": 5530, "retail_price": "45.00", "currency": "USD", "product": { "variant_id": 5530, "product_id": 146, "name": "Gildan 18500 Unisex Heavy Blend Hooded Sweatshirt (Black / M)" } },
+			{ "id": 30202, "external_id": "pura-hoodie-l", "sync_product_id": 302, "name": "Hoodie Pura Capoeira / L", "synced": true, "variant_id": 5531, "retail_price": "45.00", "currency": "USD", "product": { "variant_id": 5531, "product_id": 146, "name": "Gildan 18500 Unisex Heavy Blend Hooded Sweatshirt (Black / L)" } }
+		]
+	}
+}
