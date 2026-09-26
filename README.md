@@ -23,13 +23,15 @@ bin/wp-env-seed.sh          semilla del entorno local
 Requisitos: Node 20+, Docker Desktop, Composer (solo para lint/tests de PHP).
 
 ```bash
-npm install                 # instala wp-env y wp-scripts para ambos workspaces
+npm install                 # instala wp-env y wp-scripts (el tema es el único workspace con JS)
 npm run build               # compila los bloques del tema
 npx wp-env start            # http://localhost:8888  (admin / password)
 ```
 
 `bin/wp-env-seed.sh` corre solo tras `wp-env start`: idioma, permalinks, tema, plugins y, si el
-importador existe, `wp pura-theme import all` (páginas, menú, logos, galería y ajustes desde `public/`).
+importador existe, `wp pura-theme import all` (páginas desde los patrones del tema, menú, logos y
+ajustes). Los videos de la galería solo se importan con `--source=/ruta/al/sitio/estatico`
+(la carpeta que contiene `data/gallery.json`); sin ella el importador los omite con un aviso.
 
 Llaves locales: crea `.wp-env.override.json` (ignorado por git) con las constantes `PURA_*` del
 plugin (ver su [README](plugins/pura-capoeira-core/README.md)). Stripe local:

@@ -8,6 +8,7 @@ Thumbs.db
 node_modules/
 vendor/
 build/
+.phpunit.cache/
 *.log
 npm-debug.log*
 

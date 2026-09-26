@@ -3,8 +3,10 @@
  * `wp pura-theme import` — bring the static site's content into WordPress.
  *
  * Subcommands are idempotent (keyed by slug, file name, or URL) so the command can be re-run.
- * The source directory defaults to the legacy `public/` folder, which wp-env mounts at
- * wp-content/pura-source; pass --source=/path/to/public_html on a server.
+ *
+ * Pages, menu and settings come from the theme itself. Logos come from the theme's assets/images
+ * unless --source points at a copy of the legacy static site (public_html on the server), which is
+ * also the only place gallery videos (data/gallery.json) can be imported from.
  *
  * @package Pura
  */
@@ -58,7 +60,8 @@ final class Pura_Theme_Import_Command {
 	 * ## OPTIONS
 	 *
 	 * [--source=<path>]
-	 * : Directory containing the legacy static site (index.html, assets/, data/).
+	 * : Directory containing the legacy static site (index.html, assets/, data/). Optional: without
+	 * it, logos come from the theme and the gallery import is skipped.
 	 *
 	 * @param string[]              $args       Positional args.
 	 * @param array<string, string> $assoc_args Named args.
@@ -76,7 +79,8 @@ final class Pura_Theme_Import_Command {
 	 * Sideload logos; set the site logo, site icon, and OG image.
 	 *
 	 * [--source=<path>]
-	 * : Directory containing the legacy static site.
+	 * : Directory containing the legacy static site. Optional: the theme's assets/images are used
+	 * for any file the source does not have.
 	 *
 	 * @param string[]              $args       Positional args.
 	 * @param array<string, string> $assoc_args Named args.
@@ -85,9 +89,9 @@ final class Pura_Theme_Import_Command {
 		$this->resolve_source( $assoc_args );
 		$this->require_media_functions();
 
-		$logo = $this->import_local_file( $this->source . '/assets/images/Logo-Pura-Capoeira-Prof-malandro.png', 'Pura Capoeira — Professor Malandro' );
-		$mark = $this->import_local_file( $this->source . '/assets/images/pura-capoeira-logo.png', 'Pura Capoeira' );
-		$og   = $this->import_local_file( $this->source . '/assets/images/og-image.jpg', 'Pura Capoeira Cuernavaca' );
+		$logo = $this->import_local_file( $this->find_image( 'Logo-Pura-Capoeira-Prof-malandro.png' ), 'Pura Capoeira — Professor Malandro' );
+		$mark = $this->import_local_file( $this->find_image( 'pura-capoeira-logo.png' ), 'Pura Capoeira' );
+		$og   = $this->import_local_file( $this->find_image( 'og-image.jpg' ), 'Pura Capoeira Cuernavaca' );
 
 		if ( $logo ) {
 			set_theme_mod( 'custom_logo', $logo );
@@ -257,13 +261,17 @@ final class Pura_Theme_Import_Command {
 	 * Import data/gallery.json into the gallery_video post type.
 	 *
 	 * [--source=<path>]
-	 * : Directory containing the legacy static site.
+	 * : Directory containing the legacy static site (the one with data/gallery.json). Required for
+	 * this subcommand; without it nothing is imported.
 	 *
 	 * @param string[]              $args       Positional args.
 	 * @param array<string, string> $assoc_args Named args.
 	 */
 	public function gallery( array $args, array $assoc_args ): void {
-		$this->resolve_source( $assoc_args );
+		if ( ! $this->resolve_source( $assoc_args ) ) {
+			WP_CLI::warning( 'gallery: no legacy source directory; pass --source=/path/to/public_html to import videos. Skipping.' );
+			return;
+		}
 		$this->require_media_functions();
 
 		if ( ! post_type_exists( 'gallery_video' ) ) {
@@ -435,23 +443,46 @@ final class Pura_Theme_Import_Command {
 	}
 
 	/**
+	 * Locate a copy of the legacy static site, if any.
+	 *
+	 * An explicit --source that does not exist is an error; otherwise the wp-env mapping
+	 * (wp-content/pura-source) is tried and a missing source is simply reported as absent.
+	 *
 	 * @param array<string, string> $assoc_args Named args.
+	 * @return bool Whether a source directory is available in $this->source.
 	 */
-	private function resolve_source( array $assoc_args ): void {
-		$candidates = array(
-			$assoc_args['source'] ?? '',
-			WP_CONTENT_DIR . '/pura-source',
-			dirname( PURA_THEME_DIR, 3 ) . '/public',
-		);
-
-		foreach ( $candidates as $dir ) {
-			if ( '' !== $dir && is_dir( $dir ) ) {
-				$this->source = rtrim( $dir, '/' );
-				return;
-			}
+	private function resolve_source( array $assoc_args ): bool {
+		if ( '' !== $this->source ) {
+			return true;
 		}
 
-		WP_CLI::error( 'Source directory not found. Pass --source=/path/to/public.' );
+		$explicit = (string) ( $assoc_args['source'] ?? '' );
+		if ( '' !== $explicit ) {
+			if ( ! is_dir( $explicit ) ) {
+				WP_CLI::error( "Source directory not found: {$explicit}" );
+			}
+			$this->source = rtrim( $explicit, '/' );
+			return true;
+		}
+
+		$mapped = WP_CONTENT_DIR . '/pura-source';
+		if ( is_dir( $mapped ) ) {
+			$this->source = $mapped;
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Path of an image, preferring the legacy source and falling back to the theme's own copy.
+	 */
+	private function find_image( string $basename ): string {
+		if ( '' !== $this->source && is_readable( $this->source . '/assets/images/' . $basename ) ) {
+			return $this->source . '/assets/images/' . $basename;
+		}
+
+		return PURA_THEME_DIR . '/assets/images/' . $basename;
 	}
 }
 

@@ -4,8 +4,7 @@
 	"private": true,
 	"description": "Pura Capoeira Cuernavaca — WordPress block theme and core plugin",
 	"workspaces": [
-		"themes/pura-capoeira",
-		"plugins/pura-capoeira-core"
+		"themes/pura-capoeira"
 	],
 	"scripts": {
 		"env:start": "wp-env start",

@@ -80,7 +80,8 @@ Rollback is a directory rename.
 ### After cutover
 - [ ] Rotate the Stripe secret key and the SMTP password (they may have lived under `public_html/api/`).
 - [ ] Delete the old Stripe webhook endpoint.
-- [ ] Commit: delete `public/`, `.github/workflows/deploy.yml`, update README. Turn off the `staging` deploy-on-push if no longer wanted.
+- [x] Commit: delete `public/`, `.github/workflows/deploy.yml`, update README (done on the WordPress branch; merging it to `master` retires the static deploy).
+- [ ] Turn off the `staging` deploy-on-push if no longer wanted.
 
 ## 3. Rollback (≤ 5 minutes)
 

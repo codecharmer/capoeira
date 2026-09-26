@@ -46,6 +46,7 @@ final class Webhook_Handler {
 		} catch ( \Throwable $e ) {
 			Stripe_Events_Table::mark_failed( $event_id );
 			error_log( '[pura] webhook ' . $event_id . ' failed: ' . $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- $e is the previous exception, not output.
 			throw new \RuntimeException( esc_html( $e->getMessage() ), 0, $e );
 		}
 	}
