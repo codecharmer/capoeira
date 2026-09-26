@@ -101,10 +101,19 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 50;
+  border-bottom: 1px solid var(--border-soft);
+}
+/* The blur lives on a pseudo-element on purpose: a backdrop-filter on the header itself makes
+   the header the containing block of the navigation block's `position: fixed` overlay, which
+   traps the open mobile menu inside the header's height. */
+.site-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   background: rgba(10, 10, 10, 0.75);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border-bottom: 1px solid var(--border-soft);
 }
 .site-header__inner {
   max-width: var(--container);
@@ -1605,27 +1614,38 @@ p.is-style-muted { color: var(--text-2); }
   .site-nav .wp-block-navigation__responsive-container-open:not(.always-shown) { display: flex; }
 }
 
-/* Overlay menu styled like the old mobile menu */
-.site-nav .wp-block-navigation__responsive-container.is-menu-open {
+/* Overlay menu styled like the old mobile menu.
+   Core paints the open overlay white with black text unless the block declares overlay
+   colours, through selectors such as
+   `.wp-block-navigation:not(.has-background) .wp-block-navigation__responsive-container.is-menu-open:not(.disable-default-overlay)`
+   (specificity 0,5,0). The selectors below are deliberately more specific (0,6,0) so they win
+   regardless of stylesheet order. */
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open.is-menu-open {
   background: var(--bg);
   color: var(--text);
-  padding: 6rem 2rem 2rem;
+  padding: 5rem 1.5rem 2rem;
 }
-.site-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__container {
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open.is-menu-open .wp-block-navigation__responsive-container-content {
+  padding-top: 1.5rem;
+}
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open.is-menu-open .wp-block-navigation__container {
   flex-direction: column;
   align-items: flex-start;
   gap: 1.25rem;
 }
-.site-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item__content {
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open.is-menu-open .wp-block-navigation-item__content {
   font-family: var(--font-heading);
   font-size: 2.25rem;
-  letter-spacing: 0;
+  letter-spacing: 0.02em;
+  line-height: 1;
   text-transform: uppercase;
   color: var(--text);
 }
-.site-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item__content::after { display: none; }
-.site-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item.overlay-only { display: block; margin-top: 1rem; }
-.site-nav .wp-block-navigation__responsive-container.is-menu-open .overlay-only .wp-block-navigation-item__content {
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open.is-menu-open .wp-block-navigation-item__content:hover,
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open.is-menu-open .current-menu-item > .wp-block-navigation-item__content { color: var(--yellow); }
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open.is-menu-open .wp-block-navigation-item__content::after { display: none; }
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open.is-menu-open .wp-block-navigation-item.overlay-only { display: block; margin-top: 1rem; }
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open.is-menu-open .overlay-only .wp-block-navigation-item__content {
   display: inline-flex;
   padding: 0.95rem 1.5rem;
   font-family: var(--font-mono);
@@ -1636,7 +1656,19 @@ p.is-style-muted { color: var(--text-2); }
   background: var(--green);
   color: #fff;
 }
-.site-nav .wp-block-navigation__responsive-container-close { top: 1.5rem; right: 1.5rem; }
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open.is-menu-open .overlay-only .wp-block-navigation-item__content:hover { background: var(--green-2); color: #fff; }
+.site-header .site-nav.wp-block-navigation .wp-block-navigation__responsive-container-close {
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
 
 /* --- Hero as core/cover --- */
 .hero.wp-block-cover {
