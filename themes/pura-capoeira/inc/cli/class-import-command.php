@@ -48,7 +48,7 @@ final class Pura_Theme_Import_Command {
 		),
 		'contacto'      => array(
 			'title'   => 'Contacto',
-			'excerpt' => 'Contacta a Pura Capoeira Cuernavaca. Clases en San Jerónimo 503, Tlaltenango, Cuernavaca, Morelos. WhatsApp, Instagram y Facebook.',
+			'excerpt' => 'Contacta a Pura Capoeira Cuernavaca. Clases en Tlaltenango, Cuernavaca, Morelos. WhatsApp, Instagram y Facebook.',
 		),
 	);
 

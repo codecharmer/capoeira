@@ -122,9 +122,6 @@ final class Settings_Page {
 					'instagram_handle'         => array( 'text', __( 'Instagram (usuario)', 'pura' ) ),
 					'facebook_url'             => array( 'url', __( 'Facebook (URL)', 'pura' ) ),
 					'facebook_label'           => array( 'text', __( 'Facebook (nombre)', 'pura' ) ),
-					'address'                  => array( 'textarea', __( 'Dirección', 'pura' ) ),
-					'address_short'            => array( 'text', __( 'Dirección corta (pie de página)', 'pura' ) ),
-					'maps_url'                 => array( 'url', __( 'Enlace de Google Maps', 'pura' ) ),
 					'tagline'                  => array( 'textarea', __( 'Lema (pie de página)', 'pura' ) ),
 				),
 			),
@@ -282,7 +279,7 @@ final class Settings_Page {
 				$out[ $key ] = implode( ', ', array_filter( $emails, 'is_email' ) );
 			} elseif ( 'notify_from_email' === $key ) {
 				$out[ $key ] = sanitize_email( (string) $raw );
-			} elseif ( in_array( $key, array( 'address', 'tagline' ), true ) ) {
+			} elseif ( 'tagline' === $key ) {
 				$out[ $key ] = sanitize_textarea_field( (string) $raw );
 			} elseif ( 'whatsapp_number' === $key ) {
 				$out[ $key ] = preg_replace( '/\D+/', '', (string) $raw );

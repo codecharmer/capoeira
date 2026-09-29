@@ -17,4 +17,3 @@
 <!-- wp:pattern {"slug":"pura-capoeira/values-grid"} /-->
 <!-- wp:pattern {"slug":"pura-capoeira/audience-cards"} /-->
 <!-- wp:pattern {"slug":"pura-capoeira/home-schedule-prices"} /-->
-<!-- wp:pattern {"slug":"pura-capoeira/location"} /-->

@@ -24,12 +24,21 @@ final class Block_Bindings {
 	public const ALLOWED_KEYS = array(
 		'tagline',
 		'copyright',
-		'address',
-		'address_short',
 		'whatsapp_display',
 		'instagram_handle',
 		'facebook_label',
 		'notify_from_name',
+	);
+
+	/**
+	 * Keys that used to be bindable and now render as empty. Returning null instead would make
+	 * pages saved before the change fall back to the address text still stored in their markup.
+	 *
+	 * @var string[]
+	 */
+	public const RETIRED_KEYS = array(
+		'address',
+		'address_short',
 	);
 
 	public function register(): void {
@@ -56,6 +65,10 @@ final class Block_Bindings {
 	public function get_value( array $source_args, \WP_Block $block_instance, string $attribute_name ): ?string {
 		$key = isset( $source_args['key'] ) ? sanitize_key( (string) $source_args['key'] ) : '';
 
+		if ( in_array( $key, self::RETIRED_KEYS, true ) ) {
+			return '';
+		}
+
 		if ( ! in_array( $key, self::ALLOWED_KEYS, true ) ) {
 			return null;
 		}
@@ -64,12 +77,6 @@ final class Block_Bindings {
 			return sprintf( '© %s %s', gmdate( 'Y' ), get_bloginfo( 'name' ) );
 		}
 
-		$value = (string) Settings::get( $key, '' );
-
-		if ( 'address' === $key ) {
-			return nl2br( esc_html( $value ) );
-		}
-
-		return esc_html( $value );
+		return esc_html( (string) Settings::get( $key, '' ) );
 	}
 }
