@@ -36,10 +36,6 @@ switch ( $channel ) {
 		$href  = (string) pura_setting( 'facebook_url', '' );
 		$value = (string) pura_setting( 'facebook_label', '' );
 		break;
-	case 'maps':
-		$href  = (string) pura_setting( 'maps_url', '' );
-		$value = (string) pura_setting( 'address_short', '' );
-		break;
 	case 'calendly_adults':
 		$href = (string) pura_setting( 'calendly_trial_adult_url', '' );
 		break;

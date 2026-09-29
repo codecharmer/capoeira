@@ -98,9 +98,6 @@ final class Settings {
 			'instagram_handle'         => '@profesor.malandro',
 			'facebook_url'             => 'https://www.facebook.com/PuraCapoeiraCuernavaca/',
 			'facebook_label'           => 'Pura Capoeira Cuernavaca',
-			'address'                  => "San Jerónimo 503,\nTlaltenango, Cuernavaca,\nMorelos",
-			'address_short'            => 'San Jerónimo 503, Tlaltenango',
-			'maps_url'                 => 'https://www.google.com/maps/search/?api=1&query=San%20Jer%C3%B3nimo%20503%2C%20Tlaltenango%2C%20Cuernavaca%2C%20Morelos',
 			'tagline'                  => 'Descubre tu fuerza. Aprende a darle sentido. Capoeira para adultos y niños en Cuernavaca, Morelos.',
 			'og_image_id'              => 0,
 		);

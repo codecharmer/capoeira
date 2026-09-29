@@ -61,9 +61,10 @@ Videos**), inscripciones y alumnos (**Pura Capoeira → Inscripciones / Alumnos*
 ## Despliegue
 
 `.github/workflows/deploy-wordpress.yml` compila, pasa PHPCS y PHPUnit y sube `themes/` y
-`plugins/` al `wp-content` del VPS por rsync, activa tema y plugin y limpia cachés. Un push a
-`master` despliega a **staging**; producción se lanza a mano (*Run workflow → production*). Cada
-entorno de GitHub define la variable `WP_PATH`; los secretos SSH son los mismos de siempre.
+`plugins/` al `wp-content` del sitio en producción por rsync, y limpia la caché NGINX de cPanel.
+Se ejecuta en cada push a `master` (o a mano con *Run workflow*). Usa los mismos secretos de
+siempre: `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS` y
+`DEPLOY_PATH` (la raíz del sitio, donde vive `wp-config.php`).
 
 Los secretos de la app (`PURA_STRIPE_SECRET_KEY`, `PURA_STRIPE_WEBHOOK_SECRET`,
 `PURA_PRINTFUL_API_KEY`, `FLUENTMAIL_SMTP_PASSWORD`) viven como constantes en `wp-config.php`

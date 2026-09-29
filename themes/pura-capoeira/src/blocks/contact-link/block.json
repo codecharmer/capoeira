@@ -6,7 +6,7 @@
 	"title": "Enlace de contacto",
 	"category": "pura",
 	"icon": "phone",
-	"description": "Enlace o botón a WhatsApp, Instagram, Facebook, Google Maps o Calendly, tomado de los ajustes.",
+	"description": "Enlace o botón a WhatsApp, Instagram, Facebook o Calendly, tomado de los ajustes.",
 	"textdomain": "pura",
 	"attributes": {
 		"channel": { "type": "string", "default": "whatsapp" },

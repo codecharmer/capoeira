@@ -11,8 +11,8 @@ Rollback is a directory rename.
 - [ ] cPanel → Email Deliverability: enable DKIM and SPF for the domain.
 - [ ] Confirm the VPS PHP version for the vhost: `ssh … '/usr/local/cpanel/bin/rebuild_phpconf --current'`.
       Match it in `.wp-env.json` (`phpVersion`).
-- [ ] In the GitHub repo create two **environments**: `staging` and `production`, each with a variable
-      `WP_PATH` (absolute path of that WordPress install). The SSH secrets already exist at repo level.
+- [x] Deploys: `deploy-wordpress.yml` runs on every push to `master` and targets `secrets.DEPLOY_PATH`
+      (the live docroot) with the existing SSH secrets. No GitHub environments are needed.
 
 ## 1. Staging (`staging.capoeiracuernavaca.com`)
 

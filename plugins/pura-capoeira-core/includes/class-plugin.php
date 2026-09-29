@@ -33,6 +33,7 @@ final class Plugin {
 
 		add_action( 'init', array( $this, 'register_data' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'print_front_config' ), 5 );
+		( new Content_Migrations() )->register();
 
 		if ( is_admin() ) {
 			( new Admin\Menu() )->register();

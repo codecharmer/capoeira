@@ -13,7 +13,7 @@
 <!-- wp:group {"tagName":"section","align":"full","className":"page-header","layout":{"type":"constrained"}} -->
 <section class="wp-block-group alignfull page-header">
 	<!-- wp:paragraph {"className":"overline"} -->
-	<p class="overline">San Jerónimo 503 · Tlaltenango</p>
+	<p class="overline">Tlaltenango · Cuernavaca</p>
 	<!-- /wp:paragraph -->
 
 	<!-- wp:heading {"level":1} -->
