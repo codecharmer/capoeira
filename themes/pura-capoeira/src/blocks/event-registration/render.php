@@ -38,16 +38,31 @@ $wrapper = get_block_wrapper_attributes( array( 'class' => 'inscription-layout e
 				<label class="field"><span><?php esc_html_e( 'Apellidos *', 'pura' ); ?></span><input type="text" name="last_name" autocomplete="family-name" required /></label>
 				<label class="field"><span><?php esc_html_e( 'Correo electrónico *', 'pura' ); ?></span><input type="email" name="email" autocomplete="email" required /></label>
 				<label class="field"><span><?php esc_html_e( 'WhatsApp / teléfono *', 'pura' ); ?></span><input type="tel" name="phone" autocomplete="tel" required /></label>
+				<label class="field"><span><?php esc_html_e( 'Fecha de nacimiento *', 'pura' ); ?></span><input type="date" name="dob" autocomplete="bday" required data-event-dob /></label>
 				<label class="field"><span><?php esc_html_e( 'Ciudad de origen', 'pura' ); ?></span><input type="text" name="city" autocomplete="address-level2" /></label>
-				<label class="field"><span><?php esc_html_e( 'Grupo / academia', 'pura' ); ?></span><input type="text" name="academy" autocomplete="organization" /></label>
-				<label class="field"><span><?php esc_html_e( 'Mestre / Professor', 'pura' ); ?></span><input type="text" name="teacher" /></label>
-				<label class="field"><span><?php esc_html_e( 'Graduación (cuerda)', 'pura' ); ?></span><input type="text" name="graduation" placeholder="<?php esc_attr_e( 'Ej. verde-amarilla', 'pura' ); ?>" /></label>
+			</div>
+			<div class="form-grid event-form__extras event-form__parent" data-event-parent hidden>
+				<p class="field-label field--full"><?php esc_html_e( 'Menor de edad: datos del padre, madre o tutor', 'pura' ); ?></p>
+				<label class="field"><span><?php esc_html_e( 'Nombre del padre/madre/tutor', 'pura' ); ?></span><input type="text" name="parent_name" autocomplete="off" /></label>
+				<label class="field"><span><?php esc_html_e( 'Teléfono del padre/madre/tutor *', 'pura' ); ?></span><input type="tel" name="parent_phone" autocomplete="off" data-event-parent-phone /></label>
 			</div>
 			<label class="field" style="position:absolute;left:-9999px;opacity:0;" aria-hidden="true" tabindex="-1"><span>Sitio web</span><input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
 		</fieldset>
 
 		<fieldset class="inscription-block">
-			<legend><?php esc_html_e( '2. Tu participación', 'pura' ); ?></legend>
+			<legend><?php esc_html_e( '2. Tu camino en la capoeira', 'pura' ); ?></legend>
+			<div class="form-grid">
+				<label class="field"><span><?php esc_html_e( 'Grupo / academia', 'pura' ); ?></span><input type="text" name="academy" autocomplete="organization" /></label>
+				<label class="field"><span><?php esc_html_e( 'Mestre / Professor', 'pura' ); ?></span><input type="text" name="teacher" /></label>
+				<label class="field"><span><?php esc_html_e( 'Graduación (cuerda)', 'pura' ); ?></span><input type="text" name="graduation" placeholder="<?php esc_attr_e( 'Ej. verde-amarilla', 'pura' ); ?>" /></label>
+				<label class="field"><span><?php esc_html_e( 'Año en que empezaste capoeira *', 'pura' ); ?></span><input type="number" name="started_year" inputmode="numeric" min="1900" max="<?php echo esc_attr( wp_date( 'Y' ) ); ?>" step="1" placeholder="<?php esc_attr_e( 'Ej. 2016', 'pura' ); ?>" required /></label>
+				<label class="field"><span><?php esc_html_e( 'Años de entrenamiento constante *', 'pura' ); ?></span><input type="number" name="years_training" inputmode="numeric" min="0" max="100" step="1" placeholder="<?php esc_attr_e( 'Ej. 5', 'pura' ); ?>" required /></label>
+			</div>
+			<p class="promo-note"><?php esc_html_e( 'No es lo mismo: puedes haber empezado hace diez años y haber entrenado de forma constante solo cinco. Cuenta los años en que entrenaste con regularidad.', 'pura' ); ?></p>
+		</fieldset>
+
+		<fieldset class="inscription-block">
+			<legend><?php esc_html_e( '3. Tu participación', 'pura' ); ?></legend>
 			<?php if ( $pura_days ) : ?>
 				<p class="field-label"><?php esc_html_e( '¿Qué días asistes? *', 'pura' ); ?></p>
 				<div class="day-options" data-event-days>
@@ -72,7 +87,7 @@ $wrapper = get_block_wrapper_attributes( array( 'class' => 'inscription-layout e
 		</fieldset>
 
 		<fieldset class="inscription-block">
-			<legend><?php esc_html_e( '3. Contacto de emergencia', 'pura' ); ?></legend>
+			<legend><?php esc_html_e( '4. Contacto de emergencia', 'pura' ); ?></legend>
 			<div class="form-grid">
 				<label class="field"><span><?php esc_html_e( 'Nombre', 'pura' ); ?></span><input type="text" name="emergency_name" /></label>
 				<label class="field"><span><?php esc_html_e( 'Teléfono de emergencia *', 'pura' ); ?></span><input type="tel" name="emergency_phone" required /></label>

@@ -35,6 +35,11 @@ const TEXT_FIELDS = [
 	'last_name',
 	'email',
 	'phone',
+	'dob',
+	'parent_name',
+	'parent_phone',
+	'started_year',
+	'years_training',
 	'city',
 	'academy',
 	'teacher',
@@ -65,6 +70,42 @@ function initEventForm( root ) {
 	const resultEl = $( '[data-event-result]', root );
 	const submitBtn = $( '[data-event-submit]', root );
 	const dayInputs = $$( 'input[name="days"]', form );
+	const dobInput = $( '[data-event-dob]', form );
+	const parentWrap = $( '[data-event-parent]', form );
+	const parentPhone = $( '[data-event-parent-phone]', form );
+
+	// Under 18 on the day of the form: ask for a parent or guardian's phone.
+	const isMinor = ( dob ) => {
+		const born = new Date( dob + 'T00:00:00' );
+		if ( Number.isNaN( born.getTime() ) ) {
+			return false;
+		}
+		const now = new Date();
+		let age = now.getFullYear() - born.getFullYear();
+		const beforeBirthday =
+			now.getMonth() < born.getMonth() ||
+			( now.getMonth() === born.getMonth() &&
+				now.getDate() < born.getDate() );
+		if ( beforeBirthday ) {
+			age -= 1;
+		}
+		return age < 18;
+	};
+
+	function updateParentUi() {
+		if ( ! dobInput || ! parentWrap || ! parentPhone ) {
+			return;
+		}
+		const minor = dobInput.value !== '' && isMinor( dobInput.value );
+		parentWrap.hidden = ! minor;
+		parentPhone.required = minor;
+	}
+
+	if ( dobInput ) {
+		dobInput.max = new Date().toISOString().slice( 0, 10 );
+		dobInput.addEventListener( 'change', updateParentUi );
+		dobInput.addEventListener( 'input', updateParentUi );
+	}
 
 	const showResult = ( msg, ok ) => {
 		if ( ! resultEl ) {
@@ -119,6 +160,7 @@ function initEventForm( root ) {
 			}
 			showResult( json.message || '¡Registro recibido!', true );
 			form.reset();
+			updateParentUi();
 		} catch ( err ) {
 			showResult(
 				err.message ||

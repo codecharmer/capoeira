@@ -122,7 +122,7 @@ final class Csv_Export {
 			);
 		}
 
-		$columns = array( 'id', 'created_at', 'status', 'event', 'event_name', 'first_name', 'last_name', 'email', 'phone', 'city', 'academy', 'teacher', 'graduation', 'days', 'shirt_size', 'emergency_name', 'emergency_phone', 'notes' );
+		$columns = array( 'id', 'created_at', 'status', 'event', 'event_name', 'first_name', 'last_name', 'email', 'phone', 'dob', 'parent_name', 'parent_phone', 'city', 'academy', 'teacher', 'graduation', 'started_year', 'years_training', 'days', 'shirt_size', 'emergency_name', 'emergency_phone', 'notes' );
 
 		$this->stream(
 			'' !== $event ? 'registros-' . $event : 'registros-eventos',

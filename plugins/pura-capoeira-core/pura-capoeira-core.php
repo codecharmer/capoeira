@@ -3,7 +3,7 @@
  * Plugin Name: Pura Capoeira Core
  * Plugin URI: https://capoeiracuernavaca.com
  * Description: Settings, inscriptions, Stripe/Printful integration, gallery videos, and REST API for Pura Capoeira Cuernavaca.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Requires at least: 6.8
  * Requires PHP: 8.1
  * Author: Pura Capoeira Cuernavaca
@@ -17,7 +17,7 @@ declare( strict_types=1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PURA_CORE_VERSION', '1.1.0' );
+define( 'PURA_CORE_VERSION', '1.1.1' );
 define( 'PURA_CORE_FILE', __FILE__ );
 define( 'PURA_CORE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PURA_CORE_URL', plugin_dir_url( __FILE__ ) );

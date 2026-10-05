@@ -24,6 +24,17 @@ final class EventRegistrationTest extends TestCase {
 		$this->assertSame( array( '7 de noviembre' ), $days );
 	}
 
+	public function test_minor_detection_uses_the_exact_birthday(): void {
+		$this->assertTrue( Event_Registration_Repository::is_minor( '2008-11-07', '2026-11-06' ) );
+		$this->assertFalse( Event_Registration_Repository::is_minor( '2008-11-06', '2026-11-06' ) );
+		$this->assertFalse( Event_Registration_Repository::is_minor( '1990-01-01', '2026-11-06' ) );
+	}
+
+	public function test_minor_detection_rejects_bad_or_future_dates(): void {
+		$this->assertFalse( Event_Registration_Repository::is_minor( 'not-a-date', '2026-11-06' ) );
+		$this->assertFalse( Event_Registration_Repository::is_minor( '2030-01-01', '2026-11-06' ) );
+	}
+
 	public function test_a_single_string_and_an_empty_submission_are_handled(): void {
 		$this->assertSame( array( '6 de noviembre' ), Event_Registration_Repository::normalize_days( '6 de noviembre', self::OFFERED ) );
 		$this->assertSame( array(), Event_Registration_Repository::normalize_days( array(), self::OFFERED ) );
