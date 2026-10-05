@@ -24,7 +24,12 @@ final class Content_Migrations {
 		'remove_street_address',
 		'grant_event_registration_caps',
 		'create_vadiando_2026_page',
+		'update_vadiando_2026_organizers',
 	);
+
+	private const VADIANDO_OLD_ORGANIZER = '<p class="event-fact__value">Pura Capoeira · Centro Esportivo Cultural Mestre Madona</p>';
+	private const VADIANDO_NEW_ORGANIZER = '<p class="event-fact__value">Contramestre Pepe Mortales</p>';
+	private const VADIANDO_SUPERVISOR    = "<!-- wp:group {\"className\":\"event-fact\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group event-fact\">\n<!-- wp:paragraph {\"className\":\"event-fact__label\"} --><p class=\"event-fact__label\">Supervisa</p><!-- /wp:paragraph -->\n<!-- wp:paragraph {\"className\":\"event-fact__value\"} --><p class=\"event-fact__value\">Mestre Madona</p><!-- /wp:paragraph -->\n</div>\n<!-- /wp:group -->";
 
 	/** Slug, pattern and copy of the event page published by create_vadiando_2026_page(). */
 	public const VADIANDO_PAGE = array(
@@ -172,5 +177,48 @@ final class Content_Migrations {
 	 */
 	public static function strip_street_address( string $text ): string {
 		return strtr( $text, self::ADDRESS_REPLACEMENTS );
+	}
+
+	/**
+	 * The event page was published with the group as organiser; it is Contramestre Pepe Mortales,
+	 * supervised by Mestre Madona.
+	 */
+	private function update_vadiando_2026_organizers(): void {
+		$page = get_page_by_path( self::VADIANDO_PAGE['slug'] );
+		if ( ! $page ) {
+			return;
+		}
+
+		$content = self::set_vadiando_organizers( (string) $page->post_content );
+		if ( $content !== $page->post_content ) {
+			wp_update_post(
+				wp_slash(
+					array(
+						'ID'           => $page->ID,
+						'post_content' => $content,
+					)
+				)
+			);
+		}
+	}
+
+	/**
+	 * Replace the "Organiza" value and add a "Supervisa" fact right after it. Pure, for tests.
+	 */
+	public static function set_vadiando_organizers( string $content ): string {
+		if ( ! str_contains( $content, self::VADIANDO_OLD_ORGANIZER ) ) {
+			return $content;
+		}
+
+		$content = str_replace( self::VADIANDO_OLD_ORGANIZER, self::VADIANDO_NEW_ORGANIZER, $content );
+
+		if ( str_contains( $content, '>Supervisa</p>' ) ) {
+			return $content;
+		}
+
+		// Insert the new fact after the closing of the group that holds the organiser.
+		$pattern = '/(' . preg_quote( self::VADIANDO_NEW_ORGANIZER, '/' ) . '.*?<!-- \/wp:group -->)/s';
+
+		return (string) preg_replace( $pattern, '$1' . "\n" . str_replace( '$', '\$', self::VADIANDO_SUPERVISOR ), $content, 1 );
 	}
 }
