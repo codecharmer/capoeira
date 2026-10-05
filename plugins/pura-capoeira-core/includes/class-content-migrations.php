@@ -22,6 +22,16 @@ final class Content_Migrations {
 	/** @var string[] Migration ids, in the order they run. */
 	private const MIGRATIONS = array(
 		'remove_street_address',
+		'grant_event_registration_caps',
+		'create_vadiando_2026_page',
+	);
+
+	/** Slug, pattern and copy of the event page published by create_vadiando_2026_page(). */
+	public const VADIANDO_PAGE = array(
+		'slug'    => 'vadiando-na-ladeira',
+		'pattern' => 'pura-capoeira/page-evento-vadiando',
+		'title'   => 'Vadiando na Ladeira 2026',
+		'excerpt' => 'Vadiando na Ladeira: encuentro de capoeira del 6 al 8 de noviembre de 2026 en Guanajuato Capital, con Pura Capoeira y el Centro Esportivo Cultural Mestre Madona. Regístrate aquí.',
 	);
 
 	/**
@@ -56,10 +66,59 @@ final class Content_Migrations {
 		}
 
 		foreach ( $pending as $id ) {
-			$this->{$id}();
+			// A migration returns false when it could not run yet (e.g. the theme that provides a
+			// pattern is not active); it is retried on the next request.
+			if ( false === $this->{$id}() ) {
+				continue;
+			}
 			$done[] = $id;
 			update_option( self::OPTION, array_values( $done ), true );
 		}
+	}
+
+	/**
+	 * The event registrations post type was added after activation; give administrators its caps.
+	 */
+	private function grant_event_registration_caps(): void {
+		Activator::grant_capabilities();
+	}
+
+	/**
+	 * Publish the Vadiando na Ladeira 2026 event page from the theme's pattern, once.
+	 *
+	 * @return bool False while the pattern is not registered (theme inactive or outdated).
+	 */
+	private function create_vadiando_2026_page(): bool {
+		$page = self::VADIANDO_PAGE;
+
+		if ( get_page_by_path( $page['slug'] ) ) {
+			return true;
+		}
+
+		$pattern = \WP_Block_Patterns_Registry::get_instance()->get_registered( $page['pattern'] );
+		if ( ! $pattern ) {
+			return false;
+		}
+
+		$blocks  = parse_blocks( (string) $pattern['content'] );
+		$blocks  = function_exists( 'resolve_pattern_blocks' ) ? resolve_pattern_blocks( $blocks ) : $blocks;
+		$post_id = wp_insert_post(
+			wp_slash(
+				array(
+					'post_type'      => 'page',
+					'post_status'    => 'publish',
+					'post_name'      => $page['slug'],
+					'post_title'     => $page['title'],
+					'post_excerpt'   => $page['excerpt'],
+					'post_content'   => serialize_blocks( $blocks ),
+					'comment_status' => 'closed',
+					'ping_status'    => 'closed',
+				)
+			),
+			true
+		);
+
+		return ! is_wp_error( $post_id ) && $post_id > 0;
 	}
 
 	/**

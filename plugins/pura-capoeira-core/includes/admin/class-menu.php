@@ -50,6 +50,9 @@ final class Menu {
 		.pura-status--free { background:#dbeafe; color:#1e3a8a; }
 		.pura-status--pending_payment, .pura-status--pending_payment_offline { background:#fef3c7; color:#92400e; }
 		.pura-status--expired { background:#fee2e2; color:#991b1b; }
+		.pura-status--registered { background:#dbeafe; color:#1e3a8a; }
+		.pura-status--confirmed { background:#d1f5d3; color:#0b5d1e; }
+		.pura-status--cancelled { background:#fee2e2; color:#991b1b; }
 		.pura-settings .form-table th { width: 260px; }
 		.pura-settings input[type=text], .pura-settings input[type=url], .pura-settings input[type=email], .pura-settings input[type=password] { width: 28em; max-width: 100%; }
 		.pura-settings .pura-locked { opacity:.7 }

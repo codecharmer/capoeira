@@ -49,6 +49,7 @@ caching); rate limiting and a honeypot field (`website`) protect them instead.
 | `inscriptions/config?group=adult\|kids` | GET | public | `{ok, currency, group, addon_amount, monthly, plans:[{id,label,note,amount,allow_addon}]}` (pesos) |
 | `inscriptions/validate-promo` | POST | public, 30/10 min | `{promocode, group}` → `{ok, valid:false}` or `{ok, valid:true, type:'beca'\|'current', free, payment_optional, monthly, group, addon_amount, plans}` |
 | `inscriptions` | POST | public, 5/10 min | see below |
+| `events/register` | POST | public, 5/10 min | `{event, event_name, days:[…], days_offered:[…], first_name, last_name, email, phone, city, academy, teacher, graduation, shirt_size, emergency_name, emergency_phone, notes}` → `{ok, registration_id, message}`; `409 {ok:false, duplicate:true}` when the email already registered for that event |
 | `stripe/webhook` | POST | Stripe signature | `{received:true}` / `{received:true, duplicate:true}` / 400 / 500 |
 | `admin/notify-status` | GET | `manage_options` | masked diagnostics |
 | `admin/test-notification` | POST | `manage_options` | sends a test mail |
@@ -77,6 +78,9 @@ Stripe return URLs are `{inscriptionsUrl}?inscription=success|cancel` and
 - `pura_student` — one per email; profile fields. Payments never overwrite profile data.
 - `pura_inscription` — one per registration/payment attempt; status `free | pending_payment |
   pending_payment_offline | paid | expired`, linked to the student.
+- `pura_event_reg` — one per person registered to an event through the theme's
+  `pura/event-registration` block (**Pura Capoeira → Eventos**, with CSV export). Status
+  `registered | confirmed | cancelled`. No payment: the organisers follow up by mail or WhatsApp.
 - `gallery_video` + `gallery_category` — gallery items rendered by the theme's `pura/gallery` block.
 - `{prefix}pura_stripe_events` — idempotency ledger for webhook events.
 

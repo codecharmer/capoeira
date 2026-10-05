@@ -1,0 +1,31 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/event-registration",
+	"version": "1.0.0",
+	"title": "Registro a evento",
+	"category": "pura",
+	"icon": "tickets-alt",
+	"description": "Formulario de registro a un evento (roda, encuentro, taller). Los registros se guardan en Pura Capoeira → Eventos y se notifican por correo.",
+	"textdomain": "pura",
+	"attributes": {
+		"eventSlug": { "type": "string", "default": "vadiando-na-ladeira-2026" },
+		"eventName": { "type": "string", "default": "Vadiando na Ladeira 2026" },
+		"days": {
+			"type": "string",
+			"default": "6 de noviembre|7 de noviembre|8 de noviembre"
+		},
+		"askShirtSize": { "type": "boolean", "default": true },
+		"footnote": {
+			"type": "string",
+			"default": "El registro en línea no tiene costo. Las cuotas del evento, si las hay, se coordinan directamente con la organización."
+		}
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"viewScript": "file:./view.js",
+	"render": "file:./render.php"
+}
