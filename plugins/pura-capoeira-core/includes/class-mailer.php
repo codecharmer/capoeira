@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace Pura\Core;
 
+use Pura\Core\Data\Event_Registration_Repository;
 use Pura\Core\Data\Inscription_Post_Type;
 use Pura\Core\Data\Inscription_Repository;
 
@@ -64,6 +65,76 @@ final class Mailer {
 		}
 
 		return self::send( $recipients, $subject, $body, $headers );
+	}
+
+	/**
+	 * Notify admins about an event registration, with a copy to the person who registered.
+	 */
+	public static function notify_event_registration( int $post_id ): bool {
+		$data = Event_Registration_Repository::to_array( $post_id );
+		if ( ! $data ) {
+			return false;
+		}
+
+		$recipients = self::recipients();
+		if ( ! $recipients ) {
+			return false;
+		}
+
+		$event   = '' !== $data['event_name'] ? $data['event_name'] : $data['event'];
+		$name    = '' !== $data['name'] ? $data['name'] : $data['email'];
+		$subject = sprintf( 'Registro al evento %s — %s', $event, $name );
+		$body    = self::build_event_body( $data );
+		$headers = self::headers();
+
+		$email = sanitize_email( $data['email'] );
+		if ( is_email( $email ) ) {
+			$headers[] = 'Reply-To: ' . $email;
+			if ( Settings::get( 'cc_student', true ) && ! in_array( strtolower( $email ), array_map( 'strtolower', $recipients ), true ) ) {
+				$headers[] = 'Cc: ' . $email;
+			}
+		}
+
+		return self::send( $recipients, $subject, $body, $headers );
+	}
+
+	/**
+	 * @param array<string, mixed> $data Event registration data (see Event_Registration_Repository::to_array()).
+	 */
+	public static function build_event_body( array $data ): string {
+		$event = '' !== (string) $data['event_name'] ? (string) $data['event_name'] : (string) $data['event'];
+		$lines = array( 'Nuevo registro al evento ' . $event . ' recibido en ' . home_url( '/' ), '' );
+
+		$rows = array(
+			'Evento'                 => $event,
+			'Nombre'                 => (string) ( $data['name'] ?? '' ),
+			'Correo'                 => (string) ( $data['email'] ?? '' ),
+			'Teléfono / WhatsApp'    => (string) ( $data['phone'] ?? '' ),
+			'Ciudad'                 => (string) ( $data['city'] ?? '' ),
+			'Grupo / academia'       => (string) ( $data['academy'] ?? '' ),
+			'Mestre / Professor'     => (string) ( $data['teacher'] ?? '' ),
+			'Graduación'             => (string) ( $data['graduation'] ?? '' ),
+			'Días'                   => (string) ( $data['days'] ?? '' ),
+			'Talla de playera'       => (string) ( $data['shirt_size'] ?? '' ),
+			'Contacto de emergencia' => (string) ( $data['emergency_name'] ?? '' ),
+			'Teléfono de emergencia' => (string) ( $data['emergency_phone'] ?? '' ),
+			'Comentarios'            => (string) ( $data['notes'] ?? '' ),
+			'Fecha de registro'      => (string) ( $data['created_at'] ?? wp_date( 'Y-m-d H:i:s' ) ),
+		);
+
+		foreach ( $rows as $label => $value ) {
+			if ( '' === trim( $value ) ) {
+				continue;
+			}
+			$lines[] = $label . ': ' . $value;
+		}
+
+		if ( ! empty( $data['admin_url'] ) ) {
+			$lines[] = '';
+			$lines[] = 'Ver en el panel: ' . $data['admin_url'];
+		}
+
+		return implode( "\n", $lines ) . "\n";
 	}
 
 	/**

@@ -55,6 +55,7 @@ final class Plugin {
 		( new Data\Gallery_Post_Type() )->register();
 		( new Data\Inscription_Post_Type() )->register();
 		( new Data\Student_Post_Type() )->register();
+		( new Data\Event_Registration_Post_Type() )->register();
 		( new Data\Block_Bindings() )->register();
 	}
 
@@ -62,6 +63,7 @@ final class Plugin {
 		$controllers = array(
 			Rest\Store_Controller::class,
 			Rest\Inscriptions_Controller::class,
+			Rest\Events_Controller::class,
 			Rest\Webhook_Controller::class,
 			Rest\Admin_Controller::class,
 		);

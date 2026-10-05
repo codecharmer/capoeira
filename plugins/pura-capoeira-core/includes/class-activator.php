@@ -25,6 +25,7 @@ final class Activator {
 		( new Data\Gallery_Post_Type() )->register();
 		( new Data\Inscription_Post_Type() )->register();
 		( new Data\Student_Post_Type() )->register();
+		( new Data\Event_Registration_Post_Type() )->register();
 
 		self::grant_capabilities();
 
@@ -36,15 +37,15 @@ final class Activator {
 	}
 
 	/**
-	 * Administrators manage inscriptions and students; nobody else.
+	 * Administrators manage inscriptions, students and event registrations; nobody else.
 	 */
-	private static function grant_capabilities(): void {
+	public static function grant_capabilities(): void {
 		$role = get_role( 'administrator' );
 		if ( ! $role ) {
 			return;
 		}
 
-		foreach ( array( 'pura_inscription', 'pura_student' ) as $type ) {
+		foreach ( array( 'pura_inscription', 'pura_student', Data\Event_Registration_Post_Type::POST_TYPE ) as $type ) {
 			foreach ( Data\Capabilities::for_type( $type ) as $cap ) {
 				$role->add_cap( $cap );
 			}
