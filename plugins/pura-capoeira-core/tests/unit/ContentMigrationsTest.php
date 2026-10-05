@@ -39,6 +39,25 @@ final class ContentMigrationsTest extends TestCase {
 		$this->assertSame( 'Nos vemos en .', Content_Migrations::strip_street_address( 'Nos vemos en San Jerónimo 503.' ) );
 	}
 
+	public function test_vadiando_organizers_are_replaced_and_supervisor_added_once(): void {
+		$content = "<!-- wp:group {\"className\":\"event-fact\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group event-fact\">\n"
+			. "<!-- wp:paragraph {\"className\":\"event-fact__label\"} --><p class=\"event-fact__label\">Organiza</p><!-- /wp:paragraph -->\n"
+			. "<!-- wp:paragraph {\"className\":\"event-fact__value\"} --><p class=\"event-fact__value\">Pura Capoeira · Centro Esportivo Cultural Mestre Madona</p><!-- /wp:paragraph -->\n"
+			. "</div>\n<!-- /wp:group -->\n"
+			. "<!-- wp:group {\"className\":\"event-fact\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group event-fact\">\n"
+			. "<!-- wp:paragraph {\"className\":\"event-fact__label\"} --><p class=\"event-fact__label\">Para quién</p><!-- /wp:paragraph -->\n"
+			. "</div>\n<!-- /wp:group -->";
+
+		$updated = Content_Migrations::set_vadiando_organizers( $content );
+
+		$this->assertStringNotContainsString( 'Centro Esportivo Cultural Mestre Madona</p>', $updated );
+		$this->assertStringContainsString( '<p class="event-fact__value">Contramestre Pepe Mortales</p>', $updated );
+		$this->assertSame( 1, substr_count( $updated, '>Supervisa</p>' ) );
+		$this->assertSame( 1, substr_count( $updated, '<p class="event-fact__value">Mestre Madona</p>' ) );
+		$this->assertLessThan( strpos( $updated, 'Para quién' ), strpos( $updated, 'Supervisa' ), 'Supervisa sits right after Organiza, before Para quién.' );
+		$this->assertSame( $updated, Content_Migrations::set_vadiando_organizers( $updated ), 'Running it again changes nothing.' );
+	}
+
 	public function test_text_without_the_address_is_untouched(): void {
 		$in = 'Capoeira para adultos y niños en Tlaltenango, Cuernavaca.';
 

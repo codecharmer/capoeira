@@ -46,7 +46,13 @@ $pura_poster = esc_url( get_theme_file_uri( 'assets/images/vadiando-na-ladeira-2
 			<!-- wp:group {"className":"event-fact","layout":{"type":"default"}} -->
 			<div class="wp-block-group event-fact">
 				<!-- wp:paragraph {"className":"event-fact__label"} --><p class="event-fact__label">Organiza</p><!-- /wp:paragraph -->
-				<!-- wp:paragraph {"className":"event-fact__value"} --><p class="event-fact__value">Pura Capoeira · Centro Esportivo Cultural Mestre Madona</p><!-- /wp:paragraph -->
+				<!-- wp:paragraph {"className":"event-fact__value"} --><p class="event-fact__value">Contramestre Pepe Mortales</p><!-- /wp:paragraph -->
+			</div>
+			<!-- /wp:group -->
+			<!-- wp:group {"className":"event-fact","layout":{"type":"default"}} -->
+			<div class="wp-block-group event-fact">
+				<!-- wp:paragraph {"className":"event-fact__label"} --><p class="event-fact__label">Supervisa</p><!-- /wp:paragraph -->
+				<!-- wp:paragraph {"className":"event-fact__value"} --><p class="event-fact__value">Mestre Madona</p><!-- /wp:paragraph -->
 			</div>
 			<!-- /wp:group -->
 			<!-- wp:group {"className":"event-fact","layout":{"type":"default"}} -->
