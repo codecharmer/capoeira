@@ -20,6 +20,11 @@ final class Event_Registration_Repository {
 		'first_name',
 		'last_name',
 		'phone',
+		'dob',
+		'parent_name',
+		'parent_phone',
+		'started_year',
+		'years_training',
 		'city',
 		'academy',
 		'teacher',
@@ -155,6 +160,19 @@ final class Event_Registration_Repository {
 	}
 
 	/**
+	 * Whether someone born on $dob (Y-m-d) is under 18 on $today (Y-m-d).
+	 */
+	public static function is_minor( string $dob, string $today ): bool {
+		$born = \DateTimeImmutable::createFromFormat( '!Y-m-d', $dob );
+		$now  = \DateTimeImmutable::createFromFormat( '!Y-m-d', $today );
+		if ( ! $born || ! $now || $born > $now ) {
+			return false;
+		}
+
+		return $born->diff( $now )->y < 18;
+	}
+
+	/**
 	 * Flat array for mail, the admin details box and CSV export.
 	 *
 	 * @return array<string, mixed>|null
@@ -177,6 +195,11 @@ final class Event_Registration_Repository {
 			'name'            => trim( $meta( 'first_name' ) . ' ' . $meta( 'last_name' ) ),
 			'email'           => $meta( 'email' ),
 			'phone'           => $meta( 'phone' ),
+			'dob'             => $meta( 'dob' ),
+			'parent_name'     => $meta( 'parent_name' ),
+			'parent_phone'    => $meta( 'parent_phone' ),
+			'started_year'    => $meta( 'started_year' ),
+			'years_training'  => $meta( 'years_training' ),
 			'city'            => $meta( 'city' ),
 			'academy'         => $meta( 'academy' ),
 			'teacher'         => $meta( 'teacher' ),

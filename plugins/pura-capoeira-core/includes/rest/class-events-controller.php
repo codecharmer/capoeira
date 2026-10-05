@@ -61,6 +61,21 @@ final class Events_Controller extends Base_Controller {
 						'sanitize_callback' => 'sanitize_email',
 					),
 					'phone'           => $this->text_arg( 40 ),
+					'dob'             => array(
+						'type'    => 'string',
+						'pattern' => '^(\d{4}-\d{2}-\d{2})?$',
+						'default' => '',
+					),
+					'parent_name'     => $this->text_arg( 150 ),
+					'parent_phone'    => $this->text_arg( 40 ),
+					'started_year'    => array(
+						'type'    => array( 'integer', 'string' ),
+						'default' => '',
+					),
+					'years_training'  => array(
+						'type'    => array( 'integer', 'string' ),
+						'default' => '',
+					),
 					'city'            => $this->text_arg( 100 ),
 					'academy'         => $this->text_arg( 150 ),
 					'teacher'         => $this->text_arg( 150 ),
@@ -98,6 +113,11 @@ final class Events_Controller extends Base_Controller {
 			'last_name'       => (string) $request->get_param( 'last_name' ),
 			'email'           => $email,
 			'phone'           => (string) $request->get_param( 'phone' ),
+			'dob'             => (string) $request->get_param( 'dob' ),
+			'parent_name'     => (string) $request->get_param( 'parent_name' ),
+			'parent_phone'    => (string) $request->get_param( 'parent_phone' ),
+			'started_year'    => trim( (string) $request->get_param( 'started_year' ) ),
+			'years_training'  => trim( (string) $request->get_param( 'years_training' ) ),
 			'city'            => (string) $request->get_param( 'city' ),
 			'academy'         => (string) $request->get_param( 'academy' ),
 			'teacher'         => (string) $request->get_param( 'teacher' ),
@@ -118,6 +138,27 @@ final class Events_Controller extends Base_Controller {
 			if ( '' === trim( $data[ $field ] ) ) {
 				return $this->error( $message, 400 );
 			}
+		}
+
+		$today = ( new \DateTimeImmutable( 'today', wp_timezone() ) )->format( 'Y-m-d' );
+		if ( ! $this->valid_date( $data['dob'] ) || $data['dob'] > $today ) {
+			return $this->error( 'Indica una fecha de nacimiento válida.', 400 );
+		}
+		if ( Event_Registration_Repository::is_minor( $data['dob'], $today ) && '' === trim( $data['parent_phone'] ) ) {
+			return $this->error( 'Para menores de edad necesitamos el teléfono del padre, madre o tutor.', 400 );
+		}
+
+		// Two different things: the year someone first stepped into a roda, and how many years
+		// they have actually trained with consistency since.
+		$this_year = (int) substr( $today, 0, 4 );
+		if ( ! ctype_digit( $data['started_year'] ) || (int) $data['started_year'] < 1900 || (int) $data['started_year'] > $this_year ) {
+			return $this->error( 'Indica el año en que empezaste capoeira (por ejemplo 2016).', 400 );
+		}
+		if ( ! ctype_digit( $data['years_training'] ) || (int) $data['years_training'] > 100 ) {
+			return $this->error( 'Indica cuántos años has entrenado de forma constante (0 si acabas de empezar).', 400 );
+		}
+		if ( (int) $data['years_training'] > $this_year - (int) $data['started_year'] + 1 ) {
+			return $this->error( 'Los años de entrenamiento constante no pueden ser más que los años desde que empezaste.', 400 );
 		}
 
 		// The form tells us which days it offered; only those can be chosen.
@@ -149,6 +190,12 @@ final class Events_Controller extends Base_Controller {
 				'message'         => '¡Registro recibido! Te enviamos una copia a tu correo y te contactaremos con los detalles del evento.',
 			)
 		);
+	}
+
+	private function valid_date( string $date ): bool {
+		$dt = \DateTimeImmutable::createFromFormat( '!Y-m-d', $date );
+
+		return $dt instanceof \DateTimeImmutable && $dt->format( 'Y-m-d' ) === $date;
 	}
 
 	/**

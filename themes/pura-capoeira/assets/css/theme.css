@@ -1417,6 +1417,8 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
   outline-offset: 2px;
 }
 .event-form__extras { margin-top: 1.5rem; }
+.event-form__parent[hidden] { display: none; }
+.event-form__parent .field-label { margin-bottom: 0; color: var(--yellow); }
 .event-intro { align-items: start; }
 .event-poster { margin: 0; }
 .event-poster img {

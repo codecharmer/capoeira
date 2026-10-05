@@ -49,7 +49,7 @@ caching); rate limiting and a honeypot field (`website`) protect them instead.
 | `inscriptions/config?group=adult\|kids` | GET | public | `{ok, currency, group, addon_amount, monthly, plans:[{id,label,note,amount,allow_addon}]}` (pesos) |
 | `inscriptions/validate-promo` | POST | public, 30/10 min | `{promocode, group}` → `{ok, valid:false}` or `{ok, valid:true, type:'beca'\|'current', free, payment_optional, monthly, group, addon_amount, plans}` |
 | `inscriptions` | POST | public, 5/10 min | see below |
-| `events/register` | POST | public, 5/10 min | `{event, event_name, days:[…], days_offered:[…], first_name, last_name, email, phone, city, academy, teacher, graduation, shirt_size, emergency_name, emergency_phone, notes}` → `{ok, registration_id, message}`; `409 {ok:false, duplicate:true}` when the email already registered for that event |
+| `events/register` | POST | public, 5/10 min | `{event, event_name, days:[…], days_offered:[…], first_name, last_name, email, phone, dob, parent_name, parent_phone (required under 18), city, academy, teacher, graduation, started_year, years_training, shirt_size, emergency_name, emergency_phone, notes}` → `{ok, registration_id, message}`; `409 {ok:false, duplicate:true}` when the email already registered for that event |
 | `stripe/webhook` | POST | Stripe signature | `{received:true}` / `{received:true, duplicate:true}` / 400 / 500 |
 | `admin/notify-status` | GET | `manage_options` | masked diagnostics |
 | `admin/test-notification` | POST | `manage_options` | sends a test mail |
