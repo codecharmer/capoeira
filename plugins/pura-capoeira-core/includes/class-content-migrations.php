@@ -25,7 +25,11 @@ final class Content_Migrations {
 		'grant_event_registration_caps',
 		'create_vadiando_2026_page',
 		'update_vadiando_2026_organizers',
+		'set_notification_recipient_2026_10',
 	);
+
+	/** Address that receives inscription and event notifications from October 2026. */
+	private const NOTIFY_EMAIL = 'codecharmer@codecharmer.io';
 
 	private const VADIANDO_OLD_ORGANIZER = '<p class="event-fact__value">Pura Capoeira · Centro Esportivo Cultural Mestre Madona</p>';
 	private const VADIANDO_NEW_ORGANIZER = '<p class="event-fact__value">Contramestre Pepe Mortales</p>';
@@ -177,6 +181,14 @@ final class Content_Migrations {
 	 */
 	public static function strip_street_address( string $text ): string {
 		return strtr( $text, self::ADDRESS_REPLACEMENTS );
+	}
+
+	/**
+	 * Point the notification recipients at the owner's address, once. It stays editable in
+	 * Pura Capoeira → Ajustes → Notificaciones afterwards.
+	 */
+	private function set_notification_recipient_2026_10(): void {
+		Settings::update( array( 'notify_emails' => self::NOTIFY_EMAIL ) );
 	}
 
 	/**
