@@ -84,7 +84,7 @@ final class Settings {
 			),
 
 			// Notificaciones.
-			'notify_emails'            => '',
+			'notify_emails'            => 'codecharmer@codecharmer.io',
 			'notify_from_email'        => '',
 			'notify_from_name'         => 'Pura Capoeira',
 			'cc_student'               => true,
