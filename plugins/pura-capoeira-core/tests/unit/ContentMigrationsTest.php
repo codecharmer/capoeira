@@ -58,6 +58,18 @@ final class ContentMigrationsTest extends TestCase {
 		$this->assertSame( $updated, Content_Migrations::set_vadiando_organizers( $updated ), 'Running it again changes nothing.' );
 	}
 
+	public function test_vadiando_payment_section_is_appended_once(): void {
+		$content = "<!-- wp:group --><section>registro</section><!-- /wp:group -->\n";
+
+		$updated = Content_Migrations::add_vadiando_payment( $content );
+
+		$this->assertStringStartsWith( '<!-- wp:group --><section>registro</section><!-- /wp:group -->', $updated );
+		$this->assertStringContainsString( '722969016003937282', $updated );
+		$this->assertStringContainsString( 'Mardonio Sales Linhares', $updated );
+		$this->assertSame( 1, substr_count( $updated, 'id="pago"' ) );
+		$this->assertSame( $updated, Content_Migrations::add_vadiando_payment( $updated ) );
+	}
+
 	public function test_text_without_the_address_is_untouched(): void {
 		$in = 'Capoeira para adultos y niños en Tlaltenango, Cuernavaca.';
 

@@ -82,3 +82,38 @@ $pura_poster = esc_url( get_theme_file_uri( 'assets/images/vadiando-na-ladeira-2
 	<!-- wp:pura/event-registration {"eventSlug":"vadiando-na-ladeira-2026","eventName":"Vadiando na Ladeira 2026","days":"6 de noviembre|7 de noviembre|8 de noviembre"} /-->
 </section>
 <!-- /wp:group -->
+
+<!-- wp:group {"tagName":"section","align":"full","className":"section","anchor":"pago","layout":{"type":"constrained"}} -->
+<section class="wp-block-group alignfull section" id="pago">
+	<!-- wp:group {"className":"section__head reveal","layout":{"type":"default"}} -->
+	<div class="wp-block-group section__head reveal">
+		<!-- wp:paragraph {"className":"overline"} --><p class="overline">Pago</p><!-- /wp:paragraph -->
+		<!-- wp:heading --><h2 class="wp-block-heading">Cuota del evento</h2><!-- /wp:heading -->
+		<!-- wp:paragraph {"className":"lead"} --><p class="lead">La cuota se paga por transferencia a la cuenta de Mercado Pago de la organización. Después de pagar, envía tu comprobante por WhatsApp con tu nombre completo.</p><!-- /wp:paragraph -->
+	</div>
+	<!-- /wp:group -->
+	<!-- wp:group {"className":"payment-card reveal","layout":{"type":"default"}} -->
+	<div class="wp-block-group payment-card reveal">
+		<!-- wp:group {"className":"event-fact","layout":{"type":"default"}} -->
+		<div class="wp-block-group event-fact">
+			<!-- wp:paragraph {"className":"event-fact__label"} --><p class="event-fact__label">CLABE</p><!-- /wp:paragraph -->
+			<!-- wp:paragraph {"className":"event-fact__value event-fact__value--mono"} --><p class="event-fact__value event-fact__value--mono">722969016003937282</p><!-- /wp:paragraph -->
+		</div>
+		<!-- /wp:group -->
+		<!-- wp:group {"className":"event-fact","layout":{"type":"default"}} -->
+		<div class="wp-block-group event-fact">
+			<!-- wp:paragraph {"className":"event-fact__label"} --><p class="event-fact__label">Titular</p><!-- /wp:paragraph -->
+			<!-- wp:paragraph {"className":"event-fact__value"} --><p class="event-fact__value">Mardonio Sales Linhares</p><!-- /wp:paragraph -->
+		</div>
+		<!-- /wp:group -->
+		<!-- wp:group {"className":"event-fact","layout":{"type":"default"}} -->
+		<div class="wp-block-group event-fact">
+			<!-- wp:paragraph {"className":"event-fact__label"} --><p class="event-fact__label">Banco / app</p><!-- /wp:paragraph -->
+			<!-- wp:paragraph {"className":"event-fact__value"} --><p class="event-fact__value">Mercado Pago</p><!-- /wp:paragraph -->
+		</div>
+		<!-- /wp:group -->
+		<!-- wp:pura/contact-link {"channel":"whatsapp","label":"Enviar comprobante por WhatsApp","variant":"btn-whatsapp","message":"Hola, envío mi comprobante de pago de Vadiando na Ladeira 2026. Mi nombre es: "} /-->
+	</div>
+	<!-- /wp:group -->
+</section>
+<!-- /wp:group -->

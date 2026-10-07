@@ -18,7 +18,7 @@
 		"askShirtSize": { "type": "boolean", "default": true },
 		"footnote": {
 			"type": "string",
-			"default": "El registro en línea no tiene costo. Las cuotas del evento, si las hay, se coordinan directamente con la organización."
+			"default": "El registro en línea no tiene costo. La cuota del evento se paga por transferencia con los datos que aparecen más abajo."
 		}
 	},
 	"supports": {
