@@ -26,7 +26,11 @@ final class Content_Migrations {
 		'create_vadiando_2026_page',
 		'update_vadiando_2026_organizers',
 		'set_notification_recipient_2026_10',
+		'add_vadiando_2026_payment',
 	);
+
+	/** Payment section appended to the event page; mirrors the theme pattern. */
+	private const VADIANDO_PAYMENT = "<!-- wp:group {\"tagName\":\"section\",\"align\":\"full\",\"className\":\"section\",\"anchor\":\"pago\",\"layout\":{\"type\":\"constrained\"}} -->\n<section class=\"wp-block-group alignfull section\" id=\"pago\">\n<!-- wp:group {\"className\":\"section__head reveal\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group section__head reveal\">\n<!-- wp:paragraph {\"className\":\"overline\"} --><p class=\"overline\">Pago</p><!-- /wp:paragraph -->\n<!-- wp:heading --><h2 class=\"wp-block-heading\">Cuota del evento</h2><!-- /wp:heading -->\n<!-- wp:paragraph {\"className\":\"lead\"} --><p class=\"lead\">La cuota se paga por transferencia a la cuenta de Mercado Pago de la organización. Después de pagar, envía tu comprobante por WhatsApp con tu nombre completo.</p><!-- /wp:paragraph -->\n</div>\n<!-- /wp:group -->\n<!-- wp:group {\"className\":\"payment-card reveal\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group payment-card reveal\">\n<!-- wp:group {\"className\":\"event-fact\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group event-fact\">\n<!-- wp:paragraph {\"className\":\"event-fact__label\"} --><p class=\"event-fact__label\">CLABE</p><!-- /wp:paragraph -->\n<!-- wp:paragraph {\"className\":\"event-fact__value event-fact__value--mono\"} --><p class=\"event-fact__value event-fact__value--mono\">722969016003937282</p><!-- /wp:paragraph -->\n</div>\n<!-- /wp:group -->\n<!-- wp:group {\"className\":\"event-fact\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group event-fact\">\n<!-- wp:paragraph {\"className\":\"event-fact__label\"} --><p class=\"event-fact__label\">Titular</p><!-- /wp:paragraph -->\n<!-- wp:paragraph {\"className\":\"event-fact__value\"} --><p class=\"event-fact__value\">Mardonio Sales Linhares</p><!-- /wp:paragraph -->\n</div>\n<!-- /wp:group -->\n<!-- wp:group {\"className\":\"event-fact\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group event-fact\">\n<!-- wp:paragraph {\"className\":\"event-fact__label\"} --><p class=\"event-fact__label\">Banco / app</p><!-- /wp:paragraph -->\n<!-- wp:paragraph {\"className\":\"event-fact__value\"} --><p class=\"event-fact__value\">Mercado Pago</p><!-- /wp:paragraph -->\n</div>\n<!-- /wp:group -->\n<!-- wp:pura/contact-link {\"channel\":\"whatsapp\",\"label\":\"Enviar comprobante por WhatsApp\",\"variant\":\"btn-whatsapp\",\"message\":\"Hola, envío mi comprobante de pago de Vadiando na Ladeira 2026. Mi nombre es: \"} /-->\n</div>\n<!-- /wp:group -->\n</section>\n<!-- /wp:group -->";
 
 	/** Address that receives inscription and event notifications from October 2026. */
 	private const NOTIFY_EMAIL = 'codecharmer@codecharmer.io';
@@ -212,6 +216,39 @@ final class Content_Migrations {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Append the Mercado Pago payment section to the published event page, once.
+	 */
+	private function add_vadiando_2026_payment(): void {
+		$page = get_page_by_path( self::VADIANDO_PAGE['slug'] );
+		if ( ! $page ) {
+			return;
+		}
+
+		$content = self::add_vadiando_payment( (string) $page->post_content );
+		if ( $content !== $page->post_content ) {
+			wp_update_post(
+				wp_slash(
+					array(
+						'ID'           => $page->ID,
+						'post_content' => $content,
+					)
+				)
+			);
+		}
+	}
+
+	/**
+	 * Add the payment section at the end of the page unless it is already there. Pure, for tests.
+	 */
+	public static function add_vadiando_payment( string $content ): string {
+		if ( str_contains( $content, 'payment-card' ) ) {
+			return $content;
+		}
+
+		return rtrim( $content ) . "\n\n" . self::VADIANDO_PAYMENT;
 	}
 
 	/**
