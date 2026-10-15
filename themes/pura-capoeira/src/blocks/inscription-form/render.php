@@ -34,11 +34,24 @@ $pura_money = static function ( float $pesos ) use ( $pura_currency ): string {
 	return pura_format_pesos( $pesos ) . ' ' . $pura_currency;
 };
 
+$pura_account_url = function_exists( 'pura_account_url' ) ? pura_account_url() : home_url( '/cuenta/' );
+$pura_login_url   = add_query_arg( 'redirect_to', rawurlencode( (string) get_permalink() ), $pura_account_url );
+
 $wrapper = get_block_wrapper_attributes( array( 'class' => 'inscription-layout' ) );
 ?>
 <div <?php echo $wrapper; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> data-inscription-root data-config="<?php echo esc_attr( (string) wp_json_encode( $pura_config ) ); ?>">
 	<form class="inscription-form" data-inscription-form novalidate>
-		<fieldset class="inscription-block inscription-mode">
+		<div class="inscription-session" data-inscription-session hidden>
+			<p>
+				<?php esc_html_e( 'Inscribiendo a', 'pura' ); ?> <strong data-inscription-session-name></strong>
+				<span class="text-muted" data-inscription-session-email></span>
+				· <a href="<?php echo esc_url( $pura_account_url ); ?>"><?php esc_html_e( 'Mi cuenta', 'pura' ); ?></a>
+				· <a href="#" data-inscription-logout><?php esc_html_e( 'Cerrar sesión', 'pura' ); ?></a>
+			</p>
+			<p class="promo-note" data-inscription-session-unlinked hidden><?php esc_html_e( 'Tu cuenta aún no está vinculada a una ficha de alumno: completa tus datos abajo y la vincularemos con tu correo.', 'pura' ); ?></p>
+		</div>
+
+		<fieldset class="inscription-block inscription-mode" data-inscription-mode>
 			<legend><?php esc_html_e( '¿Qué deseas hacer?', 'pura' ); ?></legend>
 			<div class="mode-options">
 				<label class="mode-option">
@@ -48,13 +61,12 @@ $wrapper = get_block_wrapper_attributes( array( 'class' => 'inscription-layout' 
 						<span class="mode-option__note"><?php echo esc_html( $pura_text( 'modeNewNote', '' ) ); ?></span>
 					</span>
 				</label>
-				<label class="mode-option">
-					<input type="radio" name="inscription_mode" value="member" />
+				<a class="mode-option mode-option--link" href="<?php echo esc_url( $pura_login_url ); ?>">
 					<span class="mode-option__body">
 						<span class="mode-option__title"><?php echo esc_html( $pura_text( 'modeMemberTitle', 'Ya estoy inscrito' ) ); ?></span>
 						<span class="mode-option__note"><?php echo esc_html( $pura_text( 'modeMemberNote', '' ) ); ?></span>
 					</span>
-				</label>
+				</a>
 			</div>
 		</fieldset>
 
@@ -102,15 +114,6 @@ $wrapper = get_block_wrapper_attributes( array( 'class' => 'inscription-layout' 
 			</label>
 		</fieldset>
 
-		<fieldset class="inscription-block" data-inscription-member hidden>
-			<legend><?php esc_html_e( 'Tu correo', 'pura' ); ?></legend>
-			<label class="field field--full">
-				<span><?php esc_html_e( 'Correo electrónico registrado *', 'pura' ); ?></span>
-				<input type="email" name="member_email" autocomplete="email" placeholder="tu@correo.com" data-inscription-member-email />
-			</label>
-			<p class="promo-note"><?php esc_html_e( 'Usaremos el correo con el que te inscribiste para identificar tu cuenta. Si no encontramos un registro, te pediremos completar la inscripción.', 'pura' ); ?></p>
-		</fieldset>
-
 		<fieldset class="inscription-block" data-inscription-student>
 			<legend><?php esc_html_e( '2. Datos del alumno', 'pura' ); ?></legend>
 			<div class="form-grid">
@@ -150,6 +153,14 @@ $wrapper = get_block_wrapper_attributes( array( 'class' => 'inscription-layout' 
 		</div>
 
 		<div class="inscription-result" data-inscription-result hidden role="status" aria-live="polite"></div>
+
+		<div class="inscription-privacy">
+			<input type="checkbox" id="<?php echo esc_attr( $pura_uid ); ?>-privacy" name="privacy_accepted" value="1" required />
+			<span>
+				<label for="<?php echo esc_attr( $pura_uid ); ?>-privacy"><?php esc_html_e( 'He leído y acepto el', 'pura' ); ?></label>
+				<a href="<?php echo esc_url( function_exists( 'pura_theme_privacy_url' ) ? pura_theme_privacy_url() : home_url( '/aviso-de-privacidad/' ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Aviso de Privacidad', 'pura' ); ?></a> *
+			</span>
+		</div>
 
 		<button type="submit" class="btn btn--primary inscription-submit" data-inscription-submit><?php esc_html_e( 'Continuar al pago', 'pura' ); ?></button>
 		<p class="store-footnote"><?php echo esc_html( $pura_text( 'footnote', '' ) ); ?></p>

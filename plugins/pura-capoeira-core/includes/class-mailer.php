@@ -175,7 +175,7 @@ final class Mailer {
 		$lines = array( 'Nueva inscripción recibida en ' . home_url( '/' ), '' );
 
 		$rows = array(
-			'Tipo'                     => ! empty( $data['member'] ) ? 'Alumno existente (pago con correo)' : 'Alumno nuevo',
+			'Tipo'                     => ! empty( $data['member'] ) ? 'Alumno existente' . ( 'portal' === ( $data['source'] ?? '' ) ? ' (desde Mi cuenta)' : '' ) : 'Alumno nuevo',
 			'Grupo'                    => 'kids' === ( $data['group'] ?? '' ) ? 'Niños' : 'Adultos',
 			'Estado'                   => Inscription_Post_Type::status_label( (string) ( $data['status'] ?? '' ) ),
 			'Paquete'                  => (string) ( $data['label'] ?? '' ),
@@ -191,6 +191,7 @@ final class Mailer {
 			'Dirección'                => (string) ( $data['address'] ?? '' ),
 			'Fecha de nacimiento'      => (string) ( $data['dob'] ?? '' ),
 			'Stripe session'           => (string) ( $data['stripe_session_id'] ?? '' ),
+			'Aviso de privacidad'      => '' !== (string) ( $data['privacy_accepted_at'] ?? '' ) ? 'Aceptado el ' . (string) $data['privacy_accepted_at'] : '',
 			'Fecha de registro'        => (string) ( $data['created_at'] ?? wp_date( 'Y-m-d H:i:s' ) ),
 		);
 

@@ -57,6 +57,8 @@ final class Inscription_Repository {
 			'_pura_stripe_payment_intent' => (string) ( $data['stripe_payment_intent'] ?? '' ),
 			'_pura_paid_at'               => (string) ( $data['paid_at'] ?? '' ),
 			'_pura_legacy_hash'           => (string) ( $data['legacy_hash'] ?? '' ),
+			'_pura_privacy_accepted_at'   => (string) ( $data['privacy_accepted_at'] ?? '' ),
+			'_pura_source'                => (string) ( $data['source'] ?? '' ),
 		);
 
 		foreach ( $meta as $key => $value ) {
@@ -195,6 +197,8 @@ final class Inscription_Repository {
 			'stripe_session_id'     => (string) get_post_meta( $post_id, '_pura_stripe_session_id', true ),
 			'stripe_payment_intent' => (string) get_post_meta( $post_id, '_pura_stripe_payment_intent', true ),
 			'paid_at'               => (string) get_post_meta( $post_id, '_pura_paid_at', true ),
+			'privacy_accepted_at'   => (string) get_post_meta( $post_id, '_pura_privacy_accepted_at', true ),
+			'source'                => (string) get_post_meta( $post_id, '_pura_source', true ),
 			'created_at'            => $post->post_date,
 			'admin_url'             => (string) get_edit_post_link( $post_id, 'raw' ),
 		);

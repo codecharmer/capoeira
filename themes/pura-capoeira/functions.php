@@ -19,6 +19,7 @@ require_once PURA_THEME_DIR . '/inc/setup.php';
 require_once PURA_THEME_DIR . '/inc/blocks.php';
 require_once PURA_THEME_DIR . '/inc/block-styles.php';
 require_once PURA_THEME_DIR . '/inc/seo.php';
+require_once PURA_THEME_DIR . '/inc/consent.php';
 require_once PURA_THEME_DIR . '/inc/speculation.php';
 
 if ( defined( 'WP_CLI' ) && WP_CLI ) {

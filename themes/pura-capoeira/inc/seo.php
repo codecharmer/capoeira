@@ -79,6 +79,22 @@ function pura_theme_og_image_url(): string {
 	return '';
 }
 
+/**
+ * The student portal is personal: keep it out of search engines.
+ *
+ * @param array<string, mixed> $robots Robots directives.
+ * @return array<string, mixed>
+ */
+function pura_theme_noindex_account( array $robots ): array {
+	if ( is_page( 'cuenta' ) || ( function_exists( 'pura_setting' ) && (int) pura_setting( 'account_page_id', 0 ) > 0 && is_page( (int) pura_setting( 'account_page_id', 0 ) ) ) ) {
+		$robots['noindex'] = true;
+		$robots['follow']  = true;
+	}
+
+	return $robots;
+}
+add_filter( 'wp_robots', 'pura_theme_noindex_account' );
+
 function pura_theme_print_meta(): void {
 	$description = pura_theme_meta_description();
 	$url         = is_singular() ? get_permalink() : home_url( '/' );

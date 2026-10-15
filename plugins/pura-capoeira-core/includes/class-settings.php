@@ -25,6 +25,13 @@ final class Settings {
 		'stripe_secret_key',
 		'stripe_webhook_secret',
 		'printful_api_key',
+		'google_client_secret',
+		'apple_private_key',
+	);
+
+	/** @var string[] Secrets that may span several lines (PEM keys). */
+	public const MULTILINE_SECRET_KEYS = array(
+		'apple_private_key',
 	);
 
 	/**
@@ -100,6 +107,19 @@ final class Settings {
 			'facebook_label'           => 'Pura Capoeira Cuernavaca',
 			'tagline'                  => 'Descubre tu fuerza. Aprende a darle sentido. Capoeira para adultos y niños en Cuernavaca, Morelos.',
 			'og_image_id'              => 0,
+
+			// Privacidad (Aviso de Privacidad).
+			'legal_name'               => 'Pura Capoeira Cuernavaca',
+			'legal_address'            => 'Cuernavaca, Morelos, México',
+			'privacy_email'            => '',
+			'privacy_updated'          => '2026-10-15',
+
+			// Cuentas de alumnos (Google / Apple). Secrets live in pura_secrets.
+			'account_page_id'          => 0,
+			'google_client_id'         => '',
+			'apple_services_id'        => '',
+			'apple_team_id'            => '',
+			'apple_key_id'             => '',
 		);
 	}
 
@@ -185,13 +205,30 @@ final class Settings {
 		}
 	}
 
+	/** @var array<string, array{option:string,slug:string}> Pages the plugin links to. */
+	private const PAGES = array(
+		'store'        => array(
+			'option' => 'store_page_id',
+			'slug'   => 'tienda',
+		),
+		'inscriptions' => array(
+			'option' => 'inscriptions_page_id',
+			'slug'   => 'inscripciones',
+		),
+		'account'      => array(
+			'option' => 'account_page_id',
+			'slug'   => 'cuenta',
+		),
+	);
+
 	/**
-	 * Permalink of the configured store/inscriptions page, with a slug-based fallback.
+	 * Permalink of the configured store/inscriptions/account page, with a slug-based fallback.
 	 *
-	 * @param string $which 'store' or 'inscriptions'.
+	 * @param string $which 'store', 'inscriptions' or 'account'.
 	 */
 	public static function page_url( string $which ): string {
-		$id = (int) self::get( 'store' === $which ? 'store_page_id' : 'inscriptions_page_id', 0 );
+		$spec = self::PAGES[ $which ] ?? self::PAGES['inscriptions'];
+		$id   = (int) self::get( $spec['option'], 0 );
 
 		if ( $id > 0 ) {
 			$url = get_permalink( $id );
@@ -200,12 +237,29 @@ final class Settings {
 			}
 		}
 
-		$page = get_page_by_path( 'store' === $which ? 'tienda' : 'inscripciones' );
+		$page = get_page_by_path( $spec['slug'] );
 		if ( $page ) {
 			return (string) get_permalink( $page );
 		}
 
-		return home_url( 'store' === $which ? '/tienda/' : '/inscripciones/' );
+		return home_url( '/' . $spec['slug'] . '/' );
+	}
+
+	/**
+	 * URL of the Aviso de Privacidad: WordPress' privacy page, with a slug-based fallback.
+	 */
+	public static function privacy_url(): string {
+		$url = function_exists( 'get_privacy_policy_url' ) ? get_privacy_policy_url() : '';
+		if ( '' !== $url ) {
+			return $url;
+		}
+
+		$page = get_page_by_path( 'aviso-de-privacidad' );
+		if ( $page ) {
+			return (string) get_permalink( $page );
+		}
+
+		return home_url( '/aviso-de-privacidad/' );
 	}
 
 	public static function whatsapp_url( string $text = '' ): string {
@@ -230,6 +284,10 @@ final class Settings {
 			'currency'        => (string) self::get( 'currency', 'MXN' ),
 			'storeUrl'        => self::page_url( 'store' ),
 			'inscriptionsUrl' => self::page_url( 'inscriptions' ),
+			'accountUrl'      => self::page_url( 'account' ),
+			'privacyUrl'      => self::privacy_url(),
+			'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+			'providers'       => Auth\Providers::configured(),
 			'whatsapp'        => preg_replace( '/\D+/', '', (string) self::get( 'whatsapp_number', '' ) ),
 			'calendly'        => array(
 				'trialAdult' => (string) self::get( 'calendly_trial_adult_url', '' ),

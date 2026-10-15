@@ -17,7 +17,7 @@
 		"modeMemberTitle": { "type": "string", "default": "Ya estoy inscrito" },
 		"modeMemberNote": {
 			"type": "string",
-			"default": "Solo quiero pagar mi mensualidad con mi correo."
+			"default": "Inicia sesión con Google o Apple para pagar tu mensualidad sin volver a llenar tus datos."
 		},
 		"groupAdultTitle": { "type": "string", "default": "Adultos / mixto" },
 		"groupAdultNote": {
@@ -36,6 +36,6 @@
 		"customClassName": true
 	},
 	"editorScript": "file:./index.js",
-	"viewScript": "file:./view.js",
+	"viewScript": [ "pura-auth", "file:./view.js" ],
 	"render": "file:./render.php"
 }

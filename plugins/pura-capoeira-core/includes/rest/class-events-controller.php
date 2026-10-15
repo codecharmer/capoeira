@@ -31,13 +31,17 @@ final class Events_Controller extends Base_Controller {
 				'callback'            => array( $this, 'register' ),
 				'permission_callback' => $this->public_permission( 'events', 5 ),
 				'args'                => array(
-					'event'           => array(
+					'event'            => array(
 						'type'     => 'string',
 						'required' => true,
 						'pattern'  => '^[a-z0-9-]{1,60}$',
 					),
-					'event_name'      => $this->text_arg( 120 ),
-					'days'            => array(
+					'event_name'       => $this->text_arg( 120 ),
+					'privacy_accepted' => array(
+						'type'    => array( 'boolean', 'integer', 'string' ),
+						'default' => 0,
+					),
+					'days'             => array(
 						'type'    => 'array',
 						'default' => array(),
 						'items'   => array(
@@ -45,7 +49,7 @@ final class Events_Controller extends Base_Controller {
 							'maxLength' => 40,
 						),
 					),
-					'days_offered'    => array(
+					'days_offered'     => array(
 						'type'    => 'array',
 						'default' => array(),
 						'items'   => array(
@@ -53,46 +57,46 @@ final class Events_Controller extends Base_Controller {
 							'maxLength' => 40,
 						),
 					),
-					'first_name'      => $this->text_arg( 100 ),
-					'last_name'       => $this->text_arg( 100 ),
-					'email'           => array(
+					'first_name'       => $this->text_arg( 100 ),
+					'last_name'        => $this->text_arg( 100 ),
+					'email'            => array(
 						'type'              => 'string',
 						'default'           => '',
 						'sanitize_callback' => 'sanitize_email',
 					),
-					'phone'           => $this->text_arg( 40 ),
-					'dob'             => array(
+					'phone'            => $this->text_arg( 40 ),
+					'dob'              => array(
 						'type'    => 'string',
 						'pattern' => '^(\d{4}-\d{2}-\d{2})?$',
 						'default' => '',
 					),
-					'parent_name'     => $this->text_arg( 150 ),
-					'parent_phone'    => $this->text_arg( 40 ),
-					'started_year'    => array(
+					'parent_name'      => $this->text_arg( 150 ),
+					'parent_phone'     => $this->text_arg( 40 ),
+					'started_year'     => array(
 						'type'    => array( 'integer', 'string' ),
 						'default' => '',
 					),
-					'years_training'  => array(
+					'years_training'   => array(
 						'type'    => array( 'integer', 'string' ),
 						'default' => '',
 					),
-					'city'            => $this->text_arg( 100 ),
-					'academy'         => $this->text_arg( 150 ),
-					'teacher'         => $this->text_arg( 150 ),
-					'graduation'      => $this->text_arg( 80 ),
-					'shirt_size'      => array(
+					'city'             => $this->text_arg( 100 ),
+					'academy'          => $this->text_arg( 150 ),
+					'teacher'          => $this->text_arg( 150 ),
+					'graduation'       => $this->text_arg( 80 ),
+					'shirt_size'       => array(
 						'type'    => 'string',
 						'enum'    => self::SHIRT_SIZES,
 						'default' => '',
 					),
-					'emergency_name'  => $this->text_arg( 150 ),
-					'emergency_phone' => $this->text_arg( 40 ),
-					'notes'           => array(
+					'emergency_name'   => $this->text_arg( 150 ),
+					'emergency_phone'  => $this->text_arg( 40 ),
+					'notes'            => array(
 						'type'              => 'string',
 						'default'           => '',
 						'sanitize_callback' => static fn ( $value ) => mb_substr( sanitize_textarea_field( (string) $value ), 0, 1000 ),
 					),
-					'website'         => $this->text_arg( 200 ), // Honeypot.
+					'website'          => $this->text_arg( 200 ), // Honeypot.
 				),
 			)
 		);
@@ -107,26 +111,31 @@ final class Events_Controller extends Base_Controller {
 		}
 
 		$data = array(
-			'event'           => $event,
-			'event_name'      => (string) $request->get_param( 'event_name' ),
-			'first_name'      => (string) $request->get_param( 'first_name' ),
-			'last_name'       => (string) $request->get_param( 'last_name' ),
-			'email'           => $email,
-			'phone'           => (string) $request->get_param( 'phone' ),
-			'dob'             => (string) $request->get_param( 'dob' ),
-			'parent_name'     => (string) $request->get_param( 'parent_name' ),
-			'parent_phone'    => (string) $request->get_param( 'parent_phone' ),
-			'started_year'    => trim( (string) $request->get_param( 'started_year' ) ),
-			'years_training'  => trim( (string) $request->get_param( 'years_training' ) ),
-			'city'            => (string) $request->get_param( 'city' ),
-			'academy'         => (string) $request->get_param( 'academy' ),
-			'teacher'         => (string) $request->get_param( 'teacher' ),
-			'graduation'      => (string) $request->get_param( 'graduation' ),
-			'shirt_size'      => (string) $request->get_param( 'shirt_size' ),
-			'emergency_name'  => (string) $request->get_param( 'emergency_name' ),
-			'emergency_phone' => (string) $request->get_param( 'emergency_phone' ),
-			'notes'           => (string) $request->get_param( 'notes' ),
+			'event'               => $event,
+			'event_name'          => (string) $request->get_param( 'event_name' ),
+			'first_name'          => (string) $request->get_param( 'first_name' ),
+			'last_name'           => (string) $request->get_param( 'last_name' ),
+			'email'               => $email,
+			'phone'               => (string) $request->get_param( 'phone' ),
+			'dob'                 => (string) $request->get_param( 'dob' ),
+			'parent_name'         => (string) $request->get_param( 'parent_name' ),
+			'parent_phone'        => (string) $request->get_param( 'parent_phone' ),
+			'started_year'        => trim( (string) $request->get_param( 'started_year' ) ),
+			'years_training'      => trim( (string) $request->get_param( 'years_training' ) ),
+			'city'                => (string) $request->get_param( 'city' ),
+			'academy'             => (string) $request->get_param( 'academy' ),
+			'teacher'             => (string) $request->get_param( 'teacher' ),
+			'graduation'          => (string) $request->get_param( 'graduation' ),
+			'shirt_size'          => (string) $request->get_param( 'shirt_size' ),
+			'emergency_name'      => (string) $request->get_param( 'emergency_name' ),
+			'emergency_phone'     => (string) $request->get_param( 'emergency_phone' ),
+			'notes'               => (string) $request->get_param( 'notes' ),
+			'privacy_accepted_at' => current_time( 'mysql' ),
 		);
+
+		if ( ! rest_sanitize_boolean( $request->get_param( 'privacy_accepted' ) ) ) {
+			return $this->error( 'Debes aceptar el Aviso de Privacidad para continuar.', 400 );
+		}
 
 		$required = array(
 			'first_name'      => 'Escribe tu nombre.',

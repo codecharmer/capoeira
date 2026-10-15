@@ -48,3 +48,35 @@ if ( ! function_exists( 'wp_json_encode' ) ) {
 function pura_test_settings( array $overrides = array() ): void {
 	$GLOBALS['pura_test_options']['pura_settings'] = array_merge( Pura\Core\Settings::defaults(), $overrides );
 }
+
+/** @var array<string, array{value:mixed,expires:int}> In-memory transients. */
+$GLOBALS['pura_test_transients'] = array();
+
+if ( ! function_exists( 'get_transient' ) ) {
+	function get_transient( string $name ) {
+		$row = $GLOBALS['pura_test_transients'][ $name ] ?? null;
+		if ( null === $row ) {
+			return false;
+		}
+		if ( $row['expires'] > 0 && $row['expires'] < time() ) {
+			unset( $GLOBALS['pura_test_transients'][ $name ] );
+			return false;
+		}
+		return $row['value'];
+	}
+}
+if ( ! function_exists( 'set_transient' ) ) {
+	function set_transient( string $name, $value, int $expiration = 0 ): bool {
+		$GLOBALS['pura_test_transients'][ $name ] = array(
+			'value'   => $value,
+			'expires' => $expiration > 0 ? time() + $expiration : 0,
+		);
+		return true;
+	}
+}
+if ( ! function_exists( 'delete_transient' ) ) {
+	function delete_transient( string $name ): bool {
+		unset( $GLOBALS['pura_test_transients'][ $name ] );
+		return true;
+	}
+}

@@ -81,7 +81,7 @@ final class Csv_Export {
 			);
 		}
 
-		$columns = array( 'id', 'created_at', 'status', 'group', 'plan', 'label', 'amount', 'currency', 'promocode', 'trial_date', 'member', 'student_name', 'email', 'phone', 'emergency_phone', 'parent_name', 'parent_phone', 'address', 'dob', 'stripe_session_id', 'paid_at' );
+		$columns = array( 'id', 'created_at', 'status', 'group', 'plan', 'label', 'amount', 'currency', 'promocode', 'trial_date', 'member', 'student_name', 'email', 'phone', 'emergency_phone', 'parent_name', 'parent_phone', 'address', 'dob', 'stripe_session_id', 'paid_at', 'privacy_accepted_at', 'source' );
 
 		$this->stream(
 			'inscripciones',

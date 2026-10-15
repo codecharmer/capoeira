@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace Pura\Core\Cli;
 
+use Pura\Core\Auth;
 use Pura\Core\Data\Inscription_Post_Type;
 use Pura\Core\Data\Inscription_Repository;
 use Pura\Core\Data\Student_Repository;
@@ -265,7 +266,14 @@ final class Cli {
 		$checks['printful_mode']     = array( true, ( defined( 'PURA_PRINTFUL_MOCK' ) && PURA_PRINTFUL_MOCK ) ? 'mock' : 'real' );
 		$checks['printful_confirm']  = array( ! ( defined( 'PURA_PRINTFUL_CONFIRM_DISABLED' ) && PURA_PRINTFUL_CONFIRM_DISABLED ), ( defined( 'PURA_PRINTFUL_CONFIRM_DISABLED' ) && PURA_PRINTFUL_CONFIRM_DISABLED ) ? 'DESACTIVADO' : 'activo' );
 		$checks['webhook_url']       = array( true, rest_url( 'pura/v1/stripe/webhook' ) );
-		$checks['smtp_plugin']       = array( function_exists( 'is_plugin_active' ) ? is_plugin_active( 'fluent-smtp/fluent-smtp.php' ) : false, 'fluent-smtp' );
+		$checks['privacy_page']      = array( '' !== get_privacy_policy_url(), get_privacy_policy_url() ?: 'sin página de privacidad (wp pura-theme import pages)' );
+		$checks['privacy_email']     = array( is_email( (string) Settings::get( 'privacy_email', '' ) ), (string) Settings::get( 'privacy_email', '' ) ?: 'vacío (usa admin_email)' );
+		$checks['account_page']      = array( (bool) get_page_by_path( 'cuenta' ) || (int) Settings::get( 'account_page_id' ) > 0, Settings::page_url( 'account' ) );
+		$checks['student_role']      = array( null !== get_role( Auth\Student_Accounts::ROLE ), Auth\Student_Accounts::ROLE );
+		foreach ( Auth\Providers::all() as $provider ) {
+			$checks[ 'auth_' . $provider->id() ] = array( $provider->is_configured(), ( $provider->is_configured() ? 'configurado' : 'no configurado' ) . ' — callback: ' . $provider->redirect_uri() );
+		}
+		$checks['smtp_plugin'] = array( function_exists( 'is_plugin_active' ) ? is_plugin_active( 'fluent-smtp/fluent-smtp.php' ) : false, 'fluent-smtp' );
 
 		$failures = 0;
 		foreach ( $checks as $name => [ $ok, $detail ] ) {

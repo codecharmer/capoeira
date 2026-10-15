@@ -20,37 +20,57 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Pura_Theme_Import_Command {
 
-	/** @var array<string, array{title:string,excerpt:string}> slug => page meta */
+	/** @var array<string, array{title:string,label:string,excerpt:string}> slug => page meta (label = menu text) */
 	private const PAGES = array(
-		'inicio'        => array(
+		'inicio'              => array(
 			'title'   => 'Inicio',
+			'label'   => 'Inicio',
 			'excerpt' => 'Capoeira para adultos y niños en Cuernavaca, Morelos. Descubre tu fuerza y aprende a darle sentido: lucha, música y juego en una comunidad sostenida por responsabilidad e integridad.',
 		),
-		'trayectoria'   => array(
+		'trayectoria'         => array(
 			'title'   => 'Trayectoria de Professor Malandro',
+			'label'   => 'Trayectoria',
 			'excerpt' => 'Trayectoria de Professor Malandro, Alfredo Juliano Prince: dos décadas de capoeira entre las Islas Vírgenes, México y Brasil, y la idea de formación que guía Pura Capoeira Cuernavaca.',
 		),
-		'clases'        => array(
+		'clases'              => array(
 			'title'   => 'Clases de Capoeira en Cuernavaca',
+			'label'   => 'Clases',
 			'excerpt' => 'Clases de capoeira para adultos y niños en Tlaltenango, Cuernavaca. Fuerza, música y juego en una práctica que te reta a conocerte y a crecer con otros.',
 		),
-		'inscripciones' => array(
+		'inscripciones'       => array(
 			'title'   => 'Inscripciones',
+			'label'   => 'Inscripciones',
 			'excerpt' => 'Inscríbete a Pura Capoeira Cuernavaca. Clase de prueba, mensualidad o paquetes trimestral y anual para adultos y niños. Pago seguro con Stripe.',
 		),
-		'galeria'       => array(
+		'galeria'             => array(
 			'title'   => 'Galería de Videos',
+			'label'   => 'Galería',
 			'excerpt' => 'Videos de clases, rodas, música y eventos de Pura Capoeira Cuernavaca. Así se ve el entrenamiento desde adentro.',
 		),
-		'tienda'        => array(
+		'tienda'              => array(
 			'title'   => 'Tienda',
+			'label'   => 'Tienda',
 			'excerpt' => 'Tienda oficial de Pura Capoeira Cuernavaca: playeras, hoodies y accesorios con producción y envío por Printful.',
 		),
-		'contacto'      => array(
+		'contacto'            => array(
 			'title'   => 'Contacto',
+			'label'   => 'Contacto',
 			'excerpt' => 'Contacta a Pura Capoeira Cuernavaca. Clases en Tlaltenango, Cuernavaca, Morelos. WhatsApp, Instagram y Facebook.',
 		),
+		'cuenta'              => array(
+			'title'   => 'Mi cuenta',
+			'label'   => 'Mi cuenta',
+			'excerpt' => 'Accede con Google o Apple para ver tus inscripciones, pagar tu mensualidad y actualizar tus datos en Pura Capoeira Cuernavaca.',
+		),
+		'aviso-de-privacidad' => array(
+			'title'   => 'Aviso de Privacidad',
+			'label'   => 'Aviso de Privacidad',
+			'excerpt' => 'Aviso de Privacidad de Pura Capoeira Cuernavaca: qué datos personales recabamos, para qué, con quién se comparten y cómo ejercer tus derechos ARCO.',
+		),
 	);
+
+	/** @var string[] Pages linked from the footer only, never from the main navigation. */
+	private const FOOTER_ONLY = array( 'aviso-de-privacidad' );
 
 	private string $source = '';
 
@@ -121,18 +141,20 @@ final class Pura_Theme_Import_Command {
 
 		$store        = get_page_by_path( 'tienda' );
 		$inscriptions = get_page_by_path( 'inscripciones' );
+		$account      = get_page_by_path( 'cuenta' );
 
 		Pura\Core\Settings::update(
 			array(
 				'store_page_id'        => $store ? $store->ID : 0,
 				'inscriptions_page_id' => $inscriptions ? $inscriptions->ID : 0,
+				'account_page_id'      => $account ? $account->ID : 0,
 			)
 		);
 		WP_CLI::log( 'settings: page ids set.' );
 	}
 
 	/**
-	 * Create the primary navigation (a wp_navigation post) with the seven pages.
+	 * Create the primary navigation (a wp_navigation post) with the main pages.
 	 *
 	 * @param string[]              $args       Positional args.
 	 * @param array<string, string> $assoc_args Named args.
@@ -140,14 +162,16 @@ final class Pura_Theme_Import_Command {
 	public function menu( array $args, array $assoc_args ): void {
 		$links = array();
 		foreach ( self::PAGES as $slug => $meta ) {
+			if ( in_array( $slug, self::FOOTER_ONLY, true ) ) {
+				continue;
+			}
 			$page = get_page_by_path( $slug );
 			if ( ! $page ) {
 				continue;
 			}
-			$label   = 'inicio' === $slug ? 'Inicio' : ( 'trayectoria' === $slug ? 'Trayectoria' : ( 'clases' === $slug ? 'Clases' : ( 'inscripciones' === $slug ? 'Inscripciones' : ( 'galeria' === $slug ? 'Galería' : ( 'tienda' === $slug ? 'Tienda' : 'Contacto' ) ) ) ) );
 			$links[] = sprintf(
 				'<!-- wp:navigation-link {"label":"%s","type":"page","id":%d,"url":"%s","kind":"post-type"} /-->',
-				esc_attr( $label ),
+				esc_attr( $meta['label'] ),
 				$page->ID,
 				esc_url( get_permalink( $page ) )
 			);
@@ -193,7 +217,7 @@ final class Pura_Theme_Import_Command {
 	}
 
 	/**
-	 * Create or update the seven pages from the theme's page patterns, set the front page.
+	 * Create or update the site pages from the theme's page patterns; set the front and privacy pages.
 	 *
 	 * [--source=<path>]
 	 * : Directory containing the legacy static site.
@@ -243,6 +267,9 @@ final class Pura_Theme_Import_Command {
 			if ( 'inicio' === $slug ) {
 				update_option( 'show_on_front', 'page' );
 				update_option( 'page_on_front', $id );
+			}
+			if ( 'aviso-de-privacidad' === $slug ) {
+				update_option( 'wp_page_for_privacy_policy', $id );
 			}
 		}
 

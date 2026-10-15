@@ -56,5 +56,9 @@ $wrapper = get_block_wrapper_attributes( array( 'class' => 'store-layout' ) );
 		</div>
 		<button class="btn btn--primary store-pay-btn" type="button" data-store-pay disabled><?php esc_html_e( 'Pagar con tarjeta', 'pura' ); ?></button>
 		<p class="store-footnote"><?php echo esc_html( $pura_footnote ); ?></p>
+		<p class="store-footnote">
+			<?php esc_html_e( 'Al pagar, tus datos de envío se comparten con Printful y Stripe para producir y entregar tu pedido.', 'pura' ); ?>
+			<a href="<?php echo esc_url( function_exists( 'pura_theme_privacy_url' ) ? pura_theme_privacy_url() : home_url( '/aviso-de-privacidad/' ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Aviso de Privacidad', 'pura' ); ?></a>
+		</p>
 	</aside>
 </div>

@@ -139,6 +139,7 @@ function initEventForm( root ) {
 			event_name: config.event_name,
 			days,
 			days_offered: config.days,
+			privacy_accepted: fd.get( 'privacy_accepted' ) ? 1 : 0,
 		};
 		TEXT_FIELDS.forEach( ( key ) => {
 			payload[ key ] = ( fd.get( key ) || '' ).toString().trim();
