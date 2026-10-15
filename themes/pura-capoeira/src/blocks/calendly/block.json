@@ -17,5 +17,6 @@
 		"customClassName": true
 	},
 	"editorScript": "file:./index.js",
+	"viewScript": [ "pura-consent", "file:./view.js" ],
 	"render": "file:./render.php"
 }

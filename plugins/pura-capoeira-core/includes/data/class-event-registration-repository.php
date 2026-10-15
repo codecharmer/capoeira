@@ -33,6 +33,7 @@ final class Event_Registration_Repository {
 		'emergency_name',
 		'emergency_phone',
 		'notes',
+		'privacy_accepted_at',
 	);
 
 	/**

@@ -1,0 +1,28 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pura/account",
+	"version": "1.0.0",
+	"title": "Mi cuenta (alumnos)",
+	"category": "pura",
+	"icon": "admin-users",
+	"description": "Inicio de sesión con Google o Apple y portal del alumno: datos, historial de inscripciones y pago de mensualidad.",
+	"textdomain": "pura",
+	"attributes": {
+		"introLoggedOut": {
+			"type": "string",
+			"default": "Entra con la cuenta de Google o Apple que uses normalmente. Si tu correo coincide con el de tu inscripción, verás tu historial de inmediato."
+		},
+		"noStudentText": {
+			"type": "string",
+			"default": "Tu cuenta está activa pero aún no está vinculada a una ficha de alumno. Si te inscribiste con otro correo, escríbenos y lo vinculamos."
+		}
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "file:./index.js",
+	"viewScript": [ "pura-auth", "file:./view.js" ],
+	"render": "file:./render.php"
+}

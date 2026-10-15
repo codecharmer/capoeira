@@ -125,6 +125,28 @@ final class Settings_Page {
 					'tagline'                  => array( 'textarea', __( 'Lema (pie de página)', 'pura' ) ),
 				),
 			),
+			'privacidad'     => array(
+				'title'  => __( 'Privacidad (Aviso de Privacidad)', 'pura' ),
+				'fields' => array(
+					'legal_name'      => array( 'text', __( 'Responsable (nombre o razón social)', 'pura' ), __( 'Quien responde por los datos personales según la LFPDPPP. Se muestra en el Aviso de Privacidad.', 'pura' ) ),
+					'legal_address'   => array( 'textarea', __( 'Domicilio del Responsable', 'pura' ), __( 'Solo aparece en el Aviso de Privacidad (la LFPDPPP pide un domicilio para oír notificaciones). Puede ser postal o fiscal; no tiene que ser el gimnasio.', 'pura' ) ),
+					'privacy_email'   => array( 'email', __( 'Correo para derechos ARCO', 'pura' ), __( 'Vacío = usar el correo del administrador del sitio.', 'pura' ) ),
+					'privacy_updated' => array( 'date', __( 'Última actualización del Aviso', 'pura' ), __( 'Cámbiala cada vez que edites el texto del Aviso.', 'pura' ) ),
+				),
+			),
+			'cuentas'        => array(
+				'title'  => __( 'Cuentas de alumnos (Google y Apple)', 'pura' ),
+				'fields' => array(
+					'account_page_id'      => array( 'page', __( 'Página "Mi cuenta"', 'pura' ) ),
+					'google_client_id'     => array( 'text', __( 'Google: Client ID', 'pura' ), __( 'OAuth 2.0 Client ID (tipo Web) en Google Cloud Console.', 'pura' ) ),
+					'google_client_secret' => array( 'secret', __( 'Google: Client secret', 'pura' ) ),
+					'apple_services_id'    => array( 'text', __( 'Apple: Services ID', 'pura' ), __( 'Identificador del Services ID con Sign in with Apple (p. ej. com.capoeiracuernavaca.web).', 'pura' ) ),
+					'apple_team_id'        => array( 'text', __( 'Apple: Team ID', 'pura' ) ),
+					'apple_key_id'         => array( 'text', __( 'Apple: Key ID', 'pura' ), __( 'ID de la llave .p8 con Sign in with Apple habilitado.', 'pura' ) ),
+					'apple_private_key'    => array( 'secret_multiline', __( 'Apple: llave privada (.p8)', 'pura' ) ),
+					'_auth_callbacks'      => array( 'auth_callbacks', __( 'URLs de retorno', 'pura' ) ),
+				),
+			),
 		);
 
 		foreach ( $sections as $id => $section ) {
@@ -140,7 +162,7 @@ final class Settings_Page {
 						'key'         => $key,
 						'type'        => $def[0],
 						'description' => $def[2] ?? '',
-						'label_for'   => in_array( $def[0], array( 'test_mail' ), true ) ? '' : 'pura_' . $key,
+						'label_for'   => in_array( $def[0], array( 'test_mail', 'auth_callbacks' ), true ) ? '' : 'pura_' . $key,
 					)
 				);
 			}
@@ -158,13 +180,19 @@ final class Settings_Page {
 
 		switch ( $type ) {
 			case 'secret':
+			case 'secret_multiline':
 				$source = Settings::secret_source( $key );
 				$sname  = Settings::SECRETS . '[' . $key . ']';
 				if ( 'constant' === $source ) {
 					echo '<input type="password" id="' . esc_attr( $id ) . '" class="regular-text pura-locked" value="••••••••••••" disabled />';
 					echo '<p class="description">' . esc_html__( 'Definido en wp-config.php', 'pura' ) . ' (<code>' . esc_html( Settings::secret_constant( $key ) ) . '</code>).</p>';
 				} else {
-					echo '<input type="password" id="' . esc_attr( $id ) . '" name="' . esc_attr( $sname ) . '" class="regular-text" value="" autocomplete="new-password" placeholder="' . esc_attr( 'option' === $source ? __( 'guardado — escribe para reemplazar', 'pura' ) : __( 'no configurado', 'pura' ) ) . '" />';
+					$placeholder = 'option' === $source ? __( 'guardado — escribe para reemplazar', 'pura' ) : __( 'no configurado', 'pura' );
+					if ( 'secret_multiline' === $type ) {
+						echo '<textarea id="' . esc_attr( $id ) . '" name="' . esc_attr( $sname ) . '" rows="4" class="large-text code" autocomplete="off" placeholder="' . esc_attr( $placeholder ) . '"></textarea>';
+					} else {
+						echo '<input type="password" id="' . esc_attr( $id ) . '" name="' . esc_attr( $sname ) . '" class="regular-text" value="" autocomplete="new-password" placeholder="' . esc_attr( $placeholder ) . '" />';
+					}
 					if ( 'option' === $source ) {
 						echo ' <label><input type="checkbox" name="pura_secrets_delete[' . esc_attr( $key ) . ']" value="1" /> ' . esc_html__( 'Borrar', 'pura' ) . '</label>';
 					}
@@ -222,6 +250,15 @@ final class Settings_Page {
 				echo '<p class="description">' . esc_html__( 'Guarda los cambios antes de probar.', 'pura' ) . '</p>';
 				break;
 
+			case 'auth_callbacks':
+				echo '<p class="description">' . esc_html__( 'Regístralas como URI de redirección (Google) y Return URL (Apple):', 'pura' ) . '</p>';
+				foreach ( array( 'google', 'apple' ) as $provider ) {
+					echo '<p><code>' . esc_html( rest_url( 'pura/v1/auth/' . $provider . '/callback' ) ) . '</code></p>';
+				}
+				echo '<p class="description">' . esc_html__( 'Apple exige HTTPS y un dominio verificado: pruébalo en staging o producción.', 'pura' ) . '</p>';
+				break;
+
+			case 'date':
 			case 'url':
 			case 'email':
 			case 'text':
@@ -230,7 +267,7 @@ final class Settings_Page {
 				break;
 		}
 
-		if ( ! empty( $args['description'] ) && 'secret' !== $type && 'test_mail' !== $type ) {
+		if ( ! empty( $args['description'] ) && ! in_array( $type, array( 'secret', 'secret_multiline', 'test_mail', 'auth_callbacks' ), true ) ) {
 			echo '<p class="description">' . esc_html( $args['description'] ) . '</p>';
 		}
 	}
@@ -277,9 +314,12 @@ final class Settings_Page {
 			} elseif ( 'notify_emails' === $key ) {
 				$emails      = array_filter( array_map( 'sanitize_email', array_map( 'trim', explode( ',', (string) $raw ) ) ) );
 				$out[ $key ] = implode( ', ', array_filter( $emails, 'is_email' ) );
-			} elseif ( 'notify_from_email' === $key ) {
+			} elseif ( in_array( $key, array( 'notify_from_email', 'privacy_email' ), true ) ) {
 				$out[ $key ] = sanitize_email( (string) $raw );
-			} elseif ( 'tagline' === $key ) {
+			} elseif ( 'privacy_updated' === $key ) {
+				$date        = sanitize_text_field( (string) $raw );
+				$out[ $key ] = preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ? $date : (string) $current[ $key ];
+			} elseif ( in_array( $key, array( 'tagline', 'legal_address' ), true ) ) {
 				$out[ $key ] = sanitize_textarea_field( (string) $raw );
 			} elseif ( 'whatsapp_number' === $key ) {
 				$out[ $key ] = preg_replace( '/\D+/', '', (string) $raw );
@@ -318,7 +358,7 @@ final class Settings_Page {
 			}
 			$value = isset( $input[ $key ] ) ? trim( (string) $input[ $key ] ) : '';
 			if ( '' !== $value ) {
-				$stored[ $key ] = sanitize_text_field( $value );
+				$stored[ $key ] = in_array( $key, Settings::MULTILINE_SECRET_KEYS, true ) ? sanitize_textarea_field( $value ) : sanitize_text_field( $value );
 			}
 		}
 

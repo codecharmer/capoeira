@@ -4,6 +4,8 @@
 		"PURA_STRIPE_WEBHOOK_SECRET": "whsec_from_stripe_listen",
 		"PURA_PRINTFUL_API_KEY": "",
 		"PURA_PRINTFUL_MOCK": true,
-		"PURA_PRINTFUL_CONFIRM_DISABLED": true
+		"PURA_PRINTFUL_CONFIRM_DISABLED": true,
+		"PURA_GOOGLE_CLIENT_SECRET": "GOCSPX-replace_me (client id goes in Ajustes → Cuentas)",
+		"PURA_APPLE_PRIVATE_KEY": ""
 	}
 }

@@ -9,6 +9,9 @@ declare( strict_types=1 );
 
 namespace Pura\Core\Data;
 
+use Pura\Core\Auth\Providers;
+use Pura\Core\Auth\Student_Accounts;
+
 defined( 'ABSPATH' ) || exit;
 
 final class Student_Post_Type {
@@ -114,6 +117,15 @@ final class Student_Post_Type {
 		add_filter( 'manage_' . self::POST_TYPE . '_posts_columns', array( $this, 'columns' ) );
 		add_action( 'manage_' . self::POST_TYPE . '_posts_custom_column', array( $this, 'column_content' ), 10, 2 );
 		add_action( 'pre_get_posts', array( $this, 'search_by_email' ) );
+		add_action( 'admin_notices', array( $this, 'link_error_notice' ) );
+	}
+
+	public function link_error_notice(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only flag set by our own redirect.
+		if ( empty( $_GET['pura_link_error'] ) ) {
+			return;
+		}
+		echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__( 'No se vinculó la cuenta: no existe un usuario con ese correo/ID o no tiene el rol Alumno.', 'pura' ) . '</p></div>';
 	}
 
 	public function add_meta_box(): void {
@@ -123,6 +135,7 @@ final class Student_Post_Type {
 	public function render_meta_box( \WP_Post $post ): void {
 		wp_nonce_field( self::NONCE, self::NONCE . '_nonce' );
 		echo '<table class="form-table"><tbody>';
+		$this->render_account_row( $post );
 		foreach ( self::FIELDS as $key => $field ) {
 			$value    = (string) get_post_meta( $post->ID, $key, true );
 			$readonly = in_array( $key, array( '_pura_last_paid_at', '_pura_inscription_count' ), true );
@@ -156,6 +169,8 @@ final class Student_Post_Type {
 		}
 
 		$input = wp_unslash( $_POST['pura_student'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized per field below.
+
+		$this->save_account_link( $post_id, $input );
 
 		foreach ( self::FIELDS as $key => $field ) {
 			if ( in_array( $key, array( '_pura_last_paid_at', '_pura_inscription_count' ), true ) ) {
@@ -205,6 +220,76 @@ final class Student_Post_Type {
 		if ( isset( $map[ $column ] ) ) {
 			echo esc_html( (string) get_post_meta( $post_id, $map[ $column ], true ) );
 		}
+	}
+
+	/**
+	 * "Cuenta vinculada" row: which WordPress user (Google/Apple sign-in) owns this record.
+	 */
+	private function render_account_row( \WP_Post $post ): void {
+		$user_id = Student_Accounts::user_id_for_student( $post->ID );
+		$user    = $user_id ? get_user_by( 'id', $user_id ) : null;
+
+		echo '<tr><th scope="row"><label for="pura_student_user">' . esc_html__( 'Cuenta vinculada', 'pura' ) . '</label></th><td>';
+		if ( $user ) {
+			printf(
+				'<p><a href="%s">%s</a> &lt;%s&gt; — %s</p>',
+				esc_url( get_edit_user_link( $user->ID ) ),
+				esc_html( $user->display_name ),
+				esc_html( $user->user_email ),
+				esc_html( implode( ', ', array_map( static fn ( $p ) => ucfirst( $p ), self::linked_providers( $user->ID ) ) ) )
+			);
+			if ( get_user_meta( $user->ID, Student_Accounts::META_PRIVATE_EMAIL, true ) ) {
+				echo '<p class="description">' . esc_html__( 'Esta cuenta usa un correo privado de Apple (relay): el correo del alumno y el de la cuenta no coinciden, y eso es normal.', 'pura' ) . '</p>';
+			}
+			echo '<label><input type="checkbox" name="pura_student[_unlink_user]" value="1" /> ' . esc_html__( 'Desvincular esta cuenta', 'pura' ) . '</label>';
+		} else {
+			echo '<input type="text" id="pura_student_user" name="pura_student[_link_user]" class="regular-text" placeholder="' . esc_attr__( 'Correo de la cuenta o ID de usuario', 'pura' ) . '" />';
+			echo '<p class="description">' . esc_html__( 'Sin vincular. Al iniciar sesión con el mismo correo del alumno se vincula sola; si el alumno usó otro correo (p. ej. un relay de Apple), escríbelo aquí.', 'pura' ) . '</p>';
+		}
+		echo '</td></tr>';
+	}
+
+	/**
+	 * @param array<string, mixed> $input Submitted pura_student fields.
+	 */
+	private function save_account_link( int $post_id, array $input ): void {
+		if ( ! empty( $input['_unlink_user'] ) ) {
+			$user_id = Student_Accounts::user_id_for_student( $post_id );
+			if ( $user_id ) {
+				Student_Accounts::unlink_student( $user_id );
+			}
+			return;
+		}
+
+		$raw = trim( (string) ( $input['_link_user'] ?? '' ) );
+		if ( '' === $raw ) {
+			return;
+		}
+
+		$user = is_numeric( $raw ) ? get_user_by( 'id', (int) $raw ) : get_user_by( 'email', sanitize_email( $raw ) );
+		if ( ! $user || ! Student_Accounts::is_student_user( $user ) ) {
+			add_filter(
+				'redirect_post_location',
+				static fn ( string $location ): string => add_query_arg( 'pura_link_error', '1', $location )
+			);
+			return;
+		}
+
+		Student_Accounts::link_student( $user->ID, $post_id );
+	}
+
+	/**
+	 * @return string[] Provider ids with an identity on this user.
+	 */
+	private static function linked_providers( int $user_id ): array {
+		$out = array();
+		foreach ( Providers::IDS as $provider ) {
+			if ( '' !== (string) get_user_meta( $user_id, Student_Accounts::identity_meta_key( $provider ), true ) ) {
+				$out[] = $provider;
+			}
+		}
+
+		return $out;
 	}
 
 	public function search_by_email( \WP_Query $query ): void {

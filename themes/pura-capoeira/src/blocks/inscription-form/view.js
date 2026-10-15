@@ -1,6 +1,6 @@
 /**
  * Inscription form. Port of the static site's initInscription(): plans, group, add-on, trial
- * date, promo code, member-by-email, summary, submit, and Stripe return handling.
+ * date, promo code, signed-in student session, summary, submit, and Stripe return handling.
  *
  * Prices come from the block's data-config (both groups) and from validate-promo responses;
  * nothing is hard-coded here. The server re-resolves pricing on submit.
@@ -17,12 +17,19 @@ function restUrl( path ) {
 }
 
 async function postJson( path, payload ) {
+	const headers = {
+		'Content-Type': 'application/json',
+		Accept: 'application/json',
+	};
+	// Signed-in students authenticate the request with a REST nonce (see pura-auth.js).
+	const nonce = window.puraAuth ? await window.puraAuth.nonce() : null;
+	if ( nonce ) {
+		headers[ 'X-WP-Nonce' ] = nonce;
+	}
 	const res = await fetch( restUrl( path ), {
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Accept: 'application/json',
-		},
+		credentials: 'same-origin',
+		headers,
 		body: JSON.stringify( payload ),
 	} );
 	let json = {};
@@ -65,10 +72,11 @@ function initInscription( root ) {
 		? $( '[data-inscription-trial-input]', trialWrap )
 		: null;
 	const studentWrap = $( '[data-inscription-student]', root );
-	const memberWrap = $( '[data-inscription-member]', root );
-	const memberEmailInput = memberWrap
-		? $( '[data-inscription-member-email]', memberWrap )
-		: null;
+	const modeWrap = $( '[data-inscription-mode]', root );
+	const sessionWrap = $( '[data-inscription-session]', root );
+
+	// Signed-in student (Mi cuenta) with a linked record: the server uses that record.
+	let session = null;
 	const summaryLabel = $( '[data-inscription-summary-label]', root );
 	const summaryTotal = $( '[data-inscription-summary-total]', root );
 	const resultEl = $( '[data-inscription-result]', root );
@@ -85,8 +93,7 @@ function initInscription( root ) {
 
 	const currentGroup = () =>
 		$( 'input[name="inscription_group"]:checked', form )?.value || 'adult';
-	const currentMode = () =>
-		$( 'input[name="inscription_mode"]:checked', form )?.value || 'new';
+	const currentMode = () => ( session && session.student ? 'member' : 'new' );
 	const selectedPlan = () => $( 'input[name="plan"]:checked', form );
 
 	// Promo state for the current session. `plans` holds promo-priced plans for the group.
@@ -155,15 +162,49 @@ function initInscription( root ) {
 				input.required = ! isMember;
 			} );
 		}
-		if ( memberWrap ) {
-			memberWrap.hidden = ! isMember;
+		if ( modeWrap ) {
+			modeWrap.hidden = !! session;
 		}
-		if ( memberEmailInput ) {
-			memberEmailInput.required = isMember;
-			if ( ! isMember ) {
-				memberEmailInput.value = '';
+	}
+
+	function applySession( data ) {
+		session = data;
+		if ( ! sessionWrap ) {
+			updateModeUi();
+			return;
+		}
+		const nameEl = $( '[data-inscription-session-name]', sessionWrap );
+		const emailEl = $( '[data-inscription-session-email]', sessionWrap );
+		const unlinkedEl = $(
+			'[data-inscription-session-unlinked]',
+			sessionWrap
+		);
+		const logoutEl = $( '[data-inscription-logout]', sessionWrap );
+		const student = data.student;
+		if ( nameEl ) {
+			nameEl.textContent = student
+				? `${ student.firstName } ${ student.lastName }`.trim()
+				: data.user.displayName || '';
+		}
+		if ( emailEl ) {
+			emailEl.textContent =
+				( student && student.email ) || data.user.email || '';
+		}
+		if ( unlinkedEl ) {
+			unlinkedEl.hidden = !! student;
+		}
+		if ( logoutEl && data.logoutUrl ) {
+			logoutEl.href = data.logoutUrl;
+		}
+		if ( ! student && data.user.email && studentWrap ) {
+			const emailField = $( 'input[name="email"]', studentWrap );
+			if ( emailField && ! emailField.value ) {
+				emailField.value = data.user.email;
 			}
 		}
+		sessionWrap.hidden = false;
+		updateModeUi();
+		updateSummary();
 	}
 
 	if ( trialInput ) {
@@ -253,9 +294,6 @@ function initInscription( root ) {
 			name === 'payment_mode'
 		) {
 			updateSummary();
-		}
-		if ( name === 'inscription_mode' ) {
-			updateModeUi();
 		}
 		if ( name === 'inscription_group' ) {
 			updateGroup();
@@ -366,12 +404,12 @@ function initInscription( root ) {
 			promocode: ( fd.get( 'promocode' ) || '' ).toString().trim(),
 			payment_mode: payLaterSelected() ? 'later' : 'now',
 			trial_date: ( fd.get( 'trial_date' ) || '' ).toString().trim(),
+			privacy_accepted: fd.get( 'privacy_accepted' ) ? 1 : 0,
 			website: ( fd.get( 'website' ) || '' ).toString(),
 		};
 
 		if ( isMember ) {
 			payload.member = true;
-			payload.email = ( memberEmailInput?.value || '' ).toString().trim();
 		} else {
 			[
 				'first_name',
@@ -401,28 +439,16 @@ function initInscription( root ) {
 		try {
 			const { res, json } = await postJson( 'inscriptions', payload );
 
-			if ( json && json.not_registered ) {
-				const newModeRadio = $(
-					'input[name="inscription_mode"][value="new"]',
-					form
-				);
-				if ( newModeRadio ) {
-					newModeRadio.checked = true;
-				}
-				updateModeUi();
-				const emailField = studentWrap
-					? $( 'input[name="email"]', studentWrap )
-					: null;
-				if ( emailField ) {
-					emailField.value = payload.email || '';
-				}
+			if ( json && json.login_required ) {
 				showResult(
-					json.error ||
-						'No encontramos tu registro. Completa el formulario para inscribirte.',
+					( json.error || 'Tu sesión expiró.' ) +
+						' Inicia sesión de nuevo para continuar.',
 					false
 				);
-				if ( submitBtn ) {
-					submitBtn.disabled = false;
+				if ( json.login_url ) {
+					window.setTimeout( () => {
+						window.location.href = json.login_url;
+					}, 1500 );
 				}
 				return;
 			}
@@ -490,6 +516,17 @@ function initInscription( root ) {
 	updateModeUi();
 	applyPlanPrices( effectivePlans() );
 	updateSummary();
+
+	if ( window.puraAuth ) {
+		window.puraAuth
+			.me()
+			.then( ( { res, json } ) => {
+				if ( res.ok && json.ok ) {
+					applySession( json );
+				}
+			} )
+			.catch( () => {} );
+	}
 }
 
 document

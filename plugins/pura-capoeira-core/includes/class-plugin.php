@@ -35,6 +35,8 @@ final class Plugin {
 		add_action( 'wp_enqueue_scripts', array( $this, 'print_front_config' ), 5 );
 		( new Content_Migrations() )->register();
 
+		Auth\Student_Accounts::register_hooks();
+
 		if ( is_admin() ) {
 			( new Admin\Menu() )->register();
 			( new Admin\Settings_Page() )->register();
@@ -66,6 +68,8 @@ final class Plugin {
 			Rest\Events_Controller::class,
 			Rest\Webhook_Controller::class,
 			Rest\Admin_Controller::class,
+			Rest\Auth_Controller::class,
+			Rest\Account_Controller::class,
 		);
 
 		foreach ( $controllers as $class ) {
@@ -80,6 +84,9 @@ final class Plugin {
 	/**
 	 * `window.puraConfig` for the theme's view scripts: REST root, page URLs, contact details.
 	 * Printed in <head> as an inline-only handle so deferred view scripts always find it.
+	 *
+	 * Also registers `pura-auth` (window.puraAuth): the browser-side helper that discovers the
+	 * session via admin-ajax and signs REST calls with a nonce. Blocks list it as a dependency.
 	 */
 	public function print_front_config(): void {
 		wp_register_script( 'pura-core-config', false, array(), PURA_CORE_VERSION, false );
@@ -87,6 +94,14 @@ final class Plugin {
 		wp_add_inline_script(
 			'pura-core-config',
 			'window.puraConfig = ' . wp_json_encode( Settings::public_config() ) . ';'
+		);
+
+		wp_register_script(
+			'pura-auth',
+			PURA_CORE_URL . 'assets/js/pura-auth.js',
+			array( 'pura-core-config' ),
+			PURA_CORE_VERSION,
+			array( 'in_footer' => true )
 		);
 	}
 }

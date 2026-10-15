@@ -28,6 +28,7 @@ final class Activator {
 		( new Data\Event_Registration_Post_Type() )->register();
 
 		self::grant_capabilities();
+		Auth\Student_Accounts::register_role();
 
 		flush_rewrite_rules();
 	}

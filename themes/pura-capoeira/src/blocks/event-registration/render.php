@@ -96,6 +96,14 @@ $wrapper = get_block_wrapper_attributes( array( 'class' => 'inscription-layout e
 
 		<div class="inscription-result" data-event-result hidden role="status" aria-live="polite"></div>
 
+		<div class="inscription-privacy">
+			<input type="checkbox" id="<?php echo esc_attr( $pura_uid ); ?>-privacy" name="privacy_accepted" value="1" required />
+			<span>
+				<label for="<?php echo esc_attr( $pura_uid ); ?>-privacy"><?php esc_html_e( 'He leído y acepto el', 'pura' ); ?></label>
+				<a href="<?php echo esc_url( function_exists( 'pura_theme_privacy_url' ) ? pura_theme_privacy_url() : home_url( '/aviso-de-privacidad/' ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Aviso de Privacidad', 'pura' ); ?></a> *
+			</span>
+		</div>
+
 		<button type="submit" class="btn btn--primary inscription-submit" data-event-submit><?php esc_html_e( 'Registrarme', 'pura' ); ?></button>
 		<?php if ( '' !== $pura_footnote ) : ?>
 			<p class="store-footnote"><?php echo esc_html( $pura_footnote ); ?></p>

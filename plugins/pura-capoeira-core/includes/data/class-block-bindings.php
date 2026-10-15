@@ -28,6 +28,10 @@ final class Block_Bindings {
 		'instagram_handle',
 		'facebook_label',
 		'notify_from_name',
+		'legal_name',
+		'legal_address',
+		'privacy_email',
+		'privacy_updated',
 	);
 
 	/**
@@ -77,6 +81,24 @@ final class Block_Bindings {
 			return sprintf( '© %s %s', gmdate( 'Y' ), get_bloginfo( 'name' ) );
 		}
 
-		return esc_html( (string) Settings::get( $key, '' ) );
+		$value = (string) Settings::get( $key, '' );
+
+		if ( 'legal_address' === $key ) {
+			return nl2br( esc_html( $value ) );
+		}
+
+		if ( 'privacy_email' === $key ) {
+			$email = sanitize_email( $value ) ?: sanitize_email( (string) get_option( 'admin_email', '' ) );
+
+			return '' !== $email ? '<a href="' . esc_url( 'mailto:' . $email ) . '">' . esc_html( $email ) . '</a>' : '';
+		}
+
+		if ( 'privacy_updated' === $key ) {
+			$timestamp = strtotime( $value . ' 12:00:00' );
+
+			return $timestamp ? esc_html( wp_date( (string) get_option( 'date_format', 'j \d\e F \d\e Y' ), $timestamp ) ) : esc_html( $value );
+		}
+
+		return esc_html( $value );
 	}
 }
