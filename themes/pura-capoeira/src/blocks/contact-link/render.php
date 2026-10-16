@@ -36,12 +36,6 @@ switch ( $channel ) {
 		$href  = (string) pura_setting( 'facebook_url', '' );
 		$value = (string) pura_setting( 'facebook_label', '' );
 		break;
-	case 'calendly_adults':
-		$href = (string) pura_setting( 'calendly_trial_adult_url', '' );
-		break;
-	case 'calendly_kids':
-		$href = (string) pura_setting( 'calendly_trial_kids_url', '' );
-		break;
 }
 
 if ( '' === $href ) {

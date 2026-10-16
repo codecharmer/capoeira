@@ -34,8 +34,7 @@ window.puraConfig = {
   privacyUrl: "https://example.com/aviso-de-privacidad/",
   ajaxUrl: "https://example.com/wp-admin/admin-ajax.php",
   providers: [{ id: "google", label: "Continuar con Google", startUrl: "…/auth/google/start" }],
-  whatsapp: "18056385603",
-  calendly: { trialAdult: "https://calendly.com/…", trialKids: "https://calendly.com/…" }
+  whatsapp: "18056385603"
 };
 ```
 

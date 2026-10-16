@@ -40,30 +40,30 @@ final class Settings {
 	public static function defaults(): array {
 		return array(
 			// Pagos.
-			'currency'                 => 'MXN',
-			'store_page_id'            => 0,
-			'inscriptions_page_id'     => 0,
+			'currency'              => 'MXN',
+			'store_page_id'         => 0,
+			'inscriptions_page_id'  => 0,
 
 			// Printful.
-			'price_multiplier'         => 1.0,
-			'catalog_cache_ttl'        => 300,
+			'price_multiplier'      => 1.0,
+			'catalog_cache_ttl'     => 300,
 
 			// Precios (MXN cents).
-			'monthly_adult'            => 115000,
-			'monthly_kids'             => 100000,
-			'inscription_fee'          => 150000,
-			'trial_price'              => 20000,
-			'quarter_discount_pct'     => 15,
-			'year_discount_pct'        => 20,
-			'current_monthly_adult'    => 75000,
-			'current_monthly_kids'     => 100000,
+			'monthly_adult'         => 115000,
+			'monthly_kids'          => 100000,
+			'inscription_fee'       => 150000,
+			'trial_price'           => 20000,
+			'quarter_discount_pct'  => 15,
+			'year_discount_pct'     => 20,
+			'current_monthly_adult' => 75000,
+			'current_monthly_kids'  => 100000,
 
 			// Códigos.
-			'promo_beca_code'          => 'BECADOPC26',
-			'promo_current_code'       => 'ACTUALPC26',
+			'promo_beca_code'       => 'BECADOPC26',
+			'promo_current_code'    => 'ACTUALPC26',
 
 			// Horarios.
-			'schedule'                 => array(
+			'schedule'              => array(
 				array(
 					'group' => 'adult',
 					'day'   => 'Martes',
@@ -91,35 +91,33 @@ final class Settings {
 			),
 
 			// Notificaciones.
-			'notify_emails'            => 'codecharmer@codecharmer.io',
-			'notify_from_email'        => '',
-			'notify_from_name'         => 'Pura Capoeira',
-			'cc_student'               => true,
+			'notify_emails'         => 'codecharmer@codecharmer.io',
+			'notify_from_email'     => '',
+			'notify_from_name'      => 'Pura Capoeira',
+			'cc_student'            => true,
 
 			// Contacto y redes.
-			'whatsapp_number'          => '18056385603',
-			'whatsapp_display'         => '+1 (805) 638-5603',
-			'calendly_trial_adult_url' => 'https://calendly.com/codecharmer/clase-de-prueba',
-			'calendly_trial_kids_url'  => 'https://calendly.com/codecharmer/clase-de-prueba-kids',
-			'instagram_url'            => 'https://www.instagram.com/profesor.malandro/',
-			'instagram_handle'         => '@profesor.malandro',
-			'facebook_url'             => 'https://www.facebook.com/PuraCapoeiraCuernavaca/',
-			'facebook_label'           => 'Pura Capoeira Cuernavaca',
-			'tagline'                  => 'Descubre tu fuerza. Aprende a darle sentido. Capoeira para adultos y niños en Cuernavaca, Morelos.',
-			'og_image_id'              => 0,
+			'whatsapp_number'       => '18056385603',
+			'whatsapp_display'      => '+1 (805) 638-5603',
+			'instagram_url'         => 'https://www.instagram.com/profesor.malandro/',
+			'instagram_handle'      => '@profesor.malandro',
+			'facebook_url'          => 'https://www.facebook.com/PuraCapoeiraCuernavaca/',
+			'facebook_label'        => 'Pura Capoeira Cuernavaca',
+			'tagline'               => 'Descubre tu fuerza. Aprende a darle sentido. Capoeira para adultos y niños en Cuernavaca, Morelos.',
+			'og_image_id'           => 0,
 
 			// Privacidad (Aviso de Privacidad).
-			'legal_name'               => 'Pura Capoeira Cuernavaca',
-			'legal_address'            => 'Cuernavaca, Morelos, México',
-			'privacy_email'            => '',
-			'privacy_updated'          => '2026-10-15',
+			'legal_name'            => 'Pura Capoeira Cuernavaca',
+			'legal_address'         => 'Cuernavaca, Morelos, México',
+			'privacy_email'         => '',
+			'privacy_updated'       => '2026-10-15',
 
 			// Cuentas de alumnos (Google / Apple). Secrets live in pura_secrets.
-			'account_page_id'          => 0,
-			'google_client_id'         => '',
-			'apple_services_id'        => '',
-			'apple_team_id'            => '',
-			'apple_key_id'             => '',
+			'account_page_id'       => 0,
+			'google_client_id'      => '',
+			'apple_services_id'     => '',
+			'apple_team_id'         => '',
+			'apple_key_id'          => '',
 		);
 	}
 
@@ -289,10 +287,6 @@ final class Settings {
 			'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
 			'providers'       => Auth\Providers::configured(),
 			'whatsapp'        => preg_replace( '/\D+/', '', (string) self::get( 'whatsapp_number', '' ) ),
-			'calendly'        => array(
-				'trialAdult' => (string) self::get( 'calendly_trial_adult_url', '' ),
-				'trialKids'  => (string) self::get( 'calendly_trial_kids_url', '' ),
-			),
 		);
 	}
 }

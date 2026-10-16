@@ -80,7 +80,6 @@
 	<ul class="wp-block-list">
 		<!-- wp:list-item --><li><strong>Stripe:</strong> procesamiento de pagos con tarjeta. Stripe recibe tus datos de pago directamente; nosotros nunca los vemos.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li><strong>Printful:</strong> producción y envío de los pedidos de la tienda. Recibe tu nombre y tu dirección de envío.</li><!-- /wp:list-item -->
-		<!-- wp:list-item --><li><strong>Calendly:</strong> agenda de clases de prueba. Solo trata tus datos cuando decides cargar el calendario o abrir el enlace de reserva.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li><strong>Google y Apple:</strong> inicio de sesión en tu cuenta de alumno. El sitio recibe únicamente el identificador, el correo y el nombre que tú autorizas al iniciar sesión.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li><strong>Proveedor de hospedaje:</strong> servidor (cPanel/VPS) donde se aloja este sitio y su base de datos.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li><strong>Proveedor de correo electrónico:</strong> envío de notificaciones, confirmaciones y comprobantes.</li><!-- /wp:list-item -->
@@ -115,13 +114,11 @@
 	<!-- wp:list -->
 	<ul class="wp-block-list">
 		<!-- wp:list-item --><li><strong>Cookies de sesión de WordPress:</strong> se crean únicamente cuando inicias sesión en tu cuenta de alumno y sirven para mantenerte identificado mientras navegas.</li><!-- /wp:list-item -->
-		<!-- wp:list-item --><li><strong>Preferencia de consentimiento:</strong> tu elección sobre el contenido de terceros se guarda en el almacenamiento local de tu navegador (localStorage) para no volver a preguntarte en cada visita.</li><!-- /wp:list-item -->
+		<!-- wp:list-item --><li><strong>Aviso de cookies:</strong> cuando cierras el aviso que aparece al pie de la página, guardamos esa confirmación en el almacenamiento local de tu navegador (localStorage) para no mostrártelo en cada visita.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li><strong>Carrito de la tienda:</strong> los productos que agregas se guardan en el almacenamiento local de tu navegador hasta que completas o vacías tu pedido.</li><!-- /wp:list-item -->
 	</ul>
 	<!-- /wp:list -->
-	<!-- wp:paragraph --><p>El calendario de Calendly para agendar clases de prueba se carga solo después de que aceptas el «contenido de terceros» o haces clic en «Cargar calendario». Al cargarse, Calendly puede colocar sus propias cookies en tu navegador. Esas cookies las controla Calendly, no nosotros, y una vez instaladas deben eliminarse desde la configuración de tu navegador. El pago con Stripe Checkout y el inicio de sesión con Google o Apple ocurren en los sitios de esos proveedores, bajo sus propias políticas de cookies.</p><!-- /wp:paragraph -->
-	<!-- wp:paragraph --><p>Puedes cambiar tu elección en cualquier momento desde el enlace «Preferencias de cookies» que aparece en el pie de página, o con el siguiente botón:</p><!-- /wp:paragraph -->
-	<!-- wp:html --><p><button type="button" class="btn btn--ghost" data-cookie-preferences>Preferencias de cookies</button></p><!-- /wp:html -->
+	<!-- wp:paragraph --><p>Este sitio no carga contenido de terceros que coloque cookies. El pago con Stripe Checkout y el inicio de sesión con Google o Apple ocurren en los sitios de esos proveedores, bajo sus propias políticas de cookies. Puedes borrar en cualquier momento las cookies y el almacenamiento local de este sitio desde la configuración de tu navegador.</p><!-- /wp:paragraph -->
 
 	<!-- wp:heading --><h2 class="wp-block-heading">Cambios a este Aviso</h2><!-- /wp:heading -->
 	<!-- wp:paragraph --><p>Este Aviso puede actualizarse para reflejar cambios en la ley, en nuestros servicios o en los proveedores que utilizamos. Cualquier modificación se publicará en esta misma página con la fecha de la última actualización. Si el cambio es relevante para el tratamiento de tus datos, además lo notificaremos por correo electrónico a los alumnos activos.</p><!-- /wp:paragraph -->
