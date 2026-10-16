@@ -27,7 +27,14 @@ final class Content_Migrations {
 		'update_vadiando_2026_organizers',
 		'set_notification_recipient_2026_10',
 		'add_vadiando_2026_payment',
+		'remove_calendly',
 	);
+
+	/** @var string[] Settings that pointed at Calendly and no longer exist. */
+	private const CALENDLY_SETTINGS = array( 'calendly_trial_adult_url', 'calendly_trial_kids_url' );
+
+	/** Anchor of the contact-page section whose Calendly embeds became inscription buttons. */
+	public const BOOKING_SECTION_ANCHOR = 'agendar-clase';
 
 	/** Payment section appended to the event page; mirrors the theme pattern. */
 	private const VADIANDO_PAYMENT = "<!-- wp:group {\"tagName\":\"section\",\"align\":\"full\",\"className\":\"section\",\"anchor\":\"pago\",\"layout\":{\"type\":\"constrained\"}} -->\n<section class=\"wp-block-group alignfull section\" id=\"pago\">\n<!-- wp:group {\"className\":\"section__head reveal\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group section__head reveal\">\n<!-- wp:paragraph {\"className\":\"overline\"} --><p class=\"overline\">Pago</p><!-- /wp:paragraph -->\n<!-- wp:heading --><h2 class=\"wp-block-heading\">Cuota del evento</h2><!-- /wp:heading -->\n<!-- wp:paragraph {\"className\":\"lead\"} --><p class=\"lead\">La cuota se paga por transferencia a la cuenta de Mercado Pago de la organización. Después de pagar, envía tu comprobante por WhatsApp con tu nombre completo.</p><!-- /wp:paragraph -->\n</div>\n<!-- /wp:group -->\n<!-- wp:group {\"className\":\"payment-card reveal\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group payment-card reveal\">\n<!-- wp:group {\"className\":\"event-fact\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group event-fact\">\n<!-- wp:paragraph {\"className\":\"event-fact__label\"} --><p class=\"event-fact__label\">CLABE</p><!-- /wp:paragraph -->\n<!-- wp:paragraph {\"className\":\"event-fact__value event-fact__value--mono\"} --><p class=\"event-fact__value event-fact__value--mono\">722969016003937282</p><!-- /wp:paragraph -->\n</div>\n<!-- /wp:group -->\n<!-- wp:group {\"className\":\"event-fact\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group event-fact\">\n<!-- wp:paragraph {\"className\":\"event-fact__label\"} --><p class=\"event-fact__label\">Titular</p><!-- /wp:paragraph -->\n<!-- wp:paragraph {\"className\":\"event-fact__value\"} --><p class=\"event-fact__value\">Mardonio Sales Linhares</p><!-- /wp:paragraph -->\n</div>\n<!-- /wp:group -->\n<!-- wp:group {\"className\":\"event-fact\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group event-fact\">\n<!-- wp:paragraph {\"className\":\"event-fact__label\"} --><p class=\"event-fact__label\">Banco / app</p><!-- /wp:paragraph -->\n<!-- wp:paragraph {\"className\":\"event-fact__value\"} --><p class=\"event-fact__value\">Mercado Pago</p><!-- /wp:paragraph -->\n</div>\n<!-- /wp:group -->\n<!-- wp:pura/contact-link {\"channel\":\"whatsapp\",\"label\":\"Enviar comprobante por WhatsApp\",\"variant\":\"btn-whatsapp\",\"message\":\"Hola, envío mi comprobante de pago de Vadiando na Ladeira 2026. Mi nombre es: \"} /-->\n</div>\n<!-- /wp:group -->\n</section>\n<!-- /wp:group -->";
@@ -178,6 +185,145 @@ final class Content_Migrations {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Calendly is gone: drop its settings, remove its blocks from saved content, swap the contact
+	 * page's booking section for the pattern's current one, and regenerate the Aviso de
+	 * Privacidad (never edited by hand) when it still names Calendly.
+	 *
+	 * @return bool False while the theme patterns are not registered (theme inactive or outdated).
+	 */
+	private function remove_calendly(): bool {
+		$registry = \WP_Block_Patterns_Registry::get_instance();
+		$contacto = $registry->get_registered( 'pura-capoeira/contacto' );
+		$aviso    = $registry->get_registered( 'pura-capoeira/page-aviso-de-privacidad' );
+		if ( ! $contacto || ! $aviso ) {
+			return false;
+		}
+
+		$section = null;
+		foreach ( parse_blocks( (string) $contacto['content'] ) as $block ) {
+			if ( self::BOOKING_SECTION_ANCHOR === ( $block['attrs']['anchor'] ?? '' ) ) {
+				$section = $block;
+				break;
+			}
+		}
+		if ( null === $section ) {
+			return false;
+		}
+
+		$stored = get_option( Settings::OPTION, array() );
+		if ( is_array( $stored ) ) {
+			$before = $stored;
+			foreach ( self::CALENDLY_SETTINGS as $key ) {
+				unset( $stored[ $key ] );
+			}
+			if ( $stored !== $before ) {
+				update_option( Settings::OPTION, $stored, true );
+			}
+		}
+
+		$posts = get_posts(
+			array(
+				'post_type'        => array( 'page', 'post', 'wp_template', 'wp_template_part', 'wp_block' ),
+				'post_status'      => 'any',
+				'posts_per_page'   => -1,
+				's'                => 'calendly',
+				'suppress_filters' => false,
+			)
+		);
+
+		foreach ( $posts as $post ) {
+			if ( 'aviso-de-privacidad' === $post->post_name ) {
+				$blocks  = parse_blocks( (string) $aviso['content'] );
+				$blocks  = function_exists( 'resolve_pattern_blocks' ) ? resolve_pattern_blocks( $blocks ) : $blocks;
+				$content = serialize_blocks( $blocks );
+			} else {
+				$content = serialize_blocks( self::strip_calendly_blocks( parse_blocks( (string) $post->post_content ), $section ) );
+			}
+
+			if ( $content === $post->post_content ) {
+				continue;
+			}
+
+			wp_update_post(
+				wp_slash(
+					array(
+						'ID'           => $post->ID,
+						'post_content' => $content,
+					)
+				)
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Remove `pura/calendly` blocks and Calendly contact links from a parsed block tree, and
+	 * replace the booking section (by anchor) with `$section` when given. Pure: no WordPress calls,
+	 * so it can be unit-tested. Keeps `innerContent` in step with `innerBlocks`.
+	 *
+	 * @param array<int, array<string, mixed>> $blocks  Output of parse_blocks().
+	 * @param array<string, mixed>|null        $section Replacement for the booking section.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function strip_calendly_blocks( array $blocks, ?array $section ): array {
+		$out = array();
+
+		foreach ( $blocks as $block ) {
+			$name    = (string) ( $block['blockName'] ?? '' );
+			$channel = (string) ( $block['attrs']['channel'] ?? '' );
+
+			if ( 'pura/calendly' === $name || ( 'pura/contact-link' === $name && str_starts_with( $channel, 'calendly' ) ) ) {
+				continue;
+			}
+			if ( null !== $section && self::BOOKING_SECTION_ANCHOR === ( $block['attrs']['anchor'] ?? '' ) ) {
+				$out[] = $section;
+				continue;
+			}
+
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$inner_before  = $block['innerBlocks'];
+				$inner_after   = self::strip_calendly_blocks( $inner_before, $section );
+				$kept          = array();
+				$inner_content = array();
+				$slot          = 0;
+
+				// Which original slots survived (replacements keep their slot).
+				$survivors = array();
+				$j         = 0;
+				foreach ( $inner_before as $i => $child ) {
+					$child_name      = (string) ( $child['blockName'] ?? '' );
+					$child_channel   = (string) ( $child['attrs']['channel'] ?? '' );
+					$dropped         = 'pura/calendly' === $child_name || ( 'pura/contact-link' === $child_name && str_starts_with( $child_channel, 'calendly' ) );
+					$survivors[ $i ] = ! $dropped;
+					if ( ! $dropped ) {
+						$kept[] = $inner_after[ $j ];
+						++$j;
+					}
+				}
+
+				foreach ( (array) ( $block['innerContent'] ?? array() ) as $chunk ) {
+					if ( null !== $chunk ) {
+						$inner_content[] = $chunk;
+						continue;
+					}
+					if ( ! empty( $survivors[ $slot ] ) ) {
+						$inner_content[] = null;
+					}
+					++$slot;
+				}
+
+				$block['innerBlocks']  = $kept;
+				$block['innerContent'] = $inner_content;
+			}
+
+			$out[] = $block;
+		}
+
+		return $out;
 	}
 
 	/**

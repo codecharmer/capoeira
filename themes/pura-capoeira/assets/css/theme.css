@@ -835,19 +835,6 @@ p { margin: 0 0 1rem; font-size: 1.5rem; }
 }
 .form-field textarea { min-height: 120px; resize: vertical; }
 
-.scheduler-card {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1rem;
-}
-
-@media (min-width: 768px) {
-  .scheduler-card {
-    padding: 1.5rem;
-  }
-}
-
 /* --- Footer --- */
 .site-footer {
   border-top: 1px solid var(--border-soft);
@@ -1870,8 +1857,6 @@ p.is-style-muted { color: var(--text-2); }
 }
 .footer-legal a:hover,
 .footer-legal button:hover { color: var(--yellow); }
-.footer-legal [data-cookie-preferences] { display: none; }
-.js .footer-legal [data-cookie-preferences] { display: inline; }
 @media (max-width: 480px) {
   .footer-bottom { flex-direction: column; gap: 0.5rem; }
 }
@@ -1910,49 +1895,12 @@ p.is-style-muted { color: var(--text-2); }
 }
 .consent__desc { margin: 0; color: var(--text-2); font-size: 1rem; }
 .consent__desc a { color: var(--text); text-decoration: underline; text-underline-offset: 0.2em; }
-.consent__panel { display: grid; gap: 0.75rem; border-top: 1px solid var(--border); padding-top: 1rem; }
-.consent__panel[hidden] { display: none; }
-.consent__option { display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer; }
-.consent__option input { margin-top: 0.3rem; accent-color: var(--yellow); }
-.consent__option span { display: grid; gap: 0.15rem; }
-.consent__option small { color: var(--text-2); }
 .consent__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
 .consent__actions .btn { padding: 0.7rem 1.2rem; font-size: 0.9rem; }
-.consent__actions [hidden] { display: none; }
-.consent__link {
-  background: none;
-  border: 0;
-  padding: 0.5rem 0.25rem;
-  color: var(--text-2);
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-  cursor: pointer;
-}
-.consent__link:hover { color: var(--yellow); }
 @media (prefers-reduced-motion: reduce) {
   .consent { transition: none; }
 }
 
-/* --- Calendly placeholder (third-party content gated by consent) --- */
-.calendly-embed { position: relative; }
-.calendly-placeholder {
-  display: grid;
-  gap: 1rem;
-  place-content: center;
-  text-align: center;
-  min-height: inherit;
-  padding: 2rem 1.5rem;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
-  color: var(--text-2);
-}
-.calendly-placeholder[hidden] { display: none; }
-.calendly-placeholder p { margin: 0; max-width: 42ch; }
-.calendly-placeholder__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
 
 /* --- Inscription form: privacy acceptance --- */
 .inscription-privacy {

@@ -65,10 +65,10 @@ Videos**), inscripciones y alumnos (**Pura Capoeira → Inscripciones / Alumnos*
   página y registrado como página de privacidad de WordPress. El responsable, su domicilio, el correo para derechos
   ARCO y la fecha de actualización se editan en **Ajustes → Privacidad**; el resto del texto, en el
   editor. El formulario de inscripción exige aceptar el Aviso (se guarda la fecha de aceptación).
-- **Banner de consentimiento** (`inc/consent.php`, `assets/js/consent.js`): el sitio no usa cookies de
-  analítica ni publicidad; el banner solo controla el contenido de terceros (el calendario de Calendly se
-  carga al aceptar o al pulsar "Cargar calendario"). La preferencia vive en `localStorage` porque la
-  caché de página sirve el mismo HTML a todos. "Preferencias de cookies" en el pie la reabre.
+- **Aviso de cookies** (`inc/consent.php`, `assets/js/consent.js`): el sitio no usa cookies de analítica
+  ni publicidad ni carga contenido de terceros, así que el aviso solo informa (sesión de alumno y carrito
+  en el navegador) y se cierra con «Entendido». La confirmación vive en `localStorage` porque la caché de
+  página sirve el mismo HTML a todos.
 - **Mi cuenta** (`/cuenta/`): inicio de sesión con Google o Apple y portal del alumno (datos,
   historial, pago de mensualidad). Configuración y detalles en el
   [README del plugin](plugins/pura-capoeira-core/README.md#cuentas-de-alumnos-sign-in-with-google--apple).

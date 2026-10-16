@@ -76,4 +76,83 @@ final class ContentMigrationsTest extends TestCase {
 		$this->assertSame( $in, Content_Migrations::strip_street_address( $in ) );
 		$this->assertStringNotContainsString( 'Jerónimo', Content_Migrations::strip_street_address( $in ) );
 	}
+
+	/**
+	 * parse_blocks()-shaped fixture: a flex group holding WhatsApp + two Calendly links, then the
+	 * booking section with two pura/calendly blocks, then an unrelated paragraph.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	private function calendly_page(): array {
+		$link = static fn ( string $channel ): array => array(
+			'blockName'    => 'pura/contact-link',
+			'attrs'        => array( 'channel' => $channel ),
+			'innerBlocks'  => array(),
+			'innerHTML'    => '',
+			'innerContent' => array(),
+		);
+		$embed = static fn ( string $group ): array => array(
+			'blockName'    => 'pura/calendly',
+			'attrs'        => array( 'group' => $group ),
+			'innerBlocks'  => array(),
+			'innerHTML'    => '',
+			'innerContent' => array(),
+		);
+
+		return array(
+			array(
+				'blockName'    => 'core/group',
+				'attrs'        => array( 'className' => 'contact-actions' ),
+				'innerBlocks'  => array( $link( 'whatsapp' ), $link( 'calendly_adults' ), $link( 'calendly_kids' ) ),
+				'innerHTML'    => '<div class="wp-block-group contact-actions"></div>',
+				'innerContent' => array( '<div class="wp-block-group contact-actions">', null, "\n", null, "\n", null, '</div>' ),
+			),
+			array(
+				'blockName'    => 'core/group',
+				'attrs'        => array( 'anchor' => 'agendar-clase' ),
+				'innerBlocks'  => array( $embed( 'adult' ), $embed( 'kids' ) ),
+				'innerHTML'    => '<section id="agendar-clase"></section>',
+				'innerContent' => array( '<section id="agendar-clase">', null, null, '</section>' ),
+			),
+			array(
+				'blockName'    => 'core/paragraph',
+				'attrs'        => array(),
+				'innerBlocks'  => array(),
+				'innerHTML'    => '<p>Hola</p>',
+				'innerContent' => array( '<p>Hola</p>' ),
+			),
+		);
+	}
+
+	public function test_calendly_links_are_dropped_and_inner_content_stays_aligned(): void {
+		$out = Content_Migrations::strip_calendly_blocks( $this->calendly_page(), null );
+
+		$actions = $out[0];
+		$this->assertCount( 1, $actions['innerBlocks'] );
+		$this->assertSame( 'whatsapp', $actions['innerBlocks'][0]['attrs']['channel'] );
+		$this->assertSame( 1, count( array_filter( $actions['innerContent'], 'is_null' ) ), 'one null slot per surviving inner block' );
+		$this->assertSame( '</div>', end( $actions['innerContent'] ) );
+	}
+
+	public function test_booking_section_is_replaced_when_a_replacement_is_given(): void {
+		$replacement = array(
+			'blockName'    => 'core/group',
+			'attrs'        => array( 'anchor' => 'agendar-clase' ),
+			'innerBlocks'  => array(),
+			'innerHTML'    => '<section id="agendar-clase">nuevo</section>',
+			'innerContent' => array( '<section id="agendar-clase">nuevo</section>' ),
+		);
+
+		$out = Content_Migrations::strip_calendly_blocks( $this->calendly_page(), $replacement );
+
+		$this->assertSame( $replacement, $out[1] );
+		$this->assertSame( 'core/paragraph', $out[2]['blockName'], 'unrelated blocks are untouched' );
+	}
+
+	public function test_booking_section_loses_its_embeds_without_a_replacement(): void {
+		$out = Content_Migrations::strip_calendly_blocks( $this->calendly_page(), null );
+
+		$this->assertSame( array(), $out[1]['innerBlocks'] );
+		$this->assertSame( array( '<section id="agendar-clase">', '</section>' ), $out[1]['innerContent'] );
+	}
 }

@@ -114,15 +114,13 @@ final class Settings_Page {
 			'contacto'       => array(
 				'title'  => __( 'Contacto y redes', 'pura' ),
 				'fields' => array(
-					'whatsapp_number'          => array( 'text', __( 'WhatsApp (número internacional, solo dígitos)', 'pura' ) ),
-					'whatsapp_display'         => array( 'text', __( 'WhatsApp (como se muestra)', 'pura' ) ),
-					'calendly_trial_adult_url' => array( 'url', __( 'Calendly clase de prueba (adultos)', 'pura' ) ),
-					'calendly_trial_kids_url'  => array( 'url', __( 'Calendly clase de prueba (niños)', 'pura' ) ),
-					'instagram_url'            => array( 'url', __( 'Instagram (URL)', 'pura' ) ),
-					'instagram_handle'         => array( 'text', __( 'Instagram (usuario)', 'pura' ) ),
-					'facebook_url'             => array( 'url', __( 'Facebook (URL)', 'pura' ) ),
-					'facebook_label'           => array( 'text', __( 'Facebook (nombre)', 'pura' ) ),
-					'tagline'                  => array( 'textarea', __( 'Lema (pie de página)', 'pura' ) ),
+					'whatsapp_number'  => array( 'text', __( 'WhatsApp (número internacional, solo dígitos)', 'pura' ) ),
+					'whatsapp_display' => array( 'text', __( 'WhatsApp (como se muestra)', 'pura' ) ),
+					'instagram_url'    => array( 'url', __( 'Instagram (URL)', 'pura' ) ),
+					'instagram_handle' => array( 'text', __( 'Instagram (usuario)', 'pura' ) ),
+					'facebook_url'     => array( 'url', __( 'Facebook (URL)', 'pura' ) ),
+					'facebook_label'   => array( 'text', __( 'Facebook (nombre)', 'pura' ) ),
+					'tagline'          => array( 'textarea', __( 'Lema (pie de página)', 'pura' ) ),
 				),
 			),
 			'privacidad'     => array(

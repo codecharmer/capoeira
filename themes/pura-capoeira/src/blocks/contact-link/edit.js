@@ -13,8 +13,6 @@ const CHANNELS = [
 	{ value: 'whatsapp', label: 'WhatsApp' },
 	{ value: 'instagram', label: 'Instagram' },
 	{ value: 'facebook', label: 'Facebook' },
-	{ value: 'calendly_adults', label: 'Calendly (adultos)' },
-	{ value: 'calendly_kids', label: 'Calendly (niños)' },
 ];
 
 const VARIANTS = [
