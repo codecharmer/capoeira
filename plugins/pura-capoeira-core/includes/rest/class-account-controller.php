@@ -192,7 +192,8 @@ final class Account_Controller extends Base_Controller {
 				'label'          => $monthly['label'],
 				'currentStudent' => Pricing::PROMO_CURRENT === $monthly['promo_type'],
 			) : null,
-			'logoutUrl'    => wp_logout_url( home_url( '/' ) ),
+			// wp_logout_url() returns an HTML-escaped URL (&amp;); this one travels as JSON into a href.
+			'logoutUrl'    => html_entity_decode( wp_logout_url( home_url( '/' ) ), ENT_QUOTES, 'UTF-8' ),
 			'whatsappUrl'  => Settings::whatsapp_url( 'Hola, inicié sesión en Mi cuenta pero no encuentro mi ficha de alumno.' ),
 		);
 	}
