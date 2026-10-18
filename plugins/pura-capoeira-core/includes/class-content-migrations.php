@@ -28,6 +28,7 @@ final class Content_Migrations {
 		'set_notification_recipient_2026_10',
 		'add_vadiando_2026_payment',
 		'remove_calendly',
+		'set_inscription_fee_2026_10',
 	);
 
 	/** @var string[] Settings that pointed at Calendly and no longer exist. */
@@ -41,6 +42,9 @@ final class Content_Migrations {
 
 	/** Address that receives inscription and event notifications from October 2026. */
 	private const NOTIFY_EMAIL = 'codecharmer@codecharmer.io';
+
+	/** Inscription (uniform) fee in cents from October 2026. */
+	private const INSCRIPTION_FEE_CENTS = 170000;
 
 	private const VADIANDO_OLD_ORGANIZER = '<p class="event-fact__value">Pura Capoeira · Centro Esportivo Cultural Mestre Madona</p>';
 	private const VADIANDO_NEW_ORGANIZER = '<p class="event-fact__value">Contramestre Pepe Mortales</p>';
@@ -339,6 +343,14 @@ final class Content_Migrations {
 	 */
 	private function set_notification_recipient_2026_10(): void {
 		Settings::update( array( 'notify_emails' => self::NOTIFY_EMAIL ) );
+	}
+
+	/**
+	 * Inscription fee goes from $1,500 to $1,700 MXN, once. It stays editable in
+	 * Pura Capoeira → Ajustes → Precios afterwards.
+	 */
+	private function set_inscription_fee_2026_10(): void {
+		Settings::update( array( 'inscription_fee' => self::INSCRIPTION_FEE_CENTS ) );
 	}
 
 	/**

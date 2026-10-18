@@ -21,10 +21,10 @@ final class PricingTest extends TestCase {
 	 */
 	public static function legacy_amounts(): array {
 		return array(
-			'adult base'    => array( 'adult', Pricing::PROMO_NONE, array( 'trial' => 20000, 'inscription' => 150000, 'inscription_month' => 265000, 'month' => 115000, 'quarter' => 293250, 'year' => 1104000 ) ),
-			'kids base'     => array( 'kids', Pricing::PROMO_NONE, array( 'trial' => 20000, 'inscription' => 150000, 'inscription_month' => 250000, 'month' => 100000, 'quarter' => 255000, 'year' => 960000 ) ),
-			'adult current' => array( 'adult', Pricing::PROMO_CURRENT, array( 'trial' => 20000, 'inscription' => 150000, 'inscription_month' => 225000, 'month' => 75000, 'quarter' => 191250, 'year' => 720000 ) ),
-			'kids current'  => array( 'kids', Pricing::PROMO_CURRENT, array( 'trial' => 20000, 'inscription' => 150000, 'inscription_month' => 250000, 'month' => 100000, 'quarter' => 255000, 'year' => 960000 ) ),
+			'adult base'    => array( 'adult', Pricing::PROMO_NONE, array( 'trial' => 20000, 'inscription' => 170000, 'inscription_month' => 285000, 'month' => 115000, 'quarter' => 293250, 'year' => 1104000 ) ),
+			'kids base'     => array( 'kids', Pricing::PROMO_NONE, array( 'trial' => 20000, 'inscription' => 170000, 'inscription_month' => 270000, 'month' => 100000, 'quarter' => 255000, 'year' => 960000 ) ),
+			'adult current' => array( 'adult', Pricing::PROMO_CURRENT, array( 'trial' => 20000, 'inscription' => 170000, 'inscription_month' => 245000, 'month' => 75000, 'quarter' => 191250, 'year' => 720000 ) ),
+			'kids current'  => array( 'kids', Pricing::PROMO_CURRENT, array( 'trial' => 20000, 'inscription' => 170000, 'inscription_month' => 270000, 'month' => 100000, 'quarter' => 255000, 'year' => 960000 ) ),
 		);
 	}
 
@@ -53,7 +53,7 @@ final class PricingTest extends TestCase {
 		}
 
 		self::assertSame( array( 'month', 'quarter', 'year' ), $allowed );
-		self::assertSame( 150000, Pricing::addon_cents() );
+		self::assertSame( 170000, Pricing::addon_cents() );
 	}
 
 	public function test_promo_resolution_is_case_insensitive(): void {
@@ -88,13 +88,13 @@ final class PricingTest extends TestCase {
 		pura_test_settings( array( 'monthly_adult' => 120000, 'quarter_discount_pct' => 10 ) );
 
 		self::assertSame( 324000, Pricing::plan( 'quarter', 'adult' )['amount'] );
-		self::assertSame( 270000, Pricing::plan( 'inscription_month', 'adult' )['amount'] );
+		self::assertSame( 290000, Pricing::plan( 'inscription_month', 'adult' )['amount'] );
 	}
 
 	public function test_pesos_conversion_and_formatting(): void {
 		self::assertSame( 2932.5, Pricing::to_pesos( 293250 ) );
 		self::assertSame( '$2,932.50', Pricing::format_pesos( 293250 ) );
 		self::assertSame( '$1,150', Pricing::format_pesos( 115000 ) );
-		self::assertSame( 'Inscripción ($1,500) + primera mensualidad ($1,150).', Pricing::plan( 'inscription_month', 'adult' )['note'] );
+		self::assertSame( 'Inscripción ($1,700) + primera mensualidad ($1,150).', Pricing::plan( 'inscription_month', 'adult' )['note'] );
 	}
 }

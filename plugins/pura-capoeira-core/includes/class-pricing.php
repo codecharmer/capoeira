@@ -34,7 +34,7 @@ final class Pricing {
 	}
 
 	public static function inscription_fee_cents(): int {
-		return max( 0, (int) Settings::get( 'inscription_fee', 150000 ) );
+		return max( 0, (int) Settings::get( 'inscription_fee', 170000 ) );
 	}
 
 	public static function trial_cents(): int {
