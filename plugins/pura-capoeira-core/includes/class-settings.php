@@ -51,7 +51,7 @@ final class Settings {
 			// Precios (MXN cents).
 			'monthly_adult'         => 115000,
 			'monthly_kids'          => 100000,
-			'inscription_fee'       => 150000,
+			'inscription_fee'       => 170000,
 			'trial_price'           => 20000,
 			'quarter_discount_pct'  => 15,
 			'year_discount_pct'     => 20,

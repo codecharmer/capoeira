@@ -49,7 +49,7 @@ function initInscription( root ) {
 
 	let config = {
 		currency: 'MXN',
-		addon_amount: 1500,
+		addon_amount: 1700,
 		plans: { adult: [], kids: [] },
 	};
 	try {
