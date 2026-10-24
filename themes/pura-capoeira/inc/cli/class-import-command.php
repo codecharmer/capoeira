@@ -67,10 +67,18 @@ final class Pura_Theme_Import_Command {
 			'label'   => 'Aviso de Privacidad',
 			'excerpt' => 'Aviso de Privacidad de Pura Capoeira Cuernavaca: qué datos personales recabamos, para qué, con quién se comparten y cómo ejercer tus derechos ARCO.',
 		),
+		'gracias-clase-de-prueba' => array(
+			'title'   => 'Gracias por reservar tu clase de prueba',
+			'label'   => 'Gracias',
+			'excerpt' => 'Tu clase de prueba en Pura Capoeira Cuernavaca está reservada. Revisa tu correo: ahí van la ubicación de la academia y lo que necesitas traer.',
+		),
 	);
 
 	/** @var string[] Pages linked from the footer only, never from the main navigation. */
 	private const FOOTER_ONLY = array( 'aviso-de-privacidad' );
+
+	/** @var string[] Pages reached only by redirect (confirmations); never in any menu. */
+	private const UNLISTED = array( 'gracias-clase-de-prueba' );
 
 	private string $source = '';
 
@@ -162,7 +170,7 @@ final class Pura_Theme_Import_Command {
 	public function menu( array $args, array $assoc_args ): void {
 		$links = array();
 		foreach ( self::PAGES as $slug => $meta ) {
-			if ( in_array( $slug, self::FOOTER_ONLY, true ) ) {
+			if ( in_array( $slug, self::FOOTER_ONLY, true ) || in_array( $slug, self::UNLISTED, true ) ) {
 				continue;
 			}
 			$page = get_page_by_path( $slug );

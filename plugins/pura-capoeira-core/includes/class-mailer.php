@@ -59,12 +59,196 @@ final class Mailer {
 		$student_email = sanitize_email( (string) ( $data['email'] ?? '' ) );
 		if ( is_email( $student_email ) ) {
 			$headers[] = 'Reply-To: ' . $student_email;
-			if ( Settings::get( 'cc_student', true ) && ! in_array( strtolower( $student_email ), array_map( 'strtolower', $recipients ), true ) ) {
+			// A trial-class student gets their own confirmation (see send_trial_confirmation), not
+			// a copy of the admin notification.
+			$cc = Settings::get( 'cc_student', true ) && 'trial' !== (string) ( $data['plan'] ?? '' );
+			if ( $cc && ! in_array( strtolower( $student_email ), array_map( 'strtolower', $recipients ), true ) ) {
 				$headers[] = 'Cc: ' . $student_email;
 			}
 		}
 
 		return self::send( $recipients, $subject, $body, $headers );
+	}
+
+	/**
+	 * Thank the student for booking a trial class and give them what they need to show up:
+	 * date, time, where the academy is, and what to bring. Sent once per inscription.
+	 */
+	public static function send_trial_confirmation( int $post_id ): bool {
+		$data = Inscription_Repository::to_array( $post_id );
+		if ( ! $data || 'trial' !== (string) ( $data['plan'] ?? '' ) ) {
+			return false;
+		}
+		if ( '' !== (string) get_post_meta( $post_id, '_pura_trial_confirmation_sent', true ) ) {
+			return true;
+		}
+
+		$email = sanitize_email( (string) ( $data['email'] ?? '' ) );
+		if ( ! is_email( $email ) ) {
+			return false;
+		}
+
+		$student    = ! empty( $data['student_id'] ) ? Data\Student_Repository::to_array( (int) $data['student_id'] ) : array();
+		$first_name = trim( (string) ( $student['first_name'] ?? '' ) );
+		$group      = (string) ( $data['group'] ?? 'adult' );
+		$date       = (string) ( $data['trial_date'] ?? '' );
+		$timestamp  = '' !== $date ? strtotime( $date . ' 12:00:00' ) : false;
+
+		$body = self::build_trial_body(
+			array(
+				'first_name'   => $first_name,
+				'date'         => $timestamp ? wp_date( 'l j \d\e F \d\e Y', $timestamp ) : $date,
+				'time'         => $timestamp ? self::class_time_for( $group, (int) wp_date( 'N', $timestamp ) ) : '',
+				'schedule'     => self::schedule_lines( $group ),
+				'location'     => (string) Settings::get( 'trial_location', '' ),
+				'maps_url'     => (string) Settings::get( 'trial_maps_url', '' ),
+				'instructions' => (string) Settings::get( 'trial_instructions', '' ),
+				'whatsapp'     => (string) Settings::get( 'whatsapp_display', '' ),
+				'whatsapp_url' => Settings::whatsapp_url(),
+				'site_name'    => (string) get_bloginfo( 'name' ),
+			)
+		);
+
+		$subject = sprintf( '¡Tu clase de prueba está reservada! — %s', (string) get_bloginfo( 'name' ) );
+		$headers = self::headers();
+		$reply   = self::recipients();
+		if ( $reply ) {
+			$headers[] = 'Reply-To: ' . $reply[0];
+		}
+
+		$ok = self::send( array( $email ), $subject, $body, $headers );
+		if ( $ok ) {
+			update_post_meta( $post_id, '_pura_trial_confirmation_sent', current_time( 'mysql' ) );
+		}
+
+		return $ok;
+	}
+
+	/**
+	 * Plain-text body of the trial confirmation. Pure, so it can be unit-tested.
+	 *
+	 * @param array<string, mixed> $vars first_name, date, time, schedule (string[]), location,
+	 *                                   maps_url, instructions, whatsapp, whatsapp_url, site_name.
+	 */
+	public static function build_trial_body( array $vars ): string {
+		$name  = trim( (string) ( $vars['first_name'] ?? '' ) );
+		$lines = array( '' !== $name ? "¡Hola, {$name}!" : '¡Hola!', '' );
+
+		$lines[] = 'Gracias por reservar tu clase de prueba en ' . (string) ( $vars['site_name'] ?? 'Pura Capoeira Cuernavaca' ) . '. Nos da mucho gusto que quieras conocer la capoeira con nosotros.';
+		$lines[] = '';
+
+		$lines[] = 'TU CLASE';
+		$when    = (string) ( $vars['date'] ?? '' );
+		if ( '' !== (string) ( $vars['time'] ?? '' ) ) {
+			$when .= ', ' . (string) $vars['time'];
+		}
+		if ( '' !== trim( $when ) ) {
+			$lines[] = 'Fecha: ' . ucfirst( $when );
+		}
+		$schedule = array_filter( (array) ( $vars['schedule'] ?? array() ) );
+		if ( '' === (string) ( $vars['time'] ?? '' ) && $schedule ) {
+			$lines[] = 'Horario de clases:';
+			foreach ( $schedule as $row ) {
+				$lines[] = '  · ' . $row;
+			}
+		}
+		$lines[] = '';
+
+		$location = trim( (string) ( $vars['location'] ?? '' ) );
+		if ( '' !== $location ) {
+			$lines[] = 'DÓNDE';
+			foreach ( preg_split( '/\r\n|\r|\n/', $location ) ?: array() as $row ) {
+				$lines[] = $row;
+			}
+			if ( '' !== (string) ( $vars['maps_url'] ?? '' ) ) {
+				$lines[] = 'Mapa: ' . (string) $vars['maps_url'];
+			}
+			$lines[] = '';
+		}
+
+		$instructions = trim( (string) ( $vars['instructions'] ?? '' ) );
+		if ( '' !== $instructions ) {
+			$lines[] = 'ANTES DE VENIR';
+			foreach ( preg_split( '/\r\n|\r|\n/', $instructions ) ?: array() as $row ) {
+				if ( '' !== trim( $row ) ) {
+					$lines[] = '  · ' . trim( $row );
+				}
+			}
+			$lines[] = '';
+		}
+
+		$whatsapp = trim( (string) ( $vars['whatsapp'] ?? '' ) );
+		if ( '' !== $whatsapp ) {
+			$lines[] = '¿Dudas o necesitas cambiar la fecha? Escríbenos por WhatsApp al ' . $whatsapp . ( '' !== (string) ( $vars['whatsapp_url'] ?? '' ) ? ' (' . (string) $vars['whatsapp_url'] . ')' : '' ) . '.';
+			$lines[] = '';
+		}
+
+		$lines[] = 'Nos vemos en la roda.';
+		$lines[] = (string) ( $vars['site_name'] ?? 'Pura Capoeira Cuernavaca' );
+
+		return implode( "\n", $lines ) . "\n";
+	}
+
+	/**
+	 * "17:30 a 19:30" when the group trains on that ISO weekday (1 = Monday), else ''.
+	 */
+	private static function class_time_for( string $group, int $weekday ): string {
+		$names = array(
+			1 => 'lunes',
+			'martes',
+			'miercoles',
+			'jueves',
+			'viernes',
+			'sabado',
+			'domingo',
+		);
+		$day   = $names[ $weekday ] ?? '';
+
+		foreach ( self::schedule_rows( $group ) as $row ) {
+			if ( self::normalize_day( (string) ( $row['day'] ?? '' ) ) === $day ) {
+				return (string) ( $row['start'] ?? '' ) . ' a ' . (string) ( $row['end'] ?? '' );
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * @return string[] "Martes 17:30 a 19:30" per class of the group.
+	 */
+	private static function schedule_lines( string $group ): array {
+		$lines = array();
+		foreach ( self::schedule_rows( $group ) as $row ) {
+			$lines[] = trim( (string) ( $row['day'] ?? '' ) . ' ' . (string) ( $row['start'] ?? '' ) . ' a ' . (string) ( $row['end'] ?? '' ) );
+		}
+
+		return $lines;
+	}
+
+	/**
+	 * @return array<int, array{group?:string,day?:string,start?:string,end?:string}>
+	 */
+	private static function schedule_rows( string $group ): array {
+		$rows = Settings::get( 'schedule', array() );
+
+		return array_values( array_filter( is_array( $rows ) ? $rows : array(), static fn ( $row ) => is_array( $row ) && ( $row['group'] ?? '' ) === $group ) );
+	}
+
+	/**
+	 * Lower-case, trimmed, accents dropped: "Miércoles " → "miercoles", so schedule rows typed
+	 * either way match the weekday names above.
+	 */
+	private static function normalize_day( string $day ): string {
+		return strtr(
+			mb_strtolower( trim( $day ) ),
+			array(
+				'á' => 'a',
+				'é' => 'e',
+				'í' => 'i',
+				'ó' => 'o',
+				'ú' => 'u',
+			)
+		);
 	}
 
 	/**

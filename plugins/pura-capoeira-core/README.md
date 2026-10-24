@@ -83,7 +83,15 @@ full profile `first_name last_name parent_name address email phone parent_phone 
 Responses:
 
 - `200 {ok:true, url}` → redirect the browser to Stripe Checkout.
-- `200 {ok:true, free:true, message, status}` → registered without charging now
+- `200 {ok:true, free:true, message, status, redirect?}` → registered without charging now; for `plan=trial`
+  `redirect` is the thank-you page and the form navigates there.
+- Trial classes (`plan=trial`): once the booking is final (paid via the Stripe webhook, or free/pay-later
+  right away) the student receives a confirmation mail with the date, the class time taken from the
+  schedule, the academy's location and instructions (**Pura Capoeira → Ajustes → Clase de prueba**;
+  the location is never printed on the site), and Stripe's success URL is the thank-you page
+  `/gracias-clase-de-prueba/` (`trial_thanks_page_id`). The admin notification skips the student CC
+  in that case.
+- `200 {ok:true, free:true, message, status}` (other plans) → registered without charging now
   (`status` is `free` for a beca or `pending_payment_offline` for pay-in-person). `free:true` is
   returned for both cases on purpose: the form keys off it.
 - `400 {ok:false, error}` → `privacy_accepted` missing, or an invalid field.

@@ -97,6 +97,9 @@ final class Webhook_Handler {
 			if ( 'paid' !== get_post_meta( $post_id, '_pura_status', true ) ) {
 				Inscription_Repository::set_paid( $post_id, $session );
 				Mailer::notify_inscription( $post_id );
+				if ( 'trial' === (string) get_post_meta( $post_id, '_pura_plan', true ) ) {
+					Mailer::send_trial_confirmation( $post_id );
+				}
 			}
 
 			return self::RESULT_PROCESSED;
