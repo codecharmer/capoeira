@@ -29,6 +29,15 @@ final class Content_Migrations {
 		'add_vadiando_2026_payment',
 		'remove_calendly',
 		'set_inscription_fee_2026_10',
+		'create_trial_thanks_page',
+	);
+
+	/** Slug, pattern and copy of the page a student lands on after booking a trial class. */
+	public const TRIAL_THANKS_PAGE = array(
+		'slug'    => 'gracias-clase-de-prueba',
+		'pattern' => 'pura-capoeira/page-gracias-clase-de-prueba',
+		'title'   => 'Gracias por reservar tu clase de prueba',
+		'excerpt' => 'Tu clase de prueba en Pura Capoeira Cuernavaca está reservada. Revisa tu correo: ahí van la ubicación de la academia y lo que necesitas traer.',
 	);
 
 	/** @var string[] Settings that pointed at Calendly and no longer exist. */
@@ -113,8 +122,34 @@ final class Content_Migrations {
 	 * @return bool False while the pattern is not registered (theme inactive or outdated).
 	 */
 	private function create_vadiando_2026_page(): bool {
-		$page = self::VADIANDO_PAGE;
+		return $this->publish_page_from_pattern( self::VADIANDO_PAGE );
+	}
 
+	/**
+	 * Publish the thank-you page for trial-class bookings and point the plugin at it.
+	 *
+	 * @return bool False while the pattern is not registered (theme inactive or outdated).
+	 */
+	private function create_trial_thanks_page(): bool {
+		if ( ! $this->publish_page_from_pattern( self::TRIAL_THANKS_PAGE ) ) {
+			return false;
+		}
+
+		$page = get_page_by_path( self::TRIAL_THANKS_PAGE['slug'] );
+		if ( $page ) {
+			Settings::update( array( 'trial_thanks_page_id' => (int) $page->ID ) );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Create a published page from a theme pattern unless its slug already exists.
+	 *
+	 * @param array{slug:string,pattern:string,title:string,excerpt:string} $page Page spec.
+	 * @return bool False while the pattern is not registered (theme inactive or outdated).
+	 */
+	private function publish_page_from_pattern( array $page ): bool {
 		if ( get_page_by_path( $page['slug'] ) ) {
 			return true;
 		}

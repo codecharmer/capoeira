@@ -284,21 +284,30 @@ final class Inscriptions_Controller extends Base_Controller {
 				? 'Inscripción registrada con beca del 100%. Te contactaremos para confirmar tu lugar.'
 				: 'Inscripción registrada. Te contactaremos para coordinar el pago de ' . number_format( $amount / 100, 2 ) . ' ' . $base['currency'] . '.';
 
-			// `free: true` is returned for both cases; the form keys off it (legacy contract).
-			return $this->ok(
-				array(
-					'free'    => true,
-					'message' => $message,
-					'status'  => $status,
-				)
+			$response = array(
+				'free'    => true,
+				'message' => $message,
+				'status'  => $status,
 			);
+
+			// A trial class is confirmed by mail (date, place, what to bring) and the browser
+			// goes to the thank-you page.
+			if ( 'trial' === $plan_id ) {
+				Mailer::send_trial_confirmation( $post_id );
+				$response['redirect'] = Settings::page_url( 'trial_thanks' );
+			}
+
+			// `free: true` is returned for both cases; the form keys off it (legacy contract).
+			return $this->ok( $response );
 		}
 
 		// Branch B: Stripe Checkout (record created first so the session can reference it).
-		$page_url = Settings::page_url( 'inscriptions' );
-		$result   = Inscription_Checkout::start(
+		// A paid trial class lands on the thank-you page; everything else returns to the form.
+		$page_url    = Settings::page_url( 'inscriptions' );
+		$success_url = 'trial' === $plan_id ? Settings::page_url( 'trial_thanks' ) : $page_url;
+		$result      = Inscription_Checkout::start(
 			array_merge( $base, array( 'source' => 'form' ) ),
-			Inscription_Checkout::return_url( $page_url, 'inscription', 'success' ) . '&session_id={CHECKOUT_SESSION_ID}',
+			Inscription_Checkout::return_url( $success_url, 'inscription', 'success' ) . '&session_id={CHECKOUT_SESSION_ID}',
 			Inscription_Checkout::return_url( $page_url, 'inscription', 'cancel' )
 		);
 

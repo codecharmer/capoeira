@@ -101,6 +101,15 @@ final class Settings_Page {
 					'schedule' => array( 'schedule', __( 'Clases', 'pura' ), __( 'Una clase por línea: grupo | día | inicio | fin. Grupo: adult o kids.', 'pura' ) ),
 				),
 			),
+			'clase_prueba'   => array(
+				'title'  => __( 'Clase de prueba', 'pura' ),
+				'fields' => array(
+					'trial_thanks_page_id' => array( 'page', __( 'Página de gracias', 'pura' ), __( 'A donde llega el alumno después de reservar su clase de prueba.', 'pura' ) ),
+					'trial_location'       => array( 'textarea', __( 'Ubicación de la academia', 'pura' ), __( 'Solo se envía por correo a quien reserva una clase de prueba; no aparece en el sitio.', 'pura' ) ),
+					'trial_maps_url'       => array( 'url', __( 'Enlace de Google Maps', 'pura' ) ),
+					'trial_instructions'   => array( 'textarea', __( 'Indicaciones para la clase', 'pura' ), __( 'Qué traer, a qué hora llegar… Una idea por línea.', 'pura' ) ),
+				),
+			),
 			'notificaciones' => array(
 				'title'  => __( 'Notificaciones por correo', 'pura' ),
 				'fields' => array(
@@ -317,7 +326,7 @@ final class Settings_Page {
 			} elseif ( 'privacy_updated' === $key ) {
 				$date        = sanitize_text_field( (string) $raw );
 				$out[ $key ] = preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ? $date : (string) $current[ $key ];
-			} elseif ( in_array( $key, array( 'tagline', 'legal_address' ), true ) ) {
+			} elseif ( in_array( $key, array( 'tagline', 'legal_address', 'trial_location', 'trial_instructions' ), true ) ) {
 				$out[ $key ] = sanitize_textarea_field( (string) $raw );
 			} elseif ( 'whatsapp_number' === $key ) {
 				$out[ $key ] = preg_replace( '/\D+/', '', (string) $raw );

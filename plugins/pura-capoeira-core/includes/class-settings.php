@@ -90,6 +90,12 @@ final class Settings {
 				),
 			),
 
+			// Clase de prueba: confirmation mail to the student and the thank-you page.
+			'trial_thanks_page_id'  => 0,
+			'trial_location'        => "Academia Pura Capoeira\nSan Jerónimo 503, Tlaltenango\n62170 Cuernavaca, Morelos",
+			'trial_maps_url'        => 'https://www.google.com/maps/search/?api=1&query=San%20Jer%C3%B3nimo%20503%2C%20Tlaltenango%2C%20Cuernavaca%2C%20Morelos',
+			'trial_instructions'    => "Llega 10 minutos antes para conocer el espacio.\nTrae ropa cómoda para moverte, pantalón largo si es posible, y agua.\nEntrenamos descalzos.",
+
 			// Notificaciones.
 			'notify_emails'         => 'codecharmer@codecharmer.io',
 			'notify_from_email'     => '',
@@ -217,12 +223,17 @@ final class Settings {
 			'option' => 'account_page_id',
 			'slug'   => 'cuenta',
 		),
+		'trial_thanks' => array(
+			'option' => 'trial_thanks_page_id',
+			'slug'   => 'gracias-clase-de-prueba',
+		),
 	);
 
 	/**
-	 * Permalink of the configured store/inscriptions/account page, with a slug-based fallback.
+	 * Permalink of the configured store/inscriptions/account/trial-thanks page, with a slug-based
+	 * fallback.
 	 *
-	 * @param string $which 'store', 'inscriptions' or 'account'.
+	 * @param string $which 'store', 'inscriptions', 'account' or 'trial_thanks'.
 	 */
 	public static function page_url( string $which ): string {
 		$spec = self::PAGES[ $which ] ?? self::PAGES['inscriptions'];

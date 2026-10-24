@@ -460,6 +460,10 @@ function initInscription( root ) {
 						'No se pudo procesar la solicitud'
 				);
 			}
+			if ( json.redirect ) {
+				window.location.href = json.redirect;
+				return;
+			}
 			if ( json.free ) {
 				showResult( json.message || '¡Inscripción registrada!', true );
 				form.reset();
