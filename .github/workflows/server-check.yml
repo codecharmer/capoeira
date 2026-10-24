@@ -33,11 +33,13 @@ jobs:
              echo '== wp core'; run core version; run option get siteurl; \
              echo '== plugins'; run plugin list --fields=name,status,version; \
              echo '== pura doctor'; run pura doctor; \
+             echo '== content migrations applied'; run option get pura_content_migrations --format=json; echo; \
+             echo '== confirmation pages'; run post list --post_type=page --name=gracias-clase-de-prueba --fields=ID,post_name,post_status,post_date; \
              echo '== FluentSMTP settings (passwords masked)'; \
              run option get fluent_mail_settings --format=json 2>/dev/null \
                | sed -E 's/\"(password|pass|secret|api_key|access_key|secret_key)\":\"[^\"]*\"/\"\\1\":\"***\"/g' | head -c 4000; echo; \
              echo '== FluentSMTP recent log (last 10)'; \
-             run db query 'SELECT id, status, created_at, subject FROM wp_fluentmail_email_logs ORDER BY id DESC LIMIT 10' 2>&1 | head -20; \
+             run db query \"'SELECT id, status, created_at, subject FROM wp_fluentmail_email_logs ORDER BY id DESC LIMIT 10'\" 2>&1 | head -20; \
              echo '== wp_mail test (to notify_emails via FluentSMTP if active)'; \
              printf '%s' '<?php echo wp_mail(\"codecharmer@codecharmer.io\", \"Server check \" . gmdate(\"c\"), \"Prueba de wp_mail desde el VPS.\") ? \"wp_mail: true\" : \"wp_mail: false\";' > /tmp/pura-mail-probe.php; chmod 644 /tmp/pura-mail-probe.php; \
              run eval-file /tmp/pura-mail-probe.php; rm -f /tmp/pura-mail-probe.php; \
