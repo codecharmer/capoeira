@@ -96,15 +96,20 @@ jobs:
                find \"\$d\" -type d -exec chmod 755 {} \; && \
                find \"\$d\" -type f -exec chmod 644 {} \; ; done"
 
+      # The cPanel account has no login shell ("Shell access is not enabled"), so
+      # `sudo -u user -i` cannot run wp-cli; `su -s /bin/bash user -c` runs it as that user.
+      # WordPress caches the theme's pattern file list keyed on the theme version, so a new
+      # pattern file is invisible until that cache is dropped (`delete_pattern_cache`).
       - name: Activate and flush (only if WP-CLI is installed on the server)
         run: |
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
             "if command -v wp >/dev/null 2>&1; then \
-               sudo -u capoeiracuernava -i -- wp --path='${{ secrets.DEPLOY_PATH }}' plugin activate pura-capoeira-core && \
-               sudo -u capoeiracuernava -i -- wp --path='${{ secrets.DEPLOY_PATH }}' theme activate pura-capoeira && \
-               sudo -u capoeiracuernava -i -- wp --path='${{ secrets.DEPLOY_PATH }}' cache flush && \
-               sudo -u capoeiracuernava -i -- wp --path='${{ secrets.DEPLOY_PATH }}' rewrite flush --hard; \
+               su -s /bin/bash capoeiracuernava -c \"wp --path='${{ secrets.DEPLOY_PATH }}' plugin activate pura-capoeira-core\" && \
+               su -s /bin/bash capoeiracuernava -c \"wp --path='${{ secrets.DEPLOY_PATH }}' theme activate pura-capoeira\" && \
+               su -s /bin/bash capoeiracuernava -c \"wp --path='${{ secrets.DEPLOY_PATH }}' cache flush\" && \
+               su -s /bin/bash capoeiracuernava -c \"wp --path='${{ secrets.DEPLOY_PATH }}' eval 'wp_get_theme()->delete_pattern_cache();'\" && \
+               su -s /bin/bash capoeiracuernava -c \"wp --path='${{ secrets.DEPLOY_PATH }}' rewrite flush --hard\"; \
              else echo 'wp-cli not found on the server; skipping activate/flush (files are deployed).'; fi"
 
       - name: Clear cPanel NGINX cache

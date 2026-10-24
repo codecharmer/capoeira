@@ -28,7 +28,7 @@ jobs:
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
             "set +e; W='${{ secrets.DEPLOY_PATH }}'; U=capoeiracuernava; \
-             run() { sudo -u \"\$U\" -i -- wp --path=\"\$W\" \"\$@\" 2>&1; }; \
+             run() { su -s /bin/bash \"\$U\" -c \"wp --path='\$W' \$*\" 2>&1; }; \
              echo '== host'; whoami; hostname; php -v | head -1; \
              echo '== wp core'; run core version; run option get siteurl; \
              echo '== plugins'; run plugin list --fields=name,status,version; \
@@ -39,7 +39,8 @@ jobs:
              echo '== FluentSMTP recent log (last 10)'; \
              run db query 'SELECT id, status, created_at, subject FROM wp_fluentmail_email_logs ORDER BY id DESC LIMIT 10' 2>&1 | head -20; \
              echo '== wp_mail test (to notify_emails via FluentSMTP if active)'; \
-             run eval 'echo wp_mail(\"codecharmer@codecharmer.io\", \"Server check \" . gmdate(\"c\"), \"Prueba de wp_mail desde el VPS.\") ? \"wp_mail: true\" : \"wp_mail: false\";' 2>&1; \
+             printf '%s' '<?php echo wp_mail(\"codecharmer@codecharmer.io\", \"Server check \" . gmdate(\"c\"), \"Prueba de wp_mail desde el VPS.\") ? \"wp_mail: true\" : \"wp_mail: false\";' > /tmp/pura-mail-probe.php; chmod 644 /tmp/pura-mail-probe.php; \
+             run eval-file /tmp/pura-mail-probe.php; rm -f /tmp/pura-mail-probe.php; \
              echo '== Exim / sendmail'; which sendmail exim 2>/dev/null; systemctl is-active exim 2>/dev/null; \
              echo '== mail accounts for the domain'; ls /home/\$U/mail/capoeiracuernavaca.com 2>/dev/null; \
              echo '== DNS'; for t in MX TXT; do echo \"-- \$t capoeiracuernavaca.com\"; dig +short \$t capoeiracuernavaca.com; done; \
