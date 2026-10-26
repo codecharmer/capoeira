@@ -16,45 +16,69 @@ set -u
 
 U=capoeiracuernava
 D=capoeiracuernavaca.com
-M="${MAILBOX:-notificaciones}"
-SENDER="$M@$D"
-HOST="mail.$D"
+M="${MAILBOX:-}"
+MAIL_HOST="mail.$D"
+SERVER_HOST="$(hostname -f 2>/dev/null || hostname)"
 P=''
 
 run() { su -s /bin/bash "$U" -c "wp --path='$W' $*" 2>&1; }
+# `run` merges stderr, and su/PAM print locale warnings there; the last line is wp's answer.
+run_last() { run "$@" | tail -n 1; }
 mask() { if [ -n "$P" ]; then sed "s/$P/***/g"; else cat; fi; }
 mask_json() { sed -E 's/"(password|access_key|secret_key|api_key|client_secret|auth_token|access_token|refresh_token)":"[^"]*"/"\1":"***"/g'; }
+tls_check() {
+  printf '  %-45s ' "$1:465"
+  timeout 15 openssl s_client -connect "$1:465" -servername "$1" -verify_hostname "$1" </dev/null 2>/dev/null \
+    | grep -m1 -E '^Verification|Verify return code' || echo "no TLS answer"
+}
 
 echo "== FluentSMTP connections now (secrets masked)"
 run option get fluentmail-settings --format=json | mask_json | head -c 3000; echo
-echo "== FluentSMTP log table"
-run db query "'SHOW TABLES LIKE \"%fsmpt_email_logs\"'" | tail -n +2
+echo "== wp-config.php credentials"
+for c in FLUENTMAIL_SMTP_USERNAME FLUENTMAIL_SMTP_PASSWORD; do
+  if run config has "$c" --type=constant >/dev/null; then
+    if [ "$c" = FLUENTMAIL_SMTP_USERNAME ]; then echo "  $c = $(run_last config get "$c" --type=constant)"; else echo "  $c: defined"; fi
+  else echo "  $c: missing"; fi
+done
+echo "== FluentSMTP log, last 5"
+run db query "'SELECT id, status, created_at, LEFT(response, 220) AS response FROM wp_fsmpt_email_logs ORDER BY id DESC LIMIT 5'" | grep -v -E 'perl: warning|LANGUAGE|LC_ALL|LANG =|are supported|^\s*$'
 echo "== mailboxes on $D"
 uapi --output=json --user="$U" Email list_pops | grep -o '"email":"[^"]*"' | cut -d'"' -f4
-echo "== TLS certificate on $HOST:465"
-timeout 15 openssl s_client -connect "$HOST:465" -servername "$HOST" </dev/null 2>/dev/null \
-  | openssl x509 -noout -subject -issuer -enddate 2>&1 | sed 's/^/  /'
+echo "== TLS certificate check (an SSL connection needs the name to verify)"
+tls_check "$MAIL_HOST"
+tls_check "$SERVER_HOST"
 
 if [ "${APPLY:-false}" != "true" ]; then
-  echo "== inspect only (run again with apply=true to configure $SENDER)"
+  echo "== inspect only (apply=true reuses the wp-config credentials; apply=true + mailbox=<name> creates that mailbox)"
   exit 0
 fi
 
-echo "== 1. mailbox $SENDER"
-P=$(openssl rand -base64 48 | tr -dc 'A-Za-z0-9' | head -c 28)
-if uapi --output=json --user="$U" Email list_pops | grep -q "\"email\":\"$SENDER\""; then
-  out=$(uapi --output=json --user="$U" Email passwd_pop email="$M" domain="$D" password="$P"); what=password-reset
+if [ -z "$M" ]; then
+  echo "== 1. reusing the credentials already in wp-config.php"
+  SENDER="$(run_last config get FLUENTMAIL_SMTP_USERNAME --type=constant)"
+  case "$SENDER" in
+    *@*) echo "  sender: $SENDER" ;;
+    *) echo "  FLUENTMAIL_SMTP_USERNAME is not defined; run again with a mailbox name."; exit 1 ;;
+  esac
+  run config has FLUENTMAIL_SMTP_PASSWORD --type=constant >/dev/null || { echo "  FLUENTMAIL_SMTP_PASSWORD is not defined; run again with a mailbox name."; exit 1; }
 else
-  out=$(uapi --output=json --user="$U" Email add_pop email="$M" domain="$D" password="$P" quota=1024); what=created
-fi
-status=$(echo "$out" | grep -o '"status":[01]' | head -1)
-echo "  $what: ${status:-no status}"
-echo "$out" | grep -o '"errors":\[[^]]*\]' | mask | sed 's/^/  /'
-case "$status" in *1) ;; *) echo "  cPanel refused the mailbox change; stopping before touching WordPress."; exit 1;; esac
+  SENDER="$M@$D"
+  echo "== 1. mailbox $SENDER"
+  P=$(openssl rand -base64 48 | tr -dc 'A-Za-z0-9' | head -c 28)
+  if uapi --output=json --user="$U" Email list_pops | grep -q "\"email\":\"$SENDER\""; then
+    out=$(uapi --output=json --user="$U" Email passwd_pop email="$M" domain="$D" password="$P"); what=password-reset
+  else
+    out=$(uapi --output=json --user="$U" Email add_pop email="$M" domain="$D" password="$P" quota=1024); what=created
+  fi
+  status=$(echo "$out" | grep -o '"status":[01]' | head -1)
+  echo "  $what: ${status:-no status}"
+  echo "$out" | grep -o '"errors":\[[^]]*\]' | mask | sed 's/^/  /'
+  case "$status" in *1) ;; *) echo "  cPanel refused the mailbox change; stopping before touching WordPress."; exit 1;; esac
 
-echo "== 2. credentials in wp-config.php"
-run config set FLUENTMAIL_SMTP_USERNAME "$SENDER" --type=constant | mask
-run config set FLUENTMAIL_SMTP_PASSWORD "$P" --type=constant | mask
+  echo "== 2. credentials in wp-config.php"
+  run config set FLUENTMAIL_SMTP_USERNAME "$SENDER" --type=constant | mask
+  run config set FLUENTMAIL_SMTP_PASSWORD "$P" --type=constant | mask
+fi
 
 echo "== 3. FluentSMTP tables (re-run the plugin's activation)"
 run plugin deactivate fluent-smtp | mask
@@ -62,7 +86,7 @@ run plugin activate fluent-smtp | mask
 
 echo "== 4. FluentSMTP connection + plugin sender (verifies the SMTP login first)"
 chmod 644 /tmp/pura-smtp-setup.php /tmp/pura-smtp-test.php
-run eval-file /tmp/pura-smtp-setup.php "$SENDER" "$HOST" | mask
+run eval-file /tmp/pura-smtp-setup.php "$SENDER" "$MAIL_HOST" "$SERVER_HOST" | mask
 rc=${PIPESTATUS[0]}
 if [ "$rc" -ne 0 ]; then
   echo "  setup failed (exit $rc); FluentSMTP settings were not written."

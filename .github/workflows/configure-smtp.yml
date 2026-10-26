@@ -13,9 +13,9 @@ on:
         type: boolean
         default: false
       mailbox:
-        description: Mailbox to send from (local part, created or password-reset)
+        description: Mailbox to create (local part, e.g. notificaciones). Leave empty to reuse the credentials already in wp-config.php.
         type: string
-        default: notificaciones
+        default: ''
 
 jobs:
   smtp:
