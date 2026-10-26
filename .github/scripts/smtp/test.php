@@ -7,8 +7,7 @@
  * @package Pura\Ops
  */
 
-declare( strict_types=1 );
-
+// No declare(strict_types): wp eval-file runs the file through eval(), which rejects it.
 // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- CLI output.
 
 $to = class_exists( '\Pura\Core\Mailer' ) ? \Pura\Core\Mailer::recipients() : array();

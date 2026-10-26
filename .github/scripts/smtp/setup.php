@@ -10,8 +10,7 @@
  * @package Pura\Ops
  */
 
-declare( strict_types=1 );
-
+// No declare(strict_types): wp eval-file runs the file through eval(), which rejects it.
 // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- CLI output.
 
 $sender = isset( $args[0] ) ? sanitize_email( (string) $args[0] ) : '';
