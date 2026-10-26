@@ -62,6 +62,11 @@ if [ -f "/var/cpanel/domain_keys/public/$D" ]; then
   echo "  DKIM public key (DNS value for default._domainkey.$D):"
   echo "    v=DKIM1; k=rsa; p=$(grep -v -- '-----' "/var/cpanel/domain_keys/public/$D" | tr -d '\n')"
 fi
+echo "  local zone records (SPF / DKIM / DMARC):"
+grep -i -E 'v=spf1|_domainkey|_dmarc' "/var/named/$D.db" 2>/dev/null | cut -c1-110 | sed 's/^/    /'
+echo "  Exim DKIM signing configured: $(grep -c -i 'dkim_domain' /etc/exim.conf 2>/dev/null) rule(s); smart host: $(grep -i -m1 'dedrelay\|smart_route\|route_list' /etc/exim.conf 2>/dev/null | cut -c1-80)"
+echo "  GoDaddy relay used by Exim: $(dig +short -x 132.148.124.49 @8.8.8.8 | tr '\n' ' ')"
+echo "  SPF of secureserver.net: $(dig +short TXT secureserver.net @8.8.8.8 | grep -i spf1)"
 echo "  Exim log for the last mail to the notification address:"
 grep -h 'codecharmer@codecharmer.io' /var/log/exim_mainlog 2>/dev/null | grep -E '<=|=>|\*\*' | tail -n 4 | sed -E 's/^/    /'
 
