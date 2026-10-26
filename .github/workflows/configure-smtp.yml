@@ -1,0 +1,52 @@
+name: Configure SMTP
+
+# Manual. Inspects how WordPress sends mail on the VPS and, when "apply" is checked, sets it
+# up end to end: a dedicated mailbox in cPanel, its credentials in wp-config.php, a FluentSMTP
+# connection over SSL that reads them, the plugin's sender address, and one real test mail.
+# See .github/scripts/smtp/ for exactly what runs on the server. The mailbox password is
+# generated on the server and never printed.
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Apply the configuration (unchecked = inspect only)
+        type: boolean
+        default: false
+      mailbox:
+        description: Mailbox to send from (local part, created or password-reset)
+        type: string
+        default: notificaciones
+
+jobs:
+  smtp:
+    name: ${{ inputs.apply && 'Configure' || 'Inspect' }} outgoing mail
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Upload the WP-CLI helpers
+        run: |
+          scp -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -P "${{ secrets.SSH_PORT }}" \
+            .github/scripts/smtp/setup.php "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/pura-smtp-setup.php"
+          scp -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -P "${{ secrets.SSH_PORT }}" \
+            .github/scripts/smtp/test.php "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/pura-smtp-test.php"
+
+      - name: ${{ inputs.apply && 'Configure' || 'Inspect' }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "W='${{ secrets.DEPLOY_PATH }}' MAILBOX='${{ inputs.mailbox }}' APPLY='${{ inputs.apply }}' bash -s" \
+            < .github/scripts/smtp/configure.sh
