@@ -30,6 +30,7 @@ jobs:
             "set +e; W='${{ secrets.DEPLOY_PATH }}'; U=capoeiracuernava; \
              run() { su -s /bin/bash \"\$U\" -c \"wp --path='\$W' \$*\" 2>&1; }; \
              echo '== host'; whoami; hostname; php -v | head -1; \
+             echo '== cPanel accounts and their sites'; for u in \$(ls /var/cpanel/users); do d=\$(grep -E '^DNS=' /var/cpanel/users/\$u | cut -d= -f2); r=/home/\$u/public_html; t=other; [ -f \$r/wp-config.php ] && t=wordpress; [ -f \$r/index.html ] && [ \$t = other ] && t=static; echo \"  \$u  \$d  \$t  \$(ls \$r 2>/dev/null | head -c 120 | tr '\\n' ' ')\"; done; \
              echo '== wp core'; run core version; run option get siteurl; \
              echo '== plugins'; run plugin list --fields=name,status,version; \
              echo '== pura doctor'; run pura doctor; \
