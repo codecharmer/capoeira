@@ -40,8 +40,9 @@ for c in FLUENTMAIL_SMTP_USERNAME FLUENTMAIL_SMTP_PASSWORD; do
     if [ "$c" = FLUENTMAIL_SMTP_USERNAME ]; then echo "  $c = $(run_last config get "$c" --type=constant)"; else echo "  $c: defined"; fi
   else echo "  $c: missing"; fi
 done
-echo "== FluentSMTP log, last 5"
-run db query "'SELECT id, status, created_at, LEFT(response, 220) AS response FROM wp_fsmpt_email_logs ORDER BY id DESC LIMIT 5'" | grep -v -E 'perl: warning|LANGUAGE|LC_ALL|LANG =|are supported|^\s*$'
+PFX="$(run_last db prefix)"; case "$PFX" in *[!A-Za-z0-9_]*|"") PFX=wp_;; esac
+echo "== FluentSMTP log, last 5 (table ${PFX}fsmpt_email_logs)"
+run db query "'SELECT id, status, created_at, LEFT(response, 220) AS response FROM ${PFX}fsmpt_email_logs ORDER BY id DESC LIMIT 5'" | grep -v -E 'perl: warning|LANGUAGE|LC_ALL|LANG =|are supported|^\s*$'
 echo "== mailboxes on $D"
 uapi --output=json --user="$U" Email list_pops | grep -o '"email":"[^"]*"' | cut -d'"' -f4
 echo "== TLS certificate check (an SSL connection needs the name to verify)"
@@ -68,7 +69,15 @@ echo "  Exim DKIM signing configured: $(grep -c -i 'dkim_domain' /etc/exim.conf 
 echo "  GoDaddy relay used by Exim: $(dig +short -x 132.148.124.49 @8.8.8.8 | tr '\n' ' ')"
 echo "  SPF of secureserver.net: $(dig +short TXT secureserver.net @8.8.8.8 | grep -i spf1)"
 echo "  Exim log for the last mail to the notification address:"
-grep -h 'codecharmer@codecharmer.io' /var/log/exim_mainlog 2>/dev/null | grep -E '<=|=>|\*\*' | tail -n 4 | sed -E 's/^/    /'
+grep -h 'codecharmer@codecharmer.io' /var/log/exim_mainlog 2>/dev/null | grep -E '<=|=>|\*\*' | tail -n 6 | sed -E 's/^/    /'
+# Copies to the sender's own mailbox (a registrant copy when the registrant used that address)
+# are delivered locally by Dovecot, so they prove the Cc path end to end.
+SMTP_USER="$(run_last config get FLUENTMAIL_SMTP_USERNAME --type=constant)"
+case "$SMTP_USER" in
+  *@*)
+    echo "  Exim log: last local deliveries into $SMTP_USER:"
+    grep -h "<$SMTP_USER>" /var/log/exim_mainlog 2>/dev/null | grep -E '=>' | tail -n 3 | sed -E 's/^/    /' ;;
+esac
 
 if [ "${APPLY:-false}" != "true" ]; then
   echo "== inspect only (apply=true reuses the wp-config credentials; apply=true + mailbox=<name> creates that mailbox)"
