@@ -1,0 +1,60 @@
+name: Configure DNS (mail authentication)
+
+# Manual. The zone for capoeiracuernavaca.com is served by this VPS (the registry delegates to
+# ns1/ns2.codecharmer.io, both on the server), so SPF and DMARC are edited here through the
+# WHM API, not at a registrar. Unchecked "apply" only prints the zone's state: delegation,
+# NS/SOA, DNS cluster, the SPF/DKIM/DMARC records and what the public resolvers answer.
+# See .github/scripts/dns/configure.sh for exactly what runs on the server.
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Apply the records (unchecked = inspect only)
+        type: boolean
+        default: false
+      spf:
+        description: SPF TXT for the apex (replaces the existing v=spf1 record)
+        type: string
+        default: 'v=spf1 +a +mx +ip4:72.167.225.151 include:secureserver.net ~all'
+      dmarc:
+        description: DMARC TXT for _dmarc (added, or replaced if one exists)
+        type: string
+        default: 'v=DMARC1; p=none; rua=mailto:codecharmer@codecharmer.io; adkim=r; aspf=r'
+
+jobs:
+  dns:
+    name: ${{ inputs.apply && 'Apply' || 'Inspect' }} mail DNS records
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: ${{ inputs.apply && 'Apply' || 'Inspect' }}
+        env:
+          SPF: ${{ inputs.spf }}
+          DMARC: ${{ inputs.dmarc }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "APPLY='${{ inputs.apply }}' SPF=$(printf %q "$SPF") DMARC=$(printf %q "$DMARC") bash -s" \
+            < .github/scripts/dns/configure.sh
+
+      - name: What the authoritative servers and public resolvers answer now
+        run: |
+          for ns in ns1.codecharmer.io ns1.secureserver.net 8.8.8.8 1.1.1.1; do
+            echo "== @$ns"
+            printf '  SPF:   '; dig +short +time=5 +tries=1 TXT capoeiracuernavaca.com @$ns | grep -i spf1 || echo '(none)'
+            printf '  DMARC: '; dig +short +time=5 +tries=1 TXT _dmarc.capoeiracuernavaca.com @$ns | grep -i dmarc1 || echo '(none)'
+          done
