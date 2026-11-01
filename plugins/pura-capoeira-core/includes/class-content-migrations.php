@@ -498,7 +498,7 @@ final class Content_Migrations {
 	}
 
 	/**
-	 * trial_campaign_2026_11 matched the trial section's delimiter as written in the pattern file,
+	 * The trial_campaign_2026_11 migration matched the trial section's delimiter as written in the pattern file,
 	 * but the saved page encodes "--" as \u002d\u002d and carries pattern metadata, so /clases went
 	 * live without id="prueba". Re-run the (idempotent) transform with the corrected pattern.
 	 */
