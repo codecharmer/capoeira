@@ -33,12 +33,13 @@
 	<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"pura/setting","args":{"key":"whatsapp_display"}}}}} --><p>+1 (805) 638-5603</p><!-- /wp:paragraph -->
 	<!-- wp:paragraph {"className":"legal__label"} --><p class="legal__label">Correo para asuntos de privacidad</p><!-- /wp:paragraph -->
 	<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"pura/setting","args":{"key":"privacy_email"}}}}} --><p>contacto@capoeiracuernavaca.com</p><!-- /wp:paragraph -->
-	<!-- wp:paragraph --><p>Este Aviso aplica a los datos que recabamos a través del sitio capoeiracuernavaca.com y de la relación directa contigo en la escuela.</p><!-- /wp:paragraph -->
+	<!-- wp:paragraph --><p>Este Aviso aplica a los datos que recabamos a través del sitio capoeiracuernavaca.com, de los formularios de Facebook e Instagram y de WhatsApp, y de la relación directa contigo en la escuela.</p><!-- /wp:paragraph -->
 
 	<!-- wp:heading --><h2 class="wp-block-heading">Datos personales que recabamos</h2><!-- /wp:heading -->
 	<!-- wp:paragraph --><p>Dependiendo de cómo te relaciones con nosotros, podemos recabar los siguientes datos personales:</p><!-- /wp:paragraph -->
 	<!-- wp:list -->
 	<ul class="wp-block-list">
+		<!-- wp:list-item --><li><strong>Solicitudes de información y clases de prueba</strong> (formularios de Facebook e Instagram, WhatsApp o este sitio): nombre, número de teléfono o WhatsApp y el día que prefieres asistir; si la solicitud es para un menor, nombre y teléfono de la madre, padre o tutor y la edad del menor.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li><strong>Formulario de inscripción:</strong> nombre(s), apellidos, fecha de nacimiento, dirección, correo electrónico, teléfono y teléfono de emergencia.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li><strong>Tienda en línea:</strong> nombre, dirección de envío, correo electrónico y teléfono.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li><strong>Registro a eventos</strong> (encuentros, talleres y rodas organizados por la escuela): nombre(s), apellidos, correo electrónico, teléfono, fecha de nacimiento, ciudad, academia y profesor, graduación y años de práctica, días de asistencia, talla de playera, nombre y teléfono de tu contacto de emergencia y las notas que decidas compartir.</li><!-- /wp:list-item -->
@@ -52,6 +53,11 @@
 	<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Datos de menores de edad</h3><!-- /wp:heading -->
 	<!-- wp:paragraph --><p>Cuando la persona inscrita es menor de edad, los datos del alumno se recaban directamente del padre, madre o tutor, quien además proporciona su propio nombre y teléfono de contacto. Al registrar al menor, el padre, madre o tutor otorga su consentimiento para el tratamiento de los datos conforme a este Aviso. El tutor puede ejercer en cualquier momento los derechos ARCO en representación del menor, acreditando su identidad y su carácter de padre, madre o tutor.</p><!-- /wp:paragraph -->
 
+	<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Solicitudes de información y clases de prueba</h3><!-- /wp:heading -->
+	<!-- wp:paragraph --><p>Cuando solicitas información o una clase de prueba mediante un formulario de Facebook o Instagram, por WhatsApp o en este sitio, recabamos tu nombre, tu número de teléfono o WhatsApp y el día que prefieres asistir. Si la solicitud es para un menor, recabamos el nombre y teléfono de la madre, padre o tutor y la edad del menor; no pedimos el nombre del menor en esta etapa.</p><!-- /wp:paragraph -->
+	<!-- wp:paragraph --><p>Usamos estos datos para contactarte, confirmar la fecha de tu clase de prueba, enviarte recordatorios sobre esa clase, responder tus preguntas y, si asististe, invitarte a inscribirte. Si no te inscribes, eliminaremos tus datos después de 6 meses.</p><!-- /wp:paragraph -->
+	<!-- wp:paragraph --><p>Los formularios de Facebook e Instagram son operados por Meta Platforms, que también trata esta información conforme a su propia política de privacidad.</p><!-- /wp:paragraph -->
+
 	<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Datos que no solicitamos</h3><!-- /wp:heading -->
 	<!-- wp:paragraph --><p>No solicitamos datos personales sensibles, como información sobre tu estado de salud, origen étnico, creencias religiosas u opiniones políticas. Te pedimos que no incluyas información de salud ni otros datos sensibles en nuestros formularios o mensajes; si necesitas informarnos de alguna condición relevante para tu práctica, coméntalo en persona con tu profesor.</p><!-- /wp:paragraph -->
 
@@ -59,6 +65,7 @@
 	<!-- wp:paragraph --><p>Tratamos tus datos personales para las siguientes finalidades, que son necesarias para la relación que mantienes con la escuela:</p><!-- /wp:paragraph -->
 	<!-- wp:list -->
 	<ul class="wp-block-list">
+		<!-- wp:list-item --><li>Atender tus solicitudes de información, confirmar la fecha de tu clase de prueba, enviarte recordatorios sobre esa clase, responder tus preguntas y, si asististe, invitarte a inscribirte.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li>Registrar tu inscripción y llevar el control de tu asistencia a clases.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li>Gestionar los cobros de inscripción, mensualidades y paquetes, y emitir los comprobantes correspondientes.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li>Contactarte, o contactar a tu tutor, sobre clases, horarios y cambios en la programación.</li><!-- /wp:list-item -->
@@ -81,6 +88,7 @@
 		<!-- wp:list-item --><li><strong>Stripe:</strong> procesamiento de pagos con tarjeta. Stripe recibe tus datos de pago directamente; nosotros nunca los vemos.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li><strong>Printful:</strong> producción y envío de los pedidos de la tienda. Recibe tu nombre y tu dirección de envío.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li><strong>Google y Apple:</strong> inicio de sesión en tu cuenta de alumno. El sitio recibe únicamente el identificador, el correo y el nombre que tú autorizas al iniciar sesión.</li><!-- /wp:list-item -->
+		<!-- wp:list-item --><li><strong>Meta Platforms (Facebook e Instagram):</strong> formularios de solicitud de información y de clase de prueba. Meta también trata esta información conforme a su propia política de privacidad.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li><strong>Proveedor de hospedaje:</strong> servidor (cPanel/VPS) donde se aloja este sitio y su base de datos.</li><!-- /wp:list-item -->
 		<!-- wp:list-item --><li><strong>Proveedor de correo electrónico:</strong> envío de notificaciones, confirmaciones y comprobantes.</li><!-- /wp:list-item -->
 	</ul>
@@ -101,7 +109,7 @@
 	</ul>
 	<!-- /wp:list -->
 	<!-- wp:paragraph --><p>Te responderemos en un plazo máximo de 20 días hábiles contados a partir de que recibamos tu solicitud. Si resulta procedente, la haremos efectiva dentro de los 15 días hábiles siguientes a la fecha en que te comuniquemos la respuesta, conforme al artículo 32 de la LFPDPPP.</p><!-- /wp:paragraph -->
-	<!-- wp:paragraph --><p>Si consideras que tu derecho a la protección de datos personales ha sido vulnerado, o no estás conforme con nuestra respuesta, puedes acudir al Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales (INAI), autoridad competente en la materia.</p><!-- /wp:paragraph -->
+	<!-- wp:paragraph --><p>Si consideras que tu derecho a la protección de datos personales ha sido vulnerado, puedes acudir a la Secretaría Anticorrupción y Buen Gobierno, autoridad competente conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares vigente desde el 21 de marzo de 2025.</p><!-- /wp:paragraph -->
 
 	<!-- wp:heading --><h2 class="wp-block-heading">Limitar el uso o divulgación de tus datos</h2><!-- /wp:heading -->
 	<!-- wp:paragraph --><p>Además de los derechos ARCO, puedes pedirnos que limitemos el uso o la divulgación de tus datos personales, por ejemplo para dejar de recibir comunicaciones sobre eventos y promociones. Basta con escribirnos al correo indicado en este Aviso o enviarnos un mensaje por WhatsApp; registraremos tu petición y la respetaremos mientras conservemos tus datos.</p><!-- /wp:paragraph -->

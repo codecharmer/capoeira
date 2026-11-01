@@ -95,6 +95,6 @@ final class PricingTest extends TestCase {
 		self::assertSame( 2932.5, Pricing::to_pesos( 293250 ) );
 		self::assertSame( '$2,932.50', Pricing::format_pesos( 293250 ) );
 		self::assertSame( '$1,150', Pricing::format_pesos( 115000 ) );
-		self::assertSame( 'Inscripción ($1,700) + primera mensualidad ($1,150).', Pricing::plan( 'inscription_month', 'adult' )['note'] );
+		self::assertSame( 'Inscripción con uniforme ($1,700) + primera mensualidad ($1,150).', Pricing::plan( 'inscription_month', 'adult' )['note'] );
 	}
 }

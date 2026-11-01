@@ -3,7 +3,7 @@
  * Title: Clases — Costos
  * Slug: pura-capoeira/costs
  * Categories: pura-capoeira
- * Description: Mensualidad e inscripción con botón a inscripciones.
+ * Description: Mensualidad, inscripción y clase de prueba con botón a inscripciones.
  * Viewport Width: 1400
  *
  * @package Pura
@@ -34,6 +34,14 @@
 			<!-- wp:paragraph {"className":"info-card__tag"} --><p class="info-card__tag">Inscripción / Uniforme</p><!-- /wp:paragraph -->
 			<!-- wp:pura/price {"key":"inscription","group":"adult","suffix":"MXN","className":"info-card__price"} /-->
 			<!-- wp:paragraph {"className":"info-card__sub"} --><p class="info-card__sub">La inscripción incluye el proceso inicial de integración y uniforme de entrenamiento.</p><!-- /wp:paragraph -->
+		</div>
+		<!-- /wp:group -->
+
+		<!-- wp:group {"className":"info-card reveal","layout":{"type":"default"}} -->
+		<div class="wp-block-group info-card reveal">
+			<!-- wp:paragraph {"className":"info-card__tag"} --><p class="info-card__tag">Clase de prueba</p><!-- /wp:paragraph -->
+			<!-- wp:pura/price {"key":"trial","group":"adult","suffix":"MXN (una clase)","className":"info-card__price"} /-->
+			<!-- wp:paragraph {"className":"info-card__sub"} --><p class="info-card__sub">Ven a una clase de tu grupo para conocer la práctica y al profesor.</p><!-- /wp:paragraph -->
 		</div>
 		<!-- /wp:group -->
 	</div>
