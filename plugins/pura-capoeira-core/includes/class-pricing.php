@@ -83,7 +83,7 @@ final class Pricing {
 				'id'          => 'inscription_month',
 				'label'       => 'Inscripción + primer mes',
 				'note'        => sprintf(
-					'Inscripción (%s) + primera mensualidad (%s).',
+					'Inscripción con uniforme (%s) + primera mensualidad (%s).',
 					self::format_pesos( $fee ),
 					self::format_pesos( $monthly )
 				),
@@ -92,8 +92,8 @@ final class Pricing {
 			),
 			array(
 				'id'          => 'inscription',
-				'label'       => 'Solo inscripción',
-				'note'        => 'Pago único de inscripción.',
+				'label'       => 'Inscripción (incluye uniforme)',
+				'note'        => 'Pago único de inscripción; incluye el uniforme de entrenamiento.',
 				'amount'      => $fee,
 				'allow_addon' => false,
 			),

@@ -24,7 +24,7 @@
 		<!-- wp:group {"className":"info-card reveal","layout":{"type":"default"}} -->
 		<div class="wp-block-group info-card reveal">
 			<!-- wp:paragraph {"className":"info-card__tag"} --><p class="info-card__tag">Adultos</p><!-- /wp:paragraph -->
-			<!-- wp:heading {"level":3,"className":"info-card__title"} --><h3 class="wp-block-heading info-card__title">Capoeira para adultos</h3><!-- /wp:heading -->
+			<!-- wp:heading {"level":3,"className":"info-card__title"} --><h3 class="wp-block-heading info-card__title">Capoeira para adultos y jóvenes</h3><!-- /wp:heading -->
 			<!-- wp:pura/schedule {"group":"adult"} /-->
 		</div>
 		<!-- /wp:group -->

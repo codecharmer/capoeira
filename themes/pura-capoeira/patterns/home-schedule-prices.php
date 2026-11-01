@@ -39,6 +39,8 @@
 			<!-- wp:heading {"level":3,"className":"info-card__title","style":{"spacing":{"margin":{"top":"2rem"}}}} --><h3 class="wp-block-heading info-card__title" style="margin-top:2rem">Inscripción / Uniforme</h3><!-- /wp:heading -->
 			<!-- wp:pura/price {"key":"inscription","group":"adult","suffix":"MXN","className":"info-card__price"} /-->
 			<!-- wp:paragraph {"className":"info-card__sub","style":{"spacing":{"margin":{"top":"1rem"}}}} --><p class="info-card__sub" style="margin-top:1rem">Incluye el proceso inicial de integración y uniforme de entrenamiento.</p><!-- /wp:paragraph -->
+			<!-- wp:heading {"level":3,"className":"info-card__title","style":{"spacing":{"margin":{"top":"2rem"}}}} --><h3 class="wp-block-heading info-card__title" style="margin-top:2rem">Clase de prueba</h3><!-- /wp:heading -->
+			<!-- wp:pura/price {"key":"trial","group":"adult","suffix":"MXN","className":"info-card__price"} /-->
 			<!-- wp:pura/contact-link {"channel":"whatsapp","label":"Agendar clase de prueba","variant":"btn-primary","message":"Hola, quiero agendar una clase de prueba en Pura Capoeira Cuernavaca."} /-->
 		</div>
 		<!-- /wp:group -->
