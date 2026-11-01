@@ -55,7 +55,7 @@
 
 	<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Solicitudes de información y clases de prueba</h3><!-- /wp:heading -->
 	<!-- wp:paragraph --><p>Cuando solicitas información o una clase de prueba mediante un formulario de Facebook o Instagram, por WhatsApp o en este sitio, recabamos tu nombre, tu número de teléfono o WhatsApp y el día que prefieres asistir. Si la solicitud es para un menor, recabamos el nombre y teléfono de la madre, padre o tutor y la edad del menor; no pedimos el nombre del menor en esta etapa.</p><!-- /wp:paragraph -->
-	<!-- wp:paragraph --><p>Usamos estos datos para contactarte, confirmar la fecha de tu clase de prueba, enviarte recordatorios sobre esa clase, responder tus preguntas y, si asististe, invitarte a inscribirte. Si no te inscribes, eliminaremos tus datos después de [X] meses.</p><!-- /wp:paragraph -->
+	<!-- wp:paragraph --><p>Usamos estos datos para contactarte, confirmar la fecha de tu clase de prueba, enviarte recordatorios sobre esa clase, responder tus preguntas y, si asististe, invitarte a inscribirte. Si no te inscribes, eliminaremos tus datos después de 6 meses.</p><!-- /wp:paragraph -->
 	<!-- wp:paragraph --><p>Los formularios de Facebook e Instagram son operados por Meta Platforms, que también trata esta información conforme a su propia política de privacidad.</p><!-- /wp:paragraph -->
 
 	<!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Datos que no solicitamos</h3><!-- /wp:heading -->
