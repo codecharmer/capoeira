@@ -517,6 +517,29 @@ function initInscription( root ) {
 		);
 	}
 
+	// The /clases buttons link here with ?plan=trial&group=adult|kids: preselect that group and
+	// package. Prices still come from the config and the server; nothing else changes.
+	const presetGroup = params.get( 'group' );
+	const presetPlan = params.get( 'plan' );
+	if ( presetGroup && /^[a-z_]+$/.test( presetGroup ) ) {
+		const groupInput = $(
+			`input[name="inscription_group"][value="${ presetGroup }"]`,
+			form
+		);
+		if ( groupInput ) {
+			groupInput.checked = true;
+		}
+	}
+	if ( presetPlan && /^[a-z_]+$/.test( presetPlan ) ) {
+		const planInput = $(
+			`input[name="plan"][value="${ presetPlan }"]`,
+			form
+		);
+		if ( planInput ) {
+			planInput.checked = true;
+		}
+	}
+
 	updateModeUi();
 	applyPlanPrices( effectivePlans() );
 	updateSummary();

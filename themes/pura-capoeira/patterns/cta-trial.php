@@ -22,8 +22,8 @@
 		<!-- wp:paragraph {"className":"lead","style":{"spacing":{"margin":{"top":"0","bottom":"2rem"}}}} --><p class="lead" style="margin-top:0;margin-bottom:2rem">Te compartimos la ubicación exacta al confirmar tu clase.</p><!-- /wp:paragraph -->
 		<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
 		<div class="wp-block-buttons">
-			<!-- wp:button {"className":"is-style-blue"} --><div class="wp-block-button is-style-blue"><a class="wp-block-button__link wp-element-button" href="/inscripciones/">Agendar Adultos</a></div><!-- /wp:button -->
-			<!-- wp:button {"className":"is-style-blue"} --><div class="wp-block-button is-style-blue"><a class="wp-block-button__link wp-element-button" href="/inscripciones/">Agendar Kids</a></div><!-- /wp:button -->
+			<!-- wp:button {"className":"is-style-blue"} --><div class="wp-block-button is-style-blue"><a class="wp-block-button__link wp-element-button" href="/inscripciones/?plan=trial&amp;group=adult">Agendar Adultos</a></div><!-- /wp:button -->
+			<!-- wp:button {"className":"is-style-blue"} --><div class="wp-block-button is-style-blue"><a class="wp-block-button__link wp-element-button" href="/inscripciones/?plan=trial&amp;group=kids">Agendar Kids</a></div><!-- /wp:button -->
 		</div>
 		<!-- /wp:buttons -->
 		<!-- wp:pura/contact-link {"channel":"whatsapp","label":"Prefiero WhatsApp","variant":"btn-whatsapp","className":"cta-whatsapp"} /-->

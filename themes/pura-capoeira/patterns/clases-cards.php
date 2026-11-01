@@ -23,7 +23,7 @@
 			<!-- wp:paragraph {"className":"info-card__sub","style":{"spacing":{"margin":{"top":"1rem"}}}} --><p class="info-card__sub" style="margin-top:1rem">Cada clase te pone frente a algo que todavía no sabes hacer: una esquiva, una secuencia, un canto. Ahí entrenas la fuerza y también la paciencia para insistir.</p><!-- /wp:paragraph -->
 			<!-- wp:buttons {"style":{"spacing":{"margin":{"top":"1.25rem"}}}} -->
 			<div class="wp-block-buttons" style="margin-top:1.25rem">
-				<!-- wp:button {"className":"is-style-blue"} --><div class="wp-block-button is-style-blue"><a class="wp-block-button__link wp-element-button" href="/inscripciones/">Agendar Adultos</a></div><!-- /wp:button -->
+				<!-- wp:button {"className":"is-style-blue"} --><div class="wp-block-button is-style-blue"><a class="wp-block-button__link wp-element-button" href="/inscripciones/?plan=trial&amp;group=adult">Agendar Adultos</a></div><!-- /wp:button -->
 			</div>
 			<!-- /wp:buttons -->
 		</div>
@@ -37,7 +37,7 @@
 			<!-- wp:paragraph {"className":"info-card__sub","style":{"spacing":{"margin":{"top":"1rem"}}}} --><p class="info-card__sub" style="margin-top:1rem">Un espacio para moverse, cantar y jugar con otros niños, donde intentar cuenta tanto como lograrlo. Cada avance se nota, y cada niño aprende a reconocer el suyo.</p><!-- /wp:paragraph -->
 			<!-- wp:buttons {"style":{"spacing":{"margin":{"top":"1.25rem"}}}} -->
 			<div class="wp-block-buttons" style="margin-top:1.25rem">
-				<!-- wp:button {"className":"is-style-blue"} --><div class="wp-block-button is-style-blue"><a class="wp-block-button__link wp-element-button" href="/inscripciones/">Agendar Kids</a></div><!-- /wp:button -->
+				<!-- wp:button {"className":"is-style-blue"} --><div class="wp-block-button is-style-blue"><a class="wp-block-button__link wp-element-button" href="/inscripciones/?plan=trial&amp;group=kids">Agendar Kids</a></div><!-- /wp:button -->
 			</div>
 			<!-- /wp:buttons -->
 		</div>

@@ -68,6 +68,12 @@ final class Content_Migrations {
 		. '</div>' . "\n"
 		. '<!-- /wp:group -->';
 
+	/** The /clases booking buttons preselect the trial package for their group on /inscripciones. */
+	private const TRIAL_BUTTON_LINKS = array(
+		'href="/inscripciones/">Agendar Adultos</a>' => 'href="/inscripciones/?plan=trial&amp;group=adult">Agendar Adultos</a>',
+		'href="/inscripciones/">Agendar Kids</a>'    => 'href="/inscripciones/?plan=trial&amp;group=kids">Agendar Kids</a>',
+	);
+
 	private const HOME_TRIAL_PRICE = '<!-- wp:heading {"level":3,"className":"info-card__title","style":{"spacing":{"margin":{"top":"2rem"}}}} --><h3 class="wp-block-heading info-card__title" style="margin-top:2rem">Clase de prueba</h3><!-- /wp:heading -->' . "\n"
 		. '<!-- wp:pura/price {"key":"trial","group":"adult","suffix":"MXN","className":"info-card__price"} /-->';
 
@@ -554,6 +560,8 @@ final class Content_Migrations {
 				1
 			);
 		}
+
+		$content = strtr( $content, self::TRIAL_BUTTON_LINKS );
 
 		if ( ! str_contains( $content, '"key":"trial"' ) ) {
 			$content = (string) preg_replace(

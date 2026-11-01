@@ -100,7 +100,7 @@ final class ContentMigrationsTest extends TestCase {
 			. "\t<!-- wp:group {\"className\":\"reveal cta-center\",\"layout\":{\"type\":\"constrained\",\"contentSize\":\"600px\"}} -->\n\t<div class=\"wp-block-group reveal cta-center\">\n"
 			. "\t\t<!-- wp:heading --><h2 class=\"wp-block-heading\">Agenda tu clase de prueba</h2><!-- /wp:heading -->\n"
 			. "\t\t<!-- wp:paragraph {\"className\":\"lead\"} --><p class=\"lead\">Una clase para conocernos. Reserva en línea según tu grupo (Adultos o Kids) o escríbenos por WhatsApp.</p><!-- /wp:paragraph -->\n"
-			. "\t\t<!-- wp:buttons --><div class=\"wp-block-buttons\"></div><!-- /wp:buttons -->\n"
+			. "\t\t<!-- wp:buttons --><div class=\"wp-block-buttons\"><a href=\"/inscripciones/\">Agendar Adultos</a><a href=\"/inscripciones/\">Agendar Kids</a><a href=\"/inscripciones/\">Inscríbete en línea</a></div><!-- /wp:buttons -->\n"
 			. "\t</div>\n\t<!-- /wp:group -->\n</section>\n<!-- /wp:group -->";
 
 		return "<!-- wp:group {\"className\":\"info-card reveal\",\"anchor\":\"adultos\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group info-card reveal\" id=\"adultos\">\n"
@@ -134,6 +134,9 @@ final class ContentMigrationsTest extends TestCase {
 		$this->assertLessThan( strpos( $updated, '<!-- wp:buttons' ), strpos( $updated, 'Clase de prueba: <strong>' ), 'the price paragraphs come before the buttons' );
 		$this->assertSame( 1, substr_count( $updated, '"key":"trial"' ) );
 		$this->assertStringContainsString( '"suffix":"MXN (una clase)"', $updated );
+		$this->assertStringContainsString( 'href="/inscripciones/?plan=trial&amp;group=adult">Agendar Adultos</a>', $updated );
+		$this->assertStringContainsString( 'href="/inscripciones/?plan=trial&amp;group=kids">Agendar Kids</a>', $updated );
+		$this->assertStringContainsString( 'href="/inscripciones/">Inscríbete en línea</a>', $updated, 'the Costos button keeps pointing at the full form' );
 
 		$this->assertSame( $updated, Content_Migrations::add_trial_copy_to_clases( $updated ), 'Running it again changes nothing.' );
 	}
