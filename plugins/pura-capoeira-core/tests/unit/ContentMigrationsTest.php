@@ -96,7 +96,7 @@ final class ContentMigrationsTest extends TestCase {
 
 	/** The /clases page as it was saved before the campaign changes. */
 	private function old_clases_page(): string {
-		$trial = "<!-- wp:group {\"tagName\":\"section\",\"align\":\"full\",\"className\":\"section section--dark\",\"layout\":{\"type\":\"constrained\"}} -->\n<section class=\"wp-block-group alignfull section section--dark\">\n"
+		$trial = "<!-- wp:group {\"tagName\":\"section\",\"align\":\"full\",\"className\":\"section section\\u002d\\u002ddark\",\"layout\":{\"type\":\"constrained\"},\"metadata\":{\"patternName\":\"pura-capoeira/cta-trial\",\"name\":\"Llamada \u2014 Agenda tu clase de prueba\"}} -->\n<section class=\"wp-block-group alignfull section section--dark\">\n"
 			. "\t<!-- wp:group {\"className\":\"reveal cta-center\",\"layout\":{\"type\":\"constrained\",\"contentSize\":\"600px\"}} -->\n\t<div class=\"wp-block-group reveal cta-center\">\n"
 			. "\t\t<!-- wp:heading --><h2 class=\"wp-block-heading\">Agenda tu clase de prueba</h2><!-- /wp:heading -->\n"
 			. "\t\t<!-- wp:paragraph {\"className\":\"lead\"} --><p class=\"lead\">Una clase para conocernos. Reserva en línea según tu grupo (Adultos o Kids) o escríbenos por WhatsApp.</p><!-- /wp:paragraph -->\n"
@@ -109,7 +109,7 @@ final class ContentMigrationsTest extends TestCase {
 			. "<!-- wp:group {\"className\":\"info-card reveal\",\"anchor\":\"kids\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group info-card reveal\" id=\"kids\">\n"
 			. "\t<!-- wp:heading {\"level\":3,\"className\":\"info-card__title\"} --><h3 class=\"wp-block-heading info-card__title\">Capoeira para niños</h3><!-- /wp:heading -->\n"
 			. "\t<!-- wp:pura/schedule {\"group\":\"kids\"} /-->\n</div>\n<!-- /wp:group -->\n"
-			. "<!-- wp:group {\"tagName\":\"section\",\"align\":\"full\",\"className\":\"section section--dark\",\"layout\":{\"type\":\"constrained\"}} -->\n<section class=\"wp-block-group alignfull section section--dark\">\n"
+			. "<!-- wp:group {\"tagName\":\"section\",\"align\":\"full\",\"className\":\"section section\\u002d\\u002ddark\",\"layout\":{\"type\":\"constrained\"},\"metadata\":{\"patternName\":\"pura-capoeira/costs\"}} -->\n<section class=\"wp-block-group alignfull section section--dark\">\n"
 			. "\t<!-- wp:group {\"className\":\"info-card reveal\",\"layout\":{\"type\":\"default\"}} -->\n\t<div class=\"wp-block-group info-card reveal\">\n"
 			. "\t\t<!-- wp:paragraph {\"className\":\"info-card__sub\"} --><p class=\"info-card__sub\">La inscripción incluye el proceso inicial de integración y uniforme de entrenamiento.</p><!-- /wp:paragraph -->\n"
 			. "\t</div>\n\t<!-- /wp:group -->\n</section>\n<!-- /wp:group -->\n"
@@ -122,7 +122,8 @@ final class ContentMigrationsTest extends TestCase {
 		$this->assertSame( 1, substr_count( $updated, 'id="adultos"' ) );
 		$this->assertSame( 1, substr_count( $updated, 'id="kids"' ) );
 		$this->assertSame( 1, substr_count( $updated, 'id="prueba"' ), 'only the trial CTA section gets the anchor, not Costos' );
-		$this->assertStringContainsString( '"anchor":"prueba"', $updated );
+		$this->assertStringContainsString( '"anchor":"prueba",', $updated );
+		$this->assertStringContainsString( 'section\u002d\u002ddark","anchor":"prueba","layout":{"type":"constrained"},"metadata":{"patternName":"pura-capoeira/cta-trial"', $updated, 'the saved delimiter keeps its encoding and metadata' );
 		$this->assertSame( 1, substr_count( $updated, 'Capoeira para adultos y jóvenes</h3>' ) );
 		$this->assertStringNotContainsString( 'Capoeira para adultos</h3>', $updated );
 		$this->assertStringContainsString( 'Capoeira para niños</h3>', $updated );

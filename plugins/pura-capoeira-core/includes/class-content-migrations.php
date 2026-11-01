@@ -31,6 +31,7 @@ final class Content_Migrations {
 		'set_inscription_fee_2026_10',
 		'create_trial_thanks_page',
 		'trial_campaign_2026_11',
+		'trial_section_anchor_2026_11',
 	);
 
 	/** Slug, pattern and copy of the page a student lands on after booking a trial class. */
@@ -53,8 +54,13 @@ final class Content_Migrations {
 
 	private const CLASES_MIXED_GROUP_LINE = '<!-- wp:paragraph {"className":"info-card__sub","style":{"spacing":{"margin":{"bottom":"1rem"}}}} --><p class="info-card__sub" style="margin-bottom:1rem">Grupo mixto desde los 8 años · Martes y jueves, 17:30 a 19:30. No se requiere experiencia previa. Los jóvenes de 13 a 17 años se integran a este grupo.</p><!-- /wp:paragraph -->';
 
-	private const TRIAL_SECTION_OPEN_OLD = '<!-- wp:group {"tagName":"section","align":"full","className":"section section--dark","layout":{"type":"constrained"}} -->' . "\n" . '<section class="wp-block-group alignfull section section--dark">';
-	private const TRIAL_SECTION_OPEN_NEW = '<!-- wp:group {"tagName":"section","align":"full","className":"section section--dark","anchor":"prueba","layout":{"type":"constrained"}} -->' . "\n" . '<section class="wp-block-group alignfull section section--dark" id="prueba">';
+	/**
+	 * Opener of the trial CTA section as saved: serialize_block_attributes() writes "--" as
+	 * \u002d\u002d (it would end the HTML comment) and resolve_pattern_blocks() appends pattern
+	 * metadata, so the saved delimiter is not the pattern file's. Group 1 ends after the className,
+	 * group 2 is the rest of the delimiter plus the opening tag up to its ">".
+	 */
+	private const TRIAL_SECTION_OPEN_RE = '/(<!-- wp:group \{"tagName":"section","align":"full","className":"section section(?:--|\\\\u002d\\\\u002d)dark",)("layout":\{"type":"constrained"\}[^\n]*? -->\s*<section class="wp-block-group alignfull section section--dark")>(?=\s*<!-- wp:group \{"className":"reveal cta-center")/u';
 
 	private const TRIAL_PARAGRAPHS = '<!-- wp:paragraph {"className":"lead","style":{"spacing":{"margin":{"top":"0","bottom":"1rem"}}}} --><p class="lead" style="margin-top:0;margin-bottom:1rem">Clase de prueba: <strong>$200 MXN</strong>. Ven a una clase de tu grupo para conocer la práctica y al profesor. Resérvala y págala en línea, o escríbenos por WhatsApp para elegir fecha.</p><!-- /wp:paragraph -->' . "\n"
 		. '<!-- wp:paragraph {"className":"lead","style":{"spacing":{"margin":{"top":"0","bottom":"1rem"}}}} --><p class="lead" style="margin-top:0;margin-bottom:1rem">¿Eres madre, padre o tutor de un joven de 13 a 17 años? Agenda su clase de prueba en el grupo de martes y jueves.</p><!-- /wp:paragraph -->' . "\n"
@@ -492,6 +498,15 @@ final class Content_Migrations {
 	}
 
 	/**
+	 * trial_campaign_2026_11 matched the trial section's delimiter as written in the pattern file,
+	 * but the saved page encodes "--" as \u002d\u002d and carries pattern metadata, so /clases went
+	 * live without id="prueba". Re-run the (idempotent) transform with the corrected pattern.
+	 */
+	private function trial_section_anchor_2026_11(): void {
+		$this->transform_page( get_page_by_path( 'clases' ), array( self::class, 'add_trial_copy_to_clases' ) );
+	}
+
+	/**
 	 * Apply a pure content transform to a saved page and store it when something changed.
 	 *
 	 * @param \WP_Post|null $page      Page, or null when it does not exist.
@@ -544,12 +559,7 @@ final class Content_Migrations {
 		if ( ! str_contains( $content, 'id="prueba"' ) ) {
 			// Two sections share the dark opener (Costos and the trial CTA); the CTA is the one whose
 			// first child is the centred group.
-			$content = (string) preg_replace(
-				'/' . preg_quote( self::TRIAL_SECTION_OPEN_OLD, '/' ) . '(?=\s*<!-- wp:group \{"className":"reveal cta-center")/u',
-				str_replace( '$', '\$', self::TRIAL_SECTION_OPEN_NEW ),
-				$content,
-				1
-			);
+			$content = (string) preg_replace( self::TRIAL_SECTION_OPEN_RE, '$1"anchor":"prueba",$2 id="prueba">', $content, 1 );
 		}
 
 		if ( ! str_contains( $content, 'Clase de prueba: <strong>$200 MXN</strong>' ) ) {
